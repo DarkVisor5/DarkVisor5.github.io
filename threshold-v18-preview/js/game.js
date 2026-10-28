@@ -1916,7 +1916,7 @@ function drawV18Sarcophagi(c){
  if(s.floor===1){
   if(!s._sarcophagusShowcase){
    const p=s.player, origin=roomGeometryAt(p.x,p.y);
-   const offsets=[[2,0],[0,2],[-2,0],[0,-2],[1,1],[-1,1],[1,-1],[-1,-1],[1,0]];
+   const offsets=[[2,0],[1,1],[0,2],[-2,0],[0,-2],[-1,1],[1,-1],[-1,-1],[1,0]];
    for(const [dx,dy] of offsets){
     const x=p.x+dx,y=p.y+dy,r=roomGeometryAt(x,y);
     if(!inBounds(x,y)||s.map[y]?.[x]==='#'||!r||!origin||r.x!==origin.x||r.y!==origin.y)continue;
@@ -1925,7 +1925,7 @@ function drawV18Sarcophagi(c){
    if(!s._sarcophagusShowcase)s._sarcophagusShowcase={x:p.x,y:p.y};
   }
   const {x,y}=s._sarcophagusShowcase;
-  if(inc(x,y,c)&&s.visible.has(K(x,y))){
+  if(inc(x,y,c)){
    const pp=lp(x,y,c),w=CELL*1.65,h=CELL*2.5;
    ctx.save();ctx.globalAlpha=1;ctx.drawImage(v18Sarcophagus,pp.x+CELL/2-w/2,pp.y+CELL/2-h/2,w,h);ctx.restore();
   }
@@ -1980,11 +1980,11 @@ function draw(){
       if(seen&&tile==='>'){drawIcon('stairs',px+3,py+3,CELL-6,visible?1:.55);if(visible&&!prefersReducedMotion()){const pulse=.5+.5*Math.sin(animNow()/420+(x+y));ctx.save();ctx.globalAlpha=.18+.18*pulse;ctx.strokeStyle='#e6cf73';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px+CELL/2,py+CELL/2,CELL*(.24+.14*pulse),0,Math.PI*2);ctx.stroke();ctx.restore()}}
     }
   }
-  drawDungeonAtmosphere(c);drawWorldAmbience(c,now);drawTorchDarkness(c,now);drawFloorColorGrade();drawThreatVisuals(now);drawTorchSconces(c,now);drawV18Sarcophagi(c);drawBossTelegraph(c);drawEnemyVision(c);drawWeaponPreview(c);drawStaticObjects(c);
+  drawDungeonAtmosphere(c);drawWorldAmbience(c,now);drawTorchDarkness(c,now);drawFloorColorGrade();drawThreatVisuals(now);drawTorchSconces(c,now);drawBossTelegraph(c);drawEnemyVision(c);drawWeaponPreview(c);drawStaticObjects(c);
   for(const e of s.enemies)if(e.hp>0&&s.visible.has(K(e.x,e.y))&&inc(e.x,e.y,c))drawEnemy(e,c,now);drawDeaths(c,now);
   const pv=playerVisualState(now),p=lpFloat(pv.x,pv.y,c),r=Math.max(0,s.hp/s.maxHp),pf=eqWeapon().family,basePX=p.x+pv.hitX,basePY=p.y+pv.hitY+pv.bob;drawGroundShadowPx(p.x+CELL/2,p.y+CELL*.80,.92,.27);ctx.save();ctx.translate(basePX+CELL/2,basePY+CELL/2);ctx.rotate(pv.rot);ctx.scale(pv.scale,pv.scale);ctx.translate(-CELL/2,-CELL/2);if(s.guard){ctx.strokeStyle='#82c8e8';ctx.lineWidth=3;ctx.beginPath();ctx.arc(CELL/2,CELL/2,15,0,Math.PI*2);ctx.stroke()}ctx.fillStyle='rgba(6,8,11,.55)';ctx.beginPath();ctx.arc(CELL/2,CELL/2,12,0,Math.PI*2);ctx.fill();if(pf&&pf!=='unarmed'){ctx.strokeStyle=FC[pf]||'#9fc3ff';ctx.lineWidth=mobileUI()?3:2.5;ctx.beginPath();ctx.arc(CELL/2,CELL/2,mobileUI()?15:14,0,Math.PI*2);ctx.stroke()}const spritePad=mobileUI()?0:1;if(!drawPlayerWeaponVisual(spritePad,spritePad,CELL-spritePad*2,{walking:pv.walking&&!pv.attack,frame:pv.frame,attacking:!!pv.attack,attackFamily:pv.attack?pv.attack.family:pf,attackPhase:pv.attack?attackProgress(pv.attack,now):0})){ctx.fillStyle='#78a9ff';ctx.beginPath();ctx.arc(CELL/2,CELL/2,10,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();if(pf&&pf!=='unarmed'){ctx.fillStyle=FC[pf]||'#fff';ctx.font='bold 10px sans-serif';ctx.fillText(familyGlyph(pf),CELL-8,8)}}drawFacingNotch(s.player.facing||'up',0,0,CELL,'#9fd6ff');if(s.riposteReady){drawIcon('riposte',CELL-13,1,12,1)||(()=>{ctx.fillStyle='#f4d36f';ctx.font='bold 13px sans-serif';ctx.fillText('✦',CELL-6,7)})()}ctx.restore();const playerHpW=mobileUI()?CELL+8:CELL-4,playerHpH=mobileUI()?11:8,playerHpX=p.x+(CELL-playerHpW)/2,playerHpY=p.y-(mobileUI()?14:10);ctx.save();ctx.fillStyle='rgba(0,0,0,.86)';ctx.beginPath();ctx.roundRect(playerHpX,playerHpY,playerHpW,playerHpH,3);ctx.fill();ctx.save();ctx.beginPath();ctx.roundRect(playerHpX+1,playerHpY+1,Math.max(0,(playerHpW-2)*r),playerHpH-2,2);ctx.clip();ctx.fillStyle=r>.5?'#71c981':r>.25?'#d3b452':'#df6666';ctx.fillRect(playerHpX+1,playerHpY+1,playerHpW-2,playerHpH-2);ctx.restore();ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=1;ctx.strokeRect(playerHpX+.5,playerHpY+.5,playerHpW-1,playerHpH-1);ctx.fillStyle='#fff';ctx.font=`900 ${mobileUI()?7.5:6.5}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=2;ctx.fillText(`${s.hp} HP`,playerHpX+playerHpW/2,playerHpY+playerHpH/2+.2);ctx.restore();drawPlayerAttackEffects(c,now);drawBursts(c,now);
   for(const f of s.fx||[]){if(!inc(f.x,f.y,c))continue;const q=lp(f.x,f.y,c),age=(now-f.start)/f.ttl;ctx.save();ctx.globalAlpha=Math.max(0,1-age);ctx.fillStyle=f.color;ctx.font='bold 13px sans-serif';ctx.fillText(f.text,q.x+CELL/2,q.y+5-age*12);ctx.restore()}
-  drawForegroundDepth(c,now);
+  drawForegroundDepth(c,now);drawV18Sarcophagi(c);
   ctx.restore();
 }
 function roomDiscovered(r){if(r.entered)return true;for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)if(s.seen.has(K(x,y)))return true;return false}
