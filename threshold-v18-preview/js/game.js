@@ -1368,7 +1368,7 @@ function interact(){
 }
 
 function completeStealthFloor(){if(!s.floorStealthCounted&&!s.floorAlerted){s.floorStealthCounted=true;s.stats.stealthFloors++;log('👻 Piano completato senza allerta.');checkMissions()}}
-function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':({archiveLectern:'LEGGIO',archiveScrollCabinet:'SCHEDARIO',guardBunk:'BRANDA',guardStandard:'STENDARDO',healingCot:'LETTINO',medicineCupboard:'ARMADIETTO',votiveAltar:'ALTARE',incenseBrazier:'BRACIERE',treasurePedestal:'TESORO',goldBalance:'BILANCIA',archiveAstrolabe:'ASTROLABIO',archiveMapChest:'CASSETTIERA',guardSpearBundle:'LANCE',guardWarDrum:'TAMBURO',healingHerbDryer:'ERBE',healingBandageBasket:'BENDE',sanctuaryStoneIdol:'STATUA',sanctuaryOfferingBowl:'COPPA VOTIVA',treasuryGemChest:'SCRIGNO DI GEMME',treasuryCoinUrn:'URNA D’ORO',cryptStele:'STELE FUNERARIA',storeSupplyShelf:'SCAFFALE',storeBarrelStack:'BARILI',storeCratePile:'CASSE',storeGrainSacks:'SACCHI',cryptTombSlab:'TOMBA',cryptAshUrn:'URNA CINERARIA',cryptGravestone:'LAPIDE',sanctuaryCandelabrum:'CANDELIERE',sanctuaryRuneStone:'PIETRA RUNICA',healingSurgicalTray:'STRUMENTI MEDICI'}[solidProp.type]||'SARCOFAGO');s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
+function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':({archiveLectern:'LEGGIO',archiveScrollCabinet:'SCHEDARIO',guardBunk:'BRANDA',guardStandard:'STENDARDO',healingCot:'LETTINO',medicineCupboard:'ARMADIETTO',votiveAltar:'ALTARE',incenseBrazier:'BRACIERE',treasurePedestal:'TESORO',goldBalance:'BILANCIA',archiveAstrolabe:'ASTROLABIO',archiveMapChest:'CASSETTIERA',guardSpearBundle:'LANCE',guardWarDrum:'TAMBURO',healingHerbDryer:'ERBE',healingBandageBasket:'BENDE',sanctuaryStoneIdol:'STATUA',sanctuaryOfferingBowl:'COPPA VOTIVA',treasuryGemChest:'SCRIGNO DI GEMME',treasuryCoinUrn:'URNA D’ORO',cryptStele:'STELE FUNERARIA',storeSupplyShelf:'SCAFFALE',storeBarrelStack:'BARILI',storeCratePile:'CASSE',storeGrainSacks:'SACCHI',cryptTombSlab:'TOMBA',cryptAshUrn:'URNA CINERARIA',cryptGravestone:'LAPIDE',sanctuaryCandelabrum:'CANDELIERE',sanctuaryRuneStone:'PIETRA RUNICA',healingSurgicalTray:'STRUMENTI MEDICI'}[solidProp.type]||V18_FURNITURE_ART[solidProp.type]?.name?.toUpperCase()||'SARCOFAGO');s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
 function useHealItem(item){if(!s||s.eventOpen||s.rewardOpen||!item||item.kind!=='heal')return;if(s.hp>=s.maxHp){log('❤️ Vita già al massimo.');return}const idx=s.inventory.indexOf(item);if(idx<0)return;playSfx('heal');const h=HEALS[item.id],gained=healPlayer(h.heal);s.inventory.splice(idx,1);meta.healsUsed++;saveMeta();log('🧪 '+h.name+': +'+gained+' HP.');render()}
 function useHeal(){if(!s||s.eventOpen||s.rewardOpen)return;const item=s.inventory.find(i=>i.kind==='heal');if(!item){log('Nessuna pozione.');return}useHealItem(item)}
 function discardItem(item){if(!s||!item)return;const idx=s.inventory.indexOf(item);if(idx<0)return;if(item.kind==='weapon'){const name=W[item.id].name,wasEq=s.equippedUid===item.uid;s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'weapon',id:item.id,uses:item.uses,seen:true});if(wasEq){const next=s.inventory.find(x=>x.kind==='weapon');s.equippedUid=next?next.uid:null}s.ambushId=null;log('🗑️ Lasci a terra '+name+' ('+item.uses+' KO rimasti).')}else{s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'heal',id:item.id,seen:true});log('🗑️ Lasci a terra '+HEALS[item.id].name+'.')}render()}
@@ -1970,6 +1970,10 @@ function v18SolidDecorationAt(x,y){
 }
 // v18.14 — Category-driven furniture generator, reusing all previously drawn sprites.
 // Every room gets a category; all placeable furniture stays inside that category.
+// v18.16 — 43 additional distinct props, yielding >=10 per room category.
+const V18_FURNITURE_ADDONS={"armory":[["armoryFurnace",2,1,"north"],["armoryShieldStack",2,1,"west"],["armoryTrainingDummy",1,1,"east"],["armoryChainRack",2,1,"north"],["armoryQuiver",1,1,"west"],["armoryHelmetShelf",2,1,"north"],["armoryBellows",1,1,"south"]],"archive":[["archiveGlobe",1,1,"west"],["archiveScrollTable",2,1,"south"],["archiveBookCart",2,1,"east"],["archiveClock",1,1,"north"]],"guardroom":[["guardFootlocker",2,1,"south"],["guardWeaponBench",2,1,"north"],["guardSignalHorn",1,1,"east"],["guardMapBoard",2,1,"north"],["guardHelmStand",1,1,"west"],["guardSupplyLocker",1,1,"east"]],"infirmary":[["healingWashBasin",1,1,"west"],["healingHerbTable",2,1,"north"],["healingWheelStretcher",2,1,"south"],["healingAnatomyChart",1,1,"east"],["healingMedicineCart",2,1,"west"]],"sanctuary":[["sanctuaryPrayerKneeler",2,1,"south"],["sanctuaryReliquary",1,1,"north"],["sanctuaryBell",1,1,"east"],["sanctuarySundial",1,1,"west"]],"treasury":[["treasuryCoinStacks",2,1,"north"],["treasuryRubyDisplay",1,1,"west"],["treasuryGoldSafe",2,1,"south"],["treasuryCrownCushion",1,1,"east"],["treasurySilverCabinet",2,1,"north"],["treasuryJewelryStand",1,1,"west"]],"crypt":[["cryptBonePile",2,1,"west"],["cryptCandleTomb",2,1,"south"],["cryptOfferingNiche",1,1,"north"],["cryptCoffin",2,1,"south"],["cryptSkullColumn",1,1,"east"]],"warehouse":[["storeHayBales",2,1,"south"],["storeCart",2,1,"west"],["storePotteryRack",2,1,"north"],["storeWineCrates",2,1,"east"],["storeChainHoist",2,1,"north"],["storeRopeCoils",1,1,"west"]]};
+const V18_FURNITURE_ART={"armoryFurnace":{"cat":"armory","w":2,"name":"Forgia","shape":"furnace"},"armoryShieldStack":{"cat":"armory","w":2,"name":"Scudi impilati","shape":"shield"},"armoryTrainingDummy":{"cat":"armory","w":1,"name":"Manichino d'allenamento","shape":"dummy"},"armoryChainRack":{"cat":"armory","w":2,"name":"Cotte di maglia","shape":"rack"},"armoryQuiver":{"cat":"armory","w":1,"name":"Faretra","shape":"bundle"},"armoryHelmetShelf":{"cat":"armory","w":2,"name":"Ripiano degli elmi","shape":"shelf"},"armoryBellows":{"cat":"armory","w":1,"name":"Mantice","shape":"bellows"},"archiveGlobe":{"cat":"archive","w":1,"name":"Globo celeste","shape":"globe"},"archiveScrollTable":{"cat":"archive","w":2,"name":"Tavolo delle mappe","shape":"desk"},"archiveBookCart":{"cat":"archive","w":2,"name":"Carrello dei volumi","shape":"cart"},"archiveClock":{"cat":"archive","w":1,"name":"Orologio astronomico","shape":"clock"},"guardFootlocker":{"cat":"guardroom","w":2,"name":"Baule militare","shape":"chest"},"guardWeaponBench":{"cat":"guardroom","w":2,"name":"Panca delle armi","shape":"bench"},"guardSignalHorn":{"cat":"guardroom","w":1,"name":"Corno d'allarme","shape":"horn"},"guardMapBoard":{"cat":"guardroom","w":2,"name":"Mappa delle pattuglie","shape":"board"},"guardHelmStand":{"cat":"guardroom","w":1,"name":"Supporto per elmo","shape":"helmet"},"guardSupplyLocker":{"cat":"guardroom","w":1,"name":"Armadietto delle guardie","shape":"locker"},"healingWashBasin":{"cat":"infirmary","w":1,"name":"Bacinella d'acqua","shape":"basin"},"healingHerbTable":{"cat":"infirmary","w":2,"name":"Tavolo delle erbe","shape":"desk"},"healingWheelStretcher":{"cat":"infirmary","w":2,"name":"Lettiga con ruote","shape":"bed"},"healingAnatomyChart":{"cat":"infirmary","w":1,"name":"Tavola anatomica","shape":"board"},"healingMedicineCart":{"cat":"infirmary","w":2,"name":"Carrello dei rimedi","shape":"cart"},"sanctuaryPrayerKneeler":{"cat":"sanctuary","w":2,"name":"Inginocchiatoio","shape":"bench"},"sanctuaryReliquary":{"cat":"sanctuary","w":1,"name":"Reliquiario","shape":"relic"},"sanctuaryBell":{"cat":"sanctuary","w":1,"name":"Campana rituale","shape":"bell"},"sanctuarySundial":{"cat":"sanctuary","w":1,"name":"Meridiana votiva","shape":"clock"},"treasuryCoinStacks":{"cat":"treasury","w":2,"name":"Pile di monete","shape":"coins"},"treasuryRubyDisplay":{"cat":"treasury","w":1,"name":"Vetrina dei rubini","shape":"relic"},"treasuryGoldSafe":{"cat":"treasury","w":2,"name":"Cassaforte","shape":"safe"},"treasuryCrownCushion":{"cat":"treasury","w":1,"name":"Corona su velluto","shape":"crown"},"treasurySilverCabinet":{"cat":"treasury","w":2,"name":"Vetrina d'argento","shape":"locker"},"treasuryJewelryStand":{"cat":"treasury","w":1,"name":"Espositore di gioielli","shape":"rack"},"cryptBonePile":{"cat":"crypt","w":2,"name":"Ossa accatastate","shape":"bones"},"cryptCandleTomb":{"cat":"crypt","w":2,"name":"Sepolcro a candele","shape":"tomb"},"cryptOfferingNiche":{"cat":"crypt","w":1,"name":"Nicchia funeraria","shape":"relic"},"cryptCoffin":{"cat":"crypt","w":2,"name":"Bara di quercia","shape":"coffin"},"cryptSkullColumn":{"cat":"crypt","w":1,"name":"Colonna di teschi","shape":"statue"},"storeHayBales":{"cat":"warehouse","w":2,"name":"Balle di fieno","shape":"hay"},"storeCart":{"cat":"warehouse","w":2,"name":"Carretto delle merci","shape":"cart"},"storePotteryRack":{"cat":"warehouse","w":2,"name":"Scaffale di giare","shape":"shelf"},"storeWineCrates":{"cat":"warehouse","w":2,"name":"Casse di vino","shape":"crates"},"storeChainHoist":{"cat":"warehouse","w":2,"name":"Argano di carico","shape":"hoist"},"storeRopeCoils":{"cat":"warehouse","w":1,"name":"Matasse di corda","shape":"rope"}};
+const V18_FURNITURE_PALETTE={"armory":["#503e35","#af8157","#ced0c8","#8c4041"],"archive":["#533b32","#b89668","#e6dbc0","#536a87"],"guardroom":["#3e4247","#b28d63","#aebec5","#873d42"],"infirmary":["#536c65","#bfb7a1","#eceddd","#688a90"],"sanctuary":["#575061","#bfab8b","#f2e5c7","#a880bd"],"treasury":["#624735","#e3b756","#fbe8b1","#ae6283"],"crypt":["#4c4955","#a29ca0","#d9cfbb","#67506c"],"warehouse":["#513c2d","#ad8051","#d2b58b","#77644e"]};
 const V18_ROOM_FURNITURE={
  armory:[['weaponRack',2,1,'north'],['armorStand',1,1,'west'],['workbench',2,1,'south']],
  archive:[['archiveBookshelf',2,1,'north'],['archiveWritingDesk',2,1,'south'],
@@ -2052,7 +2056,7 @@ function v18RoomDecor(){
  for(const room of s.rooms||[]){
   if(!room||room.w<5||room.h<4)continue;
   const kind=v18RoomCategory(room)?.type||'guardroom';
-  const objects=V18_ROOM_FURNITURE[kind]||V18_ROOM_FURNITURE.guardroom;
+  const objects=[...(V18_ROOM_FURNITURE[kind]||V18_ROOM_FURNITURE.guardroom),...(V18_FURNITURE_ADDONS[kind]||[])];
   const startRoom=inRoom(room,start.x,start.y),stairsRoom=inRoom(room,stairs.x,stairs.y);
   const bossRoom=!!(s.enemies||[]).find(e=>e.boss&&e.arena&&
    e.arena.x===room.x&&e.arena.y===room.y);
@@ -2062,10 +2066,11 @@ function v18RoomDecor(){
   if(bossRoom)budget=1;
   budget=Math.min(budget,objects.length);
   const special=(s.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y);
-  // Anchor the room with its signature furniture, then rotate secondary items.
-  // This exposes every sprite across different rooms instead of hiding late entries.
-  const signature=objects[0],secondary=objects.slice(1);
-  const shift=secondary.length?envHash(room.x,room.y,1415+s.floor)%secondary.length:0;
+  // Vary room anchors as well as secondary shapes, retaining safe density limits.
+  const anchorCount=Math.min(4,objects.length);
+  const anchorIndex=envHash(room.x,room.y,1401+s.floor)%anchorCount;
+  const signature=objects[anchorIndex],secondary=objects.filter((_,i)=>i!==anchorIndex);
+  const shift=secondary.length?envHash(room.y,room.x,1415+s.floor)%secondary.length:0;
   const ordered=[signature,...secondary.slice(shift),...secondary.slice(0,shift)];
   for(const [type,w,h,edge] of ordered){
    if(placed.filter(p=>p.room.x===room.x&&p.room.y===room.y).length>=budget)break;
@@ -2570,6 +2575,118 @@ function drawV18NewFurniture(type,px,py){
  }
  ctx.restore();
 }
+// v18.16 — Detailed, shape-specific 32px pixel art for the extended catalog.
+function drawV18CatalogFurniture(type,px,py){
+ const art=V18_FURNITURE_ART[type];if(!art)return;
+ const [dark,wood,light,accent]=V18_FURNITURE_PALETTE[art.cat],W=art.w*32;
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
+ const E=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);ctx.fill()};
+ const P=(coords,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(coords[0],coords[1]);for(let i=2;i<coords.length;i+=2)ctx.lineTo(coords[i],coords[i+1]);ctx.closePath();ctx.fill()};
+ const B=(x,y,w,h)=>{R(x,y,w,h,dark);R(x+2,y+2,w-4,h-5,wood);R(x+3,y+3,w-6,2,light)};
+ R(3,28,W-6,3,'rgba(0,0,0,.55)');
+ const left=art.w===2?8:6,right=W-left;
+ switch(art.shape){
+  case 'furnace':
+   B(3,12,W-6,16);R(9,6,W-18,13,'#646b70');R(14,9,W-28,9,'#20282c');
+   R(19,12,W-38,6,'#de6738');R(23,13,W-46,3,'#ffe39c');break;
+  case 'shield':
+   B(4,20,W-8,8);for(let x=10;x<W-13;x+=19){E(x,7,17,18,light);E(x+2,9,13,14,accent);R(x+8,11,2,12,wood)}break;
+  case 'dummy':
+   R(14,8,4,20,wood);R(7,13,19,4,light);R(11,13,11,12,accent);E(12,4,9,9,wood);
+   R(9,26,16,3,dark);break;
+  case 'rack':
+   B(3,4,W-6,24);R(8,8,W-16,17,'#252830');
+   for(let x=12;x<W-12;x+=18){R(x,11,12,11,light);R(x+2,13,8,9,accent);R(x+5,20,2,3,wood)}break;
+  case 'bundle':
+   R(8,16,16,12,wood);for(let x=10;x<=22;x+=4){R(x,7+(x%3),2,16,light);R(x-1,4+(x%3),4,5,accent)}
+   R(8,22,16,3,dark);break;
+  case 'shelf':
+   B(3,3,W-6,25);for(let y of [9,19]){R(7,y,W-14,3,light);
+    for(let x=10;x<W-10;x+=12){E(x,y-6,9,7,accent);R(x+2,y-4,5,3,wood)}}break;
+  case 'bellows':
+   E(6,11,20,16,wood);E(9,12,15,13,accent);R(15,6,3,10,light);R(3,19,9,3,'#95a8af');break;
+  case 'globe':
+   E(6,4,21,20,accent);E(10,7,14,14,'#537b88');R(15,5,2,20,light);
+   R(14,23,5,5,wood);R(10,27,13,2,light);break;
+  case 'desk':
+   B(3,9,W-6,19);R(6,7,W-12,5,light);R(10,12,W-20,11,'#e6d9bc');
+   R(13,14,W-27,2,accent);R(15,18,W-34,1,dark);R(9,26,6,4,wood);break;
+  case 'cart':
+   B(5,8,W-10,18);R(7,5,W-14,5,light);for(let x=12;x<W-8;x+=14){R(x,11,9,10,accent);R(x+2,11,5,2,light)}
+   E(9,25,9,7,dark);E(W-19,25,9,7,dark);break;
+  case 'clock':
+   E(6,4,21,21,wood);E(9,7,15,15,dark);R(15,9,2,11,light);R(15,16,7,2,accent);
+   R(13,25,6,4,wood);break;
+  case 'chest':
+   B(3,10,W-6,17);R(5,7,W-10,6,light);R(10,14,3,11,'#808b95');R(W-13,14,3,11,'#808b95');
+   R(W/2-3,13,6,11,accent);R(W/2-1,17,2,5,dark);break;
+  case 'bench':
+   B(4,11,W-8,16);R(6,8,W-12,5,light);R(11,15,W-22,8,accent);R(9,26,8,3,wood);break;
+  case 'horn':
+   P([6,9,14,5,19,9,23,18,28,22,24,25,18,18,11,14],light);
+   R(12,10,4,5,accent);R(15,23,5,5,wood);break;
+  case 'board':
+   B(3,3,W-6,25);R(7,6,W-14,19,'#dfd2b6');R(12,10,W-26,2,accent);
+   R(17,15,W-35,2,dark);R(23,20,W-47,2,wood);break;
+  case 'helmet':
+   R(14,19,4,10,wood);R(9,26,15,3,light);E(6,7,21,17,'#9ba9b1');
+   E(9,10,15,10,dark);R(8,18,18,3,accent);break;
+  case 'locker':
+   B(5,3,W-10,26);R(8,8,W-16,17,'#30363b');R(W/2-1,8,2,18,light);
+   R(W/2+4,15,3,4,accent);R(8,26,W-16,2,wood);break;
+  case 'basin':
+   E(5,10,23,15,light);E(9,12,15,10,'#49737e');R(13,19,7,9,wood);
+   R(8,26,17,2,dark);break;
+  case 'bed':
+   B(3,8,W-6,20);R(7,10,W-14,14,light);R(10,11,13,12,'#f1e7ce');
+   R(25,11,W-35,12,accent);E(11,25,8,6,dark);E(W-19,25,8,6,dark);break;
+  case 'relic':
+   B(7,18,W-14,11);E(9,9,W-18,15,accent);E(12,12,W-24,10,light);R(W/2-2,8,4,14,wood);
+   R(W/2-6,15,12,3,light);break;
+  case 'bell':
+   E(7,4,18,21,accent);E(10,7,12,15,dark);R(6,22,20,4,light);R(14,26,5,3,wood);break;
+  case 'coins':
+   for(let x=6;x<W-12;x+=13){E(x,14+(x%3),15,11,accent);E(x+1,12+(x%3),13,8,light)}
+   R(8,26,W-16,3,wood);break;
+  case 'safe':
+   B(3,5,W-6,24);R(8,8,W-16,17,'#657784');
+   E(W/2-8,10,16,15,wood);E(W/2-5,12,10,10,light);R(W/2-1,13,2,8,dark);break;
+  case 'crown':
+   R(5,20,23,9,accent);R(7,17,19,7,'#723e68');
+   P([9,18,9,10,13,14,16,7,20,14,24,10,24,18],light);
+   R(11,17,11,3,wood);break;
+  case 'bones':
+   for(let x=6;x<W-18;x+=17){E(x,15,14,9,light);R(x+6,11,3,15,light)}
+   R(9,25,W-18,2,dark);break;
+  case 'tomb':
+   B(4,13,W-8,16);R(7,10,W-14,11,light);R(W/2-2,11,4,11,dark);
+   R(W/2-8,17,16,2,dark);R(11,4,4,9,accent);R(W-15,4,4,9,accent);break;
+  case 'coffin':
+   B(4,8,W-8,20);P([9,9,W-11,9,W-7,16,W-11,26,9,26,5,16],wood);
+   R(W/2-2,12,4,11,light);R(W/2-7,17,14,3,light);break;
+  case 'statue':
+   R(12,23,10,6,dark);R(9,20,16,5,light);R(12,12,10,12,wood);E(11,4,12,11,light);
+   R(15,11,3,13,accent);break;
+  case 'hay':
+   for(let x=5;x<W-22;x+=22){R(x,11+(x%4),25,16,wood);R(x+2,8+(x%4),21,6,light);R(x+11,10,3,17,accent)}
+   break;
+  case 'crates':
+   for(let x=5;x<W-24;x+=24){B(x,9,23,19);R(x+4,12,15,2,light);R(x+11,14,2,11,accent)}
+   break;
+  case 'hoist':
+   R(8,5,W-16,5,light);R(9,9,5,19,wood);R(W-14,9,5,19,wood);
+   R(W/2-1,10,3,15,accent);E(W/2-8,17,16,10,'#758991');break;
+  case 'rope':
+   E(5,7,23,21,light);E(9,11,15,13,wood);E(12,14,9,8,dark);R(8,25,15,3,accent);break;
+  default:B(6,8,W-12,20);R(10,12,W-20,10,accent);
+ }
+ // Tiny deterministic material details, not a second piece of furniture.
+ let mark=0;for(let i=0;i<type.length;i++)mark=(mark*31+type.charCodeAt(i))>>>0;
+ for(let i=0;i<3;i++){let x=8+((mark>>>i*5)%Math.max(9,W-18)),y=9+((mark>>>((i+3)*3))%12);
+  R(x,y,2,1,i%2?light:accent)}
+ ctx.restore();
+}
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2597,7 +2714,8 @@ function drawV18RoomDecor(c,relight=false){
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
   ctx.imageSmoothingEnabled=false;
-  if(prop.type==='weaponRack')drawV18WeaponRack(px,py);
+  if(V18_FURNITURE_ART[prop.type])drawV18CatalogFurniture(prop.type,px,py);
+  else if(prop.type==='weaponRack')drawV18WeaponRack(px,py);
   else if(prop.type==='armorStand')drawV18ArmorStand(px,py);
   else if(prop.type==='workbench')drawV18Workbench(px,py);
   else if(prop.type==='archiveBookshelf')drawV18ArchiveBookshelf(px,py);
