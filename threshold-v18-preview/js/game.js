@@ -1927,7 +1927,7 @@ function drawV18Sarcophagi(c){
   const {x,y}=s._sarcophagusShowcase;
   if(inc(x,y,c)){
    const pp=lp(x,y,c),w=CELL*1.65,h=CELL*2.5;
-   ctx.save();ctx.globalAlpha=1;ctx.drawImage(v18Sarcophagus,pp.x+CELL/2-w/2,pp.y+CELL/2-h/2,w,h);ctx.restore();
+   ctx.save();ctx.globalAlpha=1;const room=roomGeometryAt(x,y);if(room){ctx.beginPath();ctx.rect((room.x-c.sx)*CELL,(room.y-c.sy)*CELL,room.w*CELL,room.h*CELL);ctx.clip()}ctx.drawImage(v18Sarcophagus,pp.x+CELL/2-w/2,pp.y+CELL/2-h/2,w,h);ctx.restore();
   }
  }
  const rooms=s.rooms||[];
