@@ -2125,38 +2125,56 @@ function drawV18ArmorStand(px,py){
 }
 // v18.9 — wooden armory workbench (2x1 tiles); anvil, hammer and metal fittings
 // are drawn directly onto the same piece of furniture, not independent objects.
+// v18.9.1 — Armory forge bench: silhouetted trestle, steel anvil, hot blade and tooling.
+// Original 64x32 pixel art, no smoothing and no additional gameplay objects.
 function drawV18Workbench(px,py){
  ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
- // Table feet and deep shadow under the oak slab.
- ctx.fillStyle='rgba(3,5,8,.50)';ctx.fillRect(4,8,57,23);
- ctx.fillStyle='#3d2a20';ctx.fillRect(6,9,6,21);ctx.fillRect(52,9,6,21);
- ctx.fillStyle='#92613d';ctx.fillRect(8,11,3,17);ctx.fillRect(53,11,3,17);
- // Solid tabletop in perspective from above.
- ctx.fillStyle='#38271f';ctx.fillRect(2,5,60,22);
- ctx.fillStyle='#6c4630';ctx.fillRect(3,6,58,18);
- ctx.fillStyle='#ad8054';ctx.fillRect(4,6,56,4);
- ctx.fillStyle='#91623c';ctx.fillRect(4,11,56,10);
- ctx.fillStyle='#714629';ctx.fillRect(4,22,56,4);
- ctx.fillStyle='#d0a173';ctx.fillRect(5,7,54,2);ctx.fillRect(5,25,54,1);
- ctx.fillStyle='#4f3226';for(const x of [15,36,54])ctx.fillRect(x,11,1,12);
- ctx.fillStyle='#b98b54';for(const x of [8,26,46])ctx.fillRect(x,15,9,1);
- // Squat steel anvil on a small iron base.
- ctx.fillStyle='#2d383f';ctx.fillRect(20,12,24,13);
- ctx.fillStyle='#768b96';ctx.fillRect(24,11,16,11);
- ctx.fillStyle='#bac9c7';ctx.fillRect(20,10,24,5);
- ctx.fillStyle='#dfe0d0';ctx.fillRect(20,10,17,2);
- ctx.fillStyle='#647b86';ctx.fillRect(24,16,16,4);
- ctx.fillStyle='#24333a';ctx.fillRect(28,21,9,2);
- ctx.fillStyle='#b6a27b';ctx.fillRect(25,12,3,1);
- // A small diagonal hammer and brass tongs on the tabletop.
- ctx.save();ctx.translate(12,17);ctx.rotate(-.43);
- ctx.fillStyle='#b18b56';ctx.fillRect(-1,-8,3,15);
- ctx.fillStyle='#8fa3aa';ctx.fillRect(-5,-9,11,4);
- ctx.fillStyle='#e2ded1';ctx.fillRect(-5,-9,8,1);ctx.restore();
- ctx.strokeStyle='#d3b274';ctx.lineWidth=2;ctx.beginPath();
- ctx.moveTo(48,14);ctx.lineTo(56,21);ctx.moveTo(56,14);ctx.lineTo(48,21);ctx.stroke();
- // Four bright bolt heads to keep the silhouette readable in low torchlight.
- ctx.fillStyle='#dbbc82';for(const x of [5,58])for(const y of [8,23])ctx.fillRect(x,y,2,2);
+ // Strong legs and an open, shadowed space under the table.
+ ctx.fillStyle='rgba(4,5,8,.58)';ctx.fillRect(5,26,55,5);
+ ctx.fillStyle='#241913';ctx.fillRect(8,18,9,12);ctx.fillRect(48,18,9,12);
+ ctx.fillStyle='#69412a';ctx.fillRect(10,19,5,10);ctx.fillRect(50,19,5,10);
+ ctx.fillStyle='#b07b4a';ctx.fillRect(10,20,2,8);ctx.fillRect(50,20,2,8);
+ ctx.fillStyle='#422b20';ctx.fillRect(15,24,36,3);
+ ctx.fillStyle='#8d603d';ctx.fillRect(16,25,31,2);
+ // Heavy oak table with a real front edge, rather than a flat rectangular tile.
+ ctx.fillStyle='#281b17';ctx.beginPath();ctx.moveTo(5,10);ctx.lineTo(53,6);ctx.lineTo(61,13);ctx.lineTo(61,21);ctx.lineTo(13,24);ctx.lineTo(4,18);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#785036';ctx.beginPath();ctx.moveTo(5,11);ctx.lineTo(52,7);ctx.lineTo(60,13);ctx.lineTo(12,18);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#be8a57';ctx.beginPath();ctx.moveTo(8,11);ctx.lineTo(51,8);ctx.lineTo(56,11);ctx.lineTo(13,15);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#d4a46a';ctx.fillRect(12,10,22,1);ctx.fillRect(34,9,15,1);
+ ctx.fillStyle='#543421';ctx.beginPath();ctx.moveTo(12,18);ctx.lineTo(60,13);ctx.lineTo(60,20);ctx.lineTo(13,24);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#906039';ctx.fillRect(15,20,40,2);ctx.fillRect(17,23,34,1);
+ ctx.fillStyle='#36221a';ctx.fillRect(12,17,2,6);ctx.fillRect(58,15,2,6);
+ // Thick iron binding and rivets at the visible corners.
+ ctx.fillStyle='#3e4546';ctx.fillRect(7,13,3,5);ctx.fillRect(54,14,4,6);
+ ctx.fillStyle='#bbc4bb';ctx.fillRect(8,14,1,1);ctx.fillRect(56,16,1,1);
+ // Large dark blue steel anvil with a recognisable horn and a raised top.
+ ctx.fillStyle='#17232d';ctx.fillRect(26,9,25,9);
+ ctx.fillStyle='#394f5e';ctx.fillRect(30,8,18,9);
+ ctx.fillStyle='#879da4';ctx.fillRect(25,7,24,4);
+ ctx.fillStyle='#dce3df';ctx.fillRect(27,7,18,2);
+ ctx.fillStyle='#879da4';ctx.fillRect(20,9,8,3);
+ ctx.fillStyle='#c5d0cc';ctx.fillRect(21,9,5,1);
+ ctx.fillStyle='#465b64';ctx.fillRect(31,11,13,5);
+ ctx.fillStyle='#9baeb2';ctx.fillRect(31,11,3,4);
+ ctx.fillStyle='#21303b';ctx.fillRect(34,16,11,3);
+ ctx.fillStyle='#788993';ctx.fillRect(38,16,5,1);
+ // Red-hot short blade resting on the anvil: a bright warm focal point.
+ ctx.fillStyle='#ef812e';ctx.fillRect(30,9,11,2);
+ ctx.fillStyle='#ffd078';ctx.fillRect(31,9,8,1);
+ ctx.fillStyle='#5c3c2b';ctx.fillRect(41,9,7,2);
+ // Smith's hammer on the left, with angled wood handle and steel head.
+ ctx.save();ctx.translate(17,12);ctx.rotate(-.51);
+ ctx.fillStyle='#c69b69';ctx.fillRect(-1,-5,3,15);
+ ctx.fillStyle='#755036';ctx.fillRect(0,1,2,7);
+ ctx.fillStyle='#a8b8bd';ctx.fillRect(-6,-7,12,5);
+ ctx.fillStyle='#eff0dc';ctx.fillRect(-5,-7,9,1);
+ ctx.fillStyle='#596f7c';ctx.fillRect(-6,-3,12,1);
+ ctx.restore();
+ // Open iron tongs, tucked near the right end of the bench.
+ ctx.strokeStyle='#c7b48f';ctx.lineWidth=1.5;ctx.beginPath();
+ ctx.moveTo(49,10);ctx.lineTo(54,15);ctx.lineTo(58,15);
+ ctx.moveTo(51,9);ctx.lineTo(56,13);ctx.lineTo(59,12);ctx.stroke();
+ ctx.fillStyle='#dfbd83';ctx.fillRect(17,22,2,1);ctx.fillRect(53,19,2,1);
  ctx.restore();
 }
 // Draw the same static prop in the normal lighting pass and again with a
