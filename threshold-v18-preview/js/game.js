@@ -948,7 +948,7 @@ function generateFloor(floor){
 
  let dangerDoor=null;if(floor>=2){const p=spot(5);if(p)dangerDoor={x:p.x,y:p.y,used:false,declined:false,rewarded:false,enemyId:null}}
  const torches=buildTorchSet(rooms,map,start,far,progressionGate,floor);
- return{map,rooms,player,stairs,open,enemies,loot,coins,chests,traps,artifactDrops,secrets,mechanism,startPos:{x:player.x,y:player.y},rareEvent,dangerDoor,keyPuzzle,specialRooms,torches,theme:dungeonThemeForFloor(floor),layoutStyle,seen:new Set(),visible:new Set(),_visionOverlayCache:null,_v18Layer2Decor:null}
+ return{map,rooms,player,stairs,open,enemies,loot,coins,chests,traps,artifactDrops,secrets,mechanism,startPos:{x:player.x,y:player.y},rareEvent,dangerDoor,keyPuzzle,specialRooms,torches,theme:dungeonThemeForFloor(floor),layoutStyle,seen:new Set(),visible:new Set(),_visionOverlayCache:null,_v18Layer2Decor:null,_v18WallShields:null}
 }
 
 function startRun(){closeThresholdDialogue();closeMobileSheet();playSfx('start');const active=firstRun?new Set():new Set(deck),baseHp=resilienceMaxHp();s={floor:1,hp:baseHp,maxHp:baseHp,resilienceHpStart:baseHp,steps:0,kills:0,runCoins:0,alarm:0,instability:0,alarmStage:0,instStage:0,equippedUid:null,inventory:[],artifactBelt:[],artifactBuffs:{stone:0,blood:0,power:0},artifactUsedThisTurn:false,deck:active,buffs:new Set(),guard:false,riposteReady:false,atStairs:false,eventOpen:false,dangerOpen:false,rewardOpen:false,targetMode:false,targetIds:[],targetIndex:0,survivorUsed:false,fx:[],ambushId:null,floorAlerted:false,floorStealthCounted:false,discoveredRoles:new Set(),chains:{},stats:{backstabs:0,chests:0,goldCollected:0,axeKills:0,spearKills:0,hammerStuns:0,stealthFloors:0,specialRooms:0,minibossKills:0,bossKills:0},portableTorches:0,torchStepsRemaining:0,torchLightLevel:TORCH_START_LIGHT,_physicalThresholdCount:0,_darkThresholds:new Set(),missions:chooseMissions()};s.objectivesAtStart=new Set(OBJECTIVES.filter(o=>o.get(meta)>=o.target).map(o=>o.id));const starter=weaponItem('rustySword');s.inventory.push(starter,{kind:'heal',id:'small'});s.equippedUid=starter.uid;Object.assign(s,generateFloor(1));v18RoomDecor();initAmbientRoutines();root.querySelector('#welcome').classList.add('hidden');root.querySelector('#hub').classList.add('hidden');root.querySelector('#runSummary').classList.add('hidden');root.querySelector('#game').classList.remove('hidden');root.querySelector('#stairsPanel').classList.add('hidden');root.querySelector('#rewardPanel').classList.add('hidden');root.querySelector('#eventPanel').classList.add('hidden');root.querySelector('#puzzlePanel').classList.add('hidden');root.querySelector('#targetPanel').classList.add('hidden');root.querySelector('#log').innerHTML='';applyCartographer();applyPathfinder();updateVisibility();log('🚪 La run comincia.');log('🗝️ In questo piano è nascosta una Camera della Soglia opzionale.');render();showFloorSplash();if(!guideSeen)setTimeout(()=>openGuide(),350);root.focus()}
@@ -2075,6 +2075,91 @@ function drawV18RoomDecor(c,relight=false){
  }
 }
 
+// v18.7 - Decorative wall shield: one heraldic plaque per eligible military room.
+// The shield occupies a real wall tile, never consumes a passable square or an exit.
+function v18WallShields(){
+ if(!s)return [];
+ if(Array.isArray(s._v18WallShields))return s._v18WallShields;
+ const out=[];
+ s._v18WallShields=out;
+ const obstructed=(x,y)=>
+  (s.torches||[]).some(t=>t.x===x&&t.y===y)||
+  (s.secrets||[]).some(t=>t.x===x&&t.y===y)||
+  (s.dangerDoor&&s.dangerDoor.x===x&&s.dangerDoor.y===y)||
+  (s.keyPuzzle?.door&&s.keyPuzzle.door.x===x&&s.keyPuzzle.door.y===y);
+ for(const room of s.specialRooms||[]){
+  if(room.type!=='armory'&&room.type!=='guardroom')continue;
+  const candidates=[];
+  const consider=(x,y,insideX,insideY,side)=>{
+   if(!inBounds(x,y)||!inBounds(insideX,insideY))return;
+   if(s.map[y]?.[x]!=='#'||s.map[insideY]?.[insideX]!=='.')return;
+   if(obstructed(x,y))return;
+   // Never mount a plaque on a corridor-opening, even if it touches the room.
+   const score=(side==='north'?0:side==='west'||side==='east'?100:200)+
+      Math.abs(insideX-room.cx)+Math.abs(insideY-room.cy)*.4;
+   candidates.push({x,y,side,score});
+  };
+  for(let x=room.x+1;x<room.x+room.w-1;x++){
+   consider(x,room.y-1,x,room.y,'north');
+   consider(x,room.y+room.h,x,room.y+room.h-1,'south');
+  }
+  for(let y=room.y+1;y<room.y+room.h-1;y++){
+   consider(room.x-1,y,room.x,y,'west');
+   consider(room.x+room.w,y,room.x+room.w-1,y,'east');
+  }
+  candidates.sort((a,b)=>a.score-b.score||a.y-b.y||a.x-b.x);
+  if(candidates.length){
+   const p=candidates[0];
+   out.push({type:'wallShield',x:p.x,y:p.y,side:p.side,roomType:room.type,
+     solid:false,interactive:false});
+  }
+ }
+ return out;
+}
+function drawV18WallShieldSprite(px,py){
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ // Hanging strap, dark backplate and readable brass silhouette.
+ ctx.fillStyle='rgba(0,0,0,.54)';ctx.fillRect(5,4,23,26);
+ ctx.fillStyle='#342720';ctx.fillRect(9,3,14,3);ctx.fillRect(15,1,3,4);
+ ctx.fillStyle='#7e633e';ctx.fillRect(6,5,20,15);
+ ctx.fillStyle='#cfb47c';
+ ctx.beginPath();ctx.moveTo(16,3);ctx.lineTo(27,7);ctx.lineTo(26,20);
+ ctx.lineTo(23,25);ctx.lineTo(16,30);ctx.lineTo(9,25);ctx.lineTo(6,20);
+ ctx.lineTo(5,7);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#2d4055';
+ ctx.beginPath();ctx.moveTo(16,6);ctx.lineTo(24,9);ctx.lineTo(23,19);
+ ctx.lineTo(21,23);ctx.lineTo(16,27);ctx.lineTo(11,23);ctx.lineTo(9,19);
+ ctx.lineTo(8,9);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#a34845';ctx.fillRect(16,7,7,15);
+ ctx.fillStyle='#c17c62';ctx.fillRect(18,9,4,11);
+ // The crest: a pale steel tower with crossbar, stays legible at 34px.
+ ctx.fillStyle='#e5dfc8';ctx.fillRect(14,10,4,12);
+ ctx.fillRect(11,13,10,3);ctx.fillRect(12,9,8,2);
+ ctx.fillStyle='#83949e';ctx.fillRect(15,11,1,10);
+ ctx.fillStyle='#f7e3aa';ctx.fillRect(9,8,2,2);
+ ctx.fillStyle='#e8cc91';ctx.fillRect(22,8,2,2);ctx.fillRect(14,25,4,2);
+ ctx.restore();
+}
+// Separate from solid furniture: the shield is fixed to a stone wall tile.
+function drawV18WallShields(c,relight=false){
+ if(!s)return;
+ for(const prop of v18WallShields()){
+  if(!inc(prop.x,prop.y,c)||!s.seen.has(K(prop.x,prop.y)))continue;
+  const visible=s.visible.has(K(prop.x,prop.y));
+  if(relight&&!visible)continue;
+  const distToPlayer=Math.hypot(prop.x-s.player.x,prop.y-s.player.y);
+  const lift=Math.max(0,Math.min(1,(5.5-distToPlayer)/3.8));
+  if(relight&&lift<=0)continue;
+  const px=(prop.x-c.sx)*CELL,py=(prop.y-c.sy)*CELL;
+  ctx.save();ctx.beginPath();ctx.rect(px,py,CELL,CELL);ctx.clip();
+  ctx.globalAlpha=relight?(.15+.63*lift):(visible?1:.34);
+  if(relight)ctx.filter='brightness(1.45) contrast(1.14)';
+  ctx.imageSmoothingEnabled=false;
+  drawV18WallShieldSprite(px,py);
+  ctx.restore();
+ }
+}
+
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#07090d';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.textAlign='center';ctx.textBaseline='middle';const c=camera(),now=performance.now(),cine=cinemaState(now);ctx.save();ctx.translate(canvas.width/2+cine.dx,canvas.height/2+cine.dy);ctx.scale(cine.zoom,cine.zoom);ctx.translate(-canvas.width/2,-canvas.height/2);
   for(let vy=0;vy<VIEW;vy++)for(let vx=0;vx<VIEW;vx++){
@@ -2110,7 +2195,8 @@ function draw(){
     }
   }
   drawV18RoomDecor(c); // LAYER 2: solid room-specific furniture
-  drawDungeonAtmosphere(c);drawWorldAmbience(c,now);drawTorchDarkness(c,now);drawFloorColorGrade();drawV18RoomDecor(c,true);drawThreatVisuals(now);drawTorchSconces(c,now);drawBossTelegraph(c);drawEnemyVision(c);drawWeaponPreview(c);drawStaticObjects(c);
+  drawV18WallShields(c); // LAYER 2: wall-mounted heraldry
+  drawDungeonAtmosphere(c);drawWorldAmbience(c,now);drawTorchDarkness(c,now);drawFloorColorGrade();drawV18RoomDecor(c,true);drawV18WallShields(c,true);drawThreatVisuals(now);drawTorchSconces(c,now);drawBossTelegraph(c);drawEnemyVision(c);drawWeaponPreview(c);drawStaticObjects(c);
   for(const e of s.enemies)if(e.hp>0&&s.visible.has(K(e.x,e.y))&&inc(e.x,e.y,c))drawEnemy(e,c,now);drawDeaths(c,now);
   const pv=playerVisualState(now),p=lpFloat(pv.x,pv.y,c),r=Math.max(0,s.hp/s.maxHp),pf=eqWeapon().family,basePX=p.x+pv.hitX,basePY=p.y+pv.hitY+pv.bob;drawGroundShadowPx(p.x+CELL/2,p.y+CELL*.80,.92,.27);ctx.save();ctx.translate(basePX+CELL/2,basePY+CELL/2);ctx.rotate(pv.rot);ctx.scale(pv.scale,pv.scale);ctx.translate(-CELL/2,-CELL/2);if(s.guard){ctx.strokeStyle='#82c8e8';ctx.lineWidth=3;ctx.beginPath();ctx.arc(CELL/2,CELL/2,15,0,Math.PI*2);ctx.stroke()}ctx.fillStyle='rgba(6,8,11,.55)';ctx.beginPath();ctx.arc(CELL/2,CELL/2,12,0,Math.PI*2);ctx.fill();if(pf&&pf!=='unarmed'){ctx.strokeStyle=FC[pf]||'#9fc3ff';ctx.lineWidth=mobileUI()?3:2.5;ctx.beginPath();ctx.arc(CELL/2,CELL/2,mobileUI()?15:14,0,Math.PI*2);ctx.stroke()}const spritePad=mobileUI()?0:1;if(!drawPlayerWeaponVisual(spritePad,spritePad,CELL-spritePad*2,{walking:pv.walking&&!pv.attack,frame:pv.frame,attacking:!!pv.attack,attackFamily:pv.attack?pv.attack.family:pf,attackPhase:pv.attack?attackProgress(pv.attack,now):0})){ctx.fillStyle='#78a9ff';ctx.beginPath();ctx.arc(CELL/2,CELL/2,10,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();if(pf&&pf!=='unarmed'){ctx.fillStyle=FC[pf]||'#fff';ctx.font='bold 10px sans-serif';ctx.fillText(familyGlyph(pf),CELL-8,8)}}drawFacingNotch(s.player.facing||'up',0,0,CELL,'#9fd6ff');if(s.riposteReady){drawIcon('riposte',CELL-13,1,12,1)||(()=>{ctx.fillStyle='#f4d36f';ctx.font='bold 13px sans-serif';ctx.fillText('✦',CELL-6,7)})()}ctx.restore();const playerHpW=mobileUI()?CELL+8:CELL-4,playerHpH=mobileUI()?11:8,playerHpX=p.x+(CELL-playerHpW)/2,playerHpY=p.y-(mobileUI()?14:10);ctx.save();ctx.fillStyle='rgba(0,0,0,.86)';ctx.beginPath();ctx.roundRect(playerHpX,playerHpY,playerHpW,playerHpH,3);ctx.fill();ctx.save();ctx.beginPath();ctx.roundRect(playerHpX+1,playerHpY+1,Math.max(0,(playerHpW-2)*r),playerHpH-2,2);ctx.clip();ctx.fillStyle=r>.5?'#71c981':r>.25?'#d3b452':'#df6666';ctx.fillRect(playerHpX+1,playerHpY+1,playerHpW-2,playerHpH-2);ctx.restore();ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=1;ctx.strokeRect(playerHpX+.5,playerHpY+.5,playerHpW-1,playerHpH-1);ctx.fillStyle='#fff';ctx.font=`900 ${mobileUI()?7.5:6.5}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=2;ctx.fillText(`${s.hp} HP`,playerHpX+playerHpW/2,playerHpY+playerHpH/2+.2);ctx.restore();drawPlayerAttackEffects(c,now);drawBursts(c,now);
   for(const f of s.fx||[]){if(!inc(f.x,f.y,c))continue;const q=lp(f.x,f.y,c),age=(now-f.start)/f.ttl;ctx.save();ctx.globalAlpha=Math.max(0,1-age);ctx.fillStyle=f.color;ctx.font='bold 13px sans-serif';ctx.fillText(f.text,q.x+CELL/2,q.y+5-age*12);ctx.restore()}
