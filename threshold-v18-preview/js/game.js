@@ -948,10 +948,10 @@ function generateFloor(floor){
 
  let dangerDoor=null;if(floor>=2){const p=spot(5);if(p)dangerDoor={x:p.x,y:p.y,used:false,declined:false,rewarded:false,enemyId:null}}
  const torches=buildTorchSet(rooms,map,start,far,progressionGate,floor);
- return{map,rooms,player,stairs,open,enemies,loot,coins,chests,traps,artifactDrops,secrets,mechanism,startPos:{x:player.x,y:player.y},rareEvent,dangerDoor,keyPuzzle,specialRooms,torches,theme:dungeonThemeForFloor(floor),layoutStyle,seen:new Set(),visible:new Set(),_visionOverlayCache:null}
+ return{map,rooms,player,stairs,open,enemies,loot,coins,chests,traps,artifactDrops,secrets,mechanism,startPos:{x:player.x,y:player.y},rareEvent,dangerDoor,keyPuzzle,specialRooms,torches,theme:dungeonThemeForFloor(floor),layoutStyle,seen:new Set(),visible:new Set(),_visionOverlayCache:null,_v18Layer2Decor:null}
 }
 
-function startRun(){closeThresholdDialogue();closeMobileSheet();playSfx('start');const active=firstRun?new Set():new Set(deck),baseHp=resilienceMaxHp();s={floor:1,hp:baseHp,maxHp:baseHp,resilienceHpStart:baseHp,steps:0,kills:0,runCoins:0,alarm:0,instability:0,alarmStage:0,instStage:0,equippedUid:null,inventory:[],artifactBelt:[],artifactBuffs:{stone:0,blood:0,power:0},artifactUsedThisTurn:false,deck:active,buffs:new Set(),guard:false,riposteReady:false,atStairs:false,eventOpen:false,dangerOpen:false,rewardOpen:false,targetMode:false,targetIds:[],targetIndex:0,survivorUsed:false,fx:[],ambushId:null,floorAlerted:false,floorStealthCounted:false,discoveredRoles:new Set(),chains:{},stats:{backstabs:0,chests:0,goldCollected:0,axeKills:0,spearKills:0,hammerStuns:0,stealthFloors:0,specialRooms:0,minibossKills:0,bossKills:0},portableTorches:0,torchStepsRemaining:0,torchLightLevel:TORCH_START_LIGHT,_physicalThresholdCount:0,_darkThresholds:new Set(),missions:chooseMissions()};s.objectivesAtStart=new Set(OBJECTIVES.filter(o=>o.get(meta)>=o.target).map(o=>o.id));const starter=weaponItem('rustySword');s.inventory.push(starter,{kind:'heal',id:'small'});s.equippedUid=starter.uid;Object.assign(s,generateFloor(1));v18FirstRoomDecor();initAmbientRoutines();root.querySelector('#welcome').classList.add('hidden');root.querySelector('#hub').classList.add('hidden');root.querySelector('#runSummary').classList.add('hidden');root.querySelector('#game').classList.remove('hidden');root.querySelector('#stairsPanel').classList.add('hidden');root.querySelector('#rewardPanel').classList.add('hidden');root.querySelector('#eventPanel').classList.add('hidden');root.querySelector('#puzzlePanel').classList.add('hidden');root.querySelector('#targetPanel').classList.add('hidden');root.querySelector('#log').innerHTML='';applyCartographer();applyPathfinder();updateVisibility();log('🚪 La run comincia.');log('🗝️ In questo piano è nascosta una Camera della Soglia opzionale.');render();showFloorSplash();if(!guideSeen)setTimeout(()=>openGuide(),350);root.focus()}
+function startRun(){closeThresholdDialogue();closeMobileSheet();playSfx('start');const active=firstRun?new Set():new Set(deck),baseHp=resilienceMaxHp();s={floor:1,hp:baseHp,maxHp:baseHp,resilienceHpStart:baseHp,steps:0,kills:0,runCoins:0,alarm:0,instability:0,alarmStage:0,instStage:0,equippedUid:null,inventory:[],artifactBelt:[],artifactBuffs:{stone:0,blood:0,power:0},artifactUsedThisTurn:false,deck:active,buffs:new Set(),guard:false,riposteReady:false,atStairs:false,eventOpen:false,dangerOpen:false,rewardOpen:false,targetMode:false,targetIds:[],targetIndex:0,survivorUsed:false,fx:[],ambushId:null,floorAlerted:false,floorStealthCounted:false,discoveredRoles:new Set(),chains:{},stats:{backstabs:0,chests:0,goldCollected:0,axeKills:0,spearKills:0,hammerStuns:0,stealthFloors:0,specialRooms:0,minibossKills:0,bossKills:0},portableTorches:0,torchStepsRemaining:0,torchLightLevel:TORCH_START_LIGHT,_physicalThresholdCount:0,_darkThresholds:new Set(),missions:chooseMissions()};s.objectivesAtStart=new Set(OBJECTIVES.filter(o=>o.get(meta)>=o.target).map(o=>o.id));const starter=weaponItem('rustySword');s.inventory.push(starter,{kind:'heal',id:'small'});s.equippedUid=starter.uid;Object.assign(s,generateFloor(1));v18RoomDecor();initAmbientRoutines();root.querySelector('#welcome').classList.add('hidden');root.querySelector('#hub').classList.add('hidden');root.querySelector('#runSummary').classList.add('hidden');root.querySelector('#game').classList.remove('hidden');root.querySelector('#stairsPanel').classList.add('hidden');root.querySelector('#rewardPanel').classList.add('hidden');root.querySelector('#eventPanel').classList.add('hidden');root.querySelector('#puzzlePanel').classList.add('hidden');root.querySelector('#targetPanel').classList.add('hidden');root.querySelector('#log').innerHTML='';applyCartographer();applyPathfinder();updateVisibility();log('🚪 La run comincia.');log('🗝️ In questo piano è nascosta una Camera della Soglia opzionale.');render();showFloorSplash();if(!guideSeen)setTimeout(()=>openGuide(),350);root.focus()}
 function applyCartographer(){if(!has('cartographer'))return;const r=choice(s.rooms.slice(1));if(!r)return;for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)s.seen.add(K(x,y));log('🗺️ Cartografo rivela una stanza.')}
 function applyPathfinder(){if(!has('pathfinder')||!s?.stairs)return;s.seen.add(K(s.stairs.x,s.stairs.y));if(s.keyPuzzle?.door?.mandatory)s.keyPuzzle.door.seen=true;log('🧭 Bussola spezzata: le scale sono segnate sulla mappa.')}
 function inBounds(x,y){return x>=0&&y>=0&&x<WORLD&&y<WORLD}
@@ -1358,7 +1358,7 @@ function renderQuickWeapons(){
  }
 }
 function openReward(){playSfx('event');root.querySelector('#stairsPanel').classList.add('hidden');root.querySelector('#rewardPanel').classList.remove('hidden');s.rewardOpen=true;const c=REWARDS.filter(r=>!s.buffs.has(r.id)),p=[];while(p.length<3&&c.length)p.push(c.splice(rand(0,c.length-1),1)[0]);const box=root.querySelector('#rewardChoices');box.innerHTML='';p.forEach(r=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<div class="reward-icon">${iconHTML(rewardIconKey(r.id),'icon-inline icon-xl')}</div><div class="reward-name">${r.name}</div><div class="reward-desc">${r.text}</div>`;b.onclick=()=>{s.buffs.add(r.id);if(r.id==='vital'){s.maxHp+=6;s.hp=Math.min(s.maxHp,s.hp+6)}s.rewardOpen=false;root.querySelector('#rewardPanel').classList.add('hidden');descend();root.focus()};box.appendChild(b)})}
-function descend(){clearMotion();root.querySelector('#dangerPanel').classList.add('hidden');for(const c of Object.values(s.chains||{}))if(c.spawned&&!c.done)c.spawned=false;cancelTargeting(false);s.floor++;s.torchLightLevel=Math.max(0,torchLight()-15);s.alarm=Math.max(0,s.alarm-20);s.instability=0;s.alarmStage=Math.floor(s.alarm/25);s.instStage=0;s.atStairs=false;s.floorAlerted=false;s.floorStealthCounted=false;s.ambushId=null;s.guard=false;s.riposteReady=false;s.artifactUsedThisTurn=false;s.discoveredRoles=new Set();Object.assign(s,generateFloor(s.floor));initAmbientRoutines();applyCartographer();applyPathfinder();updateVisibility();checkMissions();log('⬇️ Piano '+s.floor+'.');const pmsg=s.floor===2?'🗿 Soglia: nessuna chiave fisica. Leggi la Stele, trova il Sigillo dorato e usa Aspetta una volta.':s.floor===3?'🗿 Soglia: leggi la Stele e segui dalla sua casella le 5 direzioni indicate.':s.floor===4?'🚪 Varco Centrale obbligatorio: decifra le rune e usa Aspetta 3 volte sul Sigillo dorato.':'🚪 Varco Centrale obbligatorio: avanza LUNA → LAMA → OCCHIO, poi usa Aspetta sul Sigillo del Varco davanti alla porta.';log(pmsg);render();showFloorSplash()}
+function descend(){clearMotion();root.querySelector('#dangerPanel').classList.add('hidden');for(const c of Object.values(s.chains||{}))if(c.spawned&&!c.done)c.spawned=false;cancelTargeting(false);s.floor++;s.torchLightLevel=Math.max(0,torchLight()-15);s.alarm=Math.max(0,s.alarm-20);s.instability=0;s.alarmStage=Math.floor(s.alarm/25);s.instStage=0;s.atStairs=false;s.floorAlerted=false;s.floorStealthCounted=false;s.ambushId=null;s.guard=false;s.riposteReady=false;s.artifactUsedThisTurn=false;s.discoveredRoles=new Set();Object.assign(s,generateFloor(s.floor));v18RoomDecor();initAmbientRoutines();applyCartographer();applyPathfinder();updateVisibility();checkMissions();log('⬇️ Piano '+s.floor+'.');const pmsg=s.floor===2?'🗿 Soglia: nessuna chiave fisica. Leggi la Stele, trova il Sigillo dorato e usa Aspetta una volta.':s.floor===3?'🗿 Soglia: leggi la Stele e segui dalla sua casella le 5 direzioni indicate.':s.floor===4?'🚪 Varco Centrale obbligatorio: decifra le rune e usa Aspetta 3 volte sul Sigillo dorato.':'🚪 Varco Centrale obbligatorio: avanza LUNA → LAMA → OCCHIO, poi usa Aspetta sul Sigillo del Varco davanti alla porta.';log(pmsg);render();showFloorSplash()}
 function finishRun(kind,clear=false){
  const run=s;if(!run)return;clearMotion();
  const missions=run.missions.filter(m=>m.done).length,rawGold=run.runCoins,oldBestFloor=meta.bestFloor||0,oldShopRank=shopRankForDepth(oldBestFloor),rate=extractionRate(run.floor);
@@ -1838,12 +1838,20 @@ function v18ArchitecturalDoor(x,y,px,py){
 }
 
 
+// v18.5 — shared room identity for painted decor and physical props.
+function v18RoomStyle(room){
+ const theme=(s?.theme||dungeonThemeForFloor())?.id||'castle';
+ const special=(s?.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y&&q.w===room.w&&q.h===room.h);
+ // On the catacombs floor, burial chambers have precedence over random props.
+ if(theme==='catacombs'&&(special?.type==='treasury'||special?.type==='sanctuary'))return 2;
+ return envHash(room.x,room.y,801)%8;
+}
 // v18.2 — room identities: decoration follows room geometry, not random tile noise.
 // Props occupy existing walkable tiles only as artwork; they never change collision.
 function v18RoomProps(x,y,px,py,room){
  if(!room||!Number.isFinite(room.x)||!Number.isFinite(room.y)||!Number.isFinite(room.w)||!Number.isFinite(room.h))return;
  if(room.w<4||room.h<4)return;
- const rx=x-room.x,ry=y-room.y,seed=envHash(room.x,room.y,801),style=seed%8;
+ const rx=x-room.x,ry=y-room.y,seed=envHash(room.x,room.y,801),style=v18RoomStyle(room);
  const cx=Math.floor(room.w/2),cy=Math.floor(room.h/2);
  // Reserve both the edge-door tiles and central movement lanes.
  const atCenter=(rx===cx&&ry===cy), atLeft=(rx===1&&ry===1),
@@ -1854,6 +1862,8 @@ function v18RoomProps(x,y,px,py,room){
  else if(atRight && room.w>=7&&room.h>=6)variant=2;
  else if(atBottom && room.w>=7&&room.h>=7&&seed%3===0)variant=3;
  if(variant<0)return;
+ // The full-size Layer-2 sarcophagus replaces the tiny central crypt symbol.
+ if(variant===0&&style===2&&v18RoomDecor().some(p=>p.room.x===room.x&&p.room.y===room.y))return;
  const theme=(s.theme||dungeonThemeForFloor())?.id||'castle';
  const warm=theme==='temple'?'#9b8761':theme==='catacombs'?'#746577':'#756756';
  const accent=theme==='temple'?'#bca36d':theme==='catacombs'?'#b093aa':'#ae9e83';
@@ -1912,38 +1922,48 @@ v18Sarcophagus.addEventListener('load',()=>{if(s)render()});
 // A Layer-2 decoration has a footprint independent from its sprite artwork.
 // Interactable (Layer-3) objects use a separate interaction system.
 function v18SolidDecorationAt(x,y){
- if(!s||s.floor!==1)return null;
- return v18FirstRoomDecor().find(p=>p.solid&&x>=p.x&&x<p.x+p.w&&y>=p.y&&y<p.y+p.h)||null;
+ if(!s)return null;
+ return v18RoomDecor().find(p=>p.solid&&x>=p.x&&x<p.x+p.w&&y>=p.y&&y<p.y+p.h)||null;
 }
-function v18FirstRoomDecor(){
- if(!s||s.floor!==1)return [];
+// Sarcophagi are exclusive to crypt rooms, not automatically to the spawn room.
+// A safe 2×2 placement never consumes an item, a puzzle tile or a room entrance.
+function v18RoomDecor(){
+ if(!s)return [];
  if(Array.isArray(s._v18Layer2Decor))return s._v18Layer2Decor;
- const start=s.startPos||s.player,r=roomGeometryAt(start.x,start.y);
- s._v18Layer2Decor=[]; // cache even when no safe placement is possible
- if(!r||r.w<5||r.h<4)return s._v18Layer2Decor;
- const inRoom=(x,y)=>x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h;
+ const placed=[];
+ s._v18Layer2Decor=placed;
+ const start=s.startPos||s.player;
  const same=(o,x,y)=>o&&o.x===x&&o.y===y;
  const exists=(list,x,y)=>Array.isArray(list)&&list.some(o=>same(o,x,y));
  const hasObject=(x,y)=>{
-  if(same(start,x,y)||same(s.stairs,x,y)||exists(s.enemies,x,y)||exists(s.loot,x,y)||
-     exists(s.coins,x,y)||exists(s.artifactDrops,x,y)||exists(s.chests,x,y)||
-     exists(s.traps,x,y)||exists(s.torches,x,y)||exists(s.secrets,x,y)||
-     same(s.mechanism?.switch,x,y)||same(s.mechanism?.cache,x,y)||
-     same(s.rareEvent,x,y)||same(s.dangerDoor,x,y)||
-     same(s.keyPuzzle?.door,x,y))return true;
-  return false;
+  const puzzle=s.keyPuzzle;
+  return same(start,x,y)||same(s.stairs,x,y)||exists(s.enemies,x,y)||
+   exists(s.loot,x,y)||exists(s.coins,x,y)||exists(s.artifactDrops,x,y)||
+   exists(s.chests,x,y)||exists(s.traps,x,y)||exists(s.torches,x,y)||
+   exists(s.secrets,x,y)||same(s.mechanism?.switch,x,y)||
+   same(s.mechanism?.cache,x,y)||same(s.rareEvent,x,y)||
+   same(s.dangerDoor,x,y)||same(puzzle?.door,x,y)||
+   same(puzzle?.key,x,y)||same(puzzle?.tablet,x,y)||
+   same(puzzle?.decoder,x,y)||same(puzzle?.shrine,x,y)||
+   same(puzzle?.anchor,x,y)||same(puzzle?.finalSeal,x,y)||
+   exists(puzzle?.sigils,x,y);
  };
- const passableRoom=(x,y,blocked)=>{
-  return inRoom(x,y)&&s.map[y]?.[x]!== '#'&&!blocked.has(K(x,y));
- };
- const leavesPathsOpen=(blocked)=>{
-  // Start room must keep all existing floor tiles connected, including doors.
-  const seen=new Set([K(start.x,start.y)]),q=[[start.x,start.y]];
+ const inRoom=(r,x,y)=>x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h;
+ const leavesPathsOpen=(r,blocked)=>{
+  // Preserve connectivity among every remaining walkable tile of this room.
+  let first=null;
+  for(let y=r.y;y<r.y+r.h&&!first;y++)for(let x=r.x;x<r.x+r.w;x++){
+   if(s.map[y]?.[x]!=='#'&&!blocked.has(K(x,y))){first=[x,y];break}
+  }
+  if(!first)return false;
+  const seen=new Set([K(first[0],first[1])]),q=[first];
   for(let i=0;i<q.length;i++){
    const [x,y]=q[i];
    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
     const nx=x+dx,ny=y+dy,k=K(nx,ny);
-    if(!seen.has(k)&&passableRoom(nx,ny,blocked)){seen.add(k);q.push([nx,ny]);}
+    if(inRoom(r,nx,ny)&&s.map[ny]?.[nx]!=='#'&&!blocked.has(k)&&!seen.has(k)){
+     seen.add(k);q.push([nx,ny]);
+    }
    }
   }
   for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++){
@@ -1952,37 +1972,37 @@ function v18FirstRoomDecor(){
   }
   return true;
  };
- let best=null,bestScore=Infinity;
- for(let y=r.y;y<=r.y+r.h-2;y++)for(let x=r.x;x<=r.x+r.w-2;x++){
-  const occupied=new Set();let valid=true;
-  for(let yy=y;yy<y+2;yy++)for(let xx=x;xx<x+2;xx++){
-   if(s.map[yy]?.[xx]!=='.'||hasObject(xx,yy)){valid=false;break}
-   // Do not cover an entrance from corridor to the room.
-   if(xx===r.x||yy===r.y||xx===r.x+r.w-1||yy===r.y+r.h-1){
-    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
-     const nx=xx+dx,ny=yy+dy;
-     if(!inRoom(nx,ny)&&s.map[ny]?.[nx]==='.'){valid=false;break}
-    }
+ for(const r of s.rooms||[]){
+  if(!r||r.w<5||r.h<4||v18RoomStyle(r)!==2)continue;
+  // The starting room stays a readable tutorial space; don't block boss exits.
+  if(inRoom(r,start.x,start.y)||inRoom(r,s.stairs.x,s.stairs.y))continue;
+  let best=null,bestScore=Infinity;
+  // Interior tiles only: never cover a perimeter doorway, even on a loop.
+  for(let y=r.y+1;y<=r.y+r.h-3;y++)for(let x=r.x+1;x<=r.x+r.w-3;x++){
+   const blocked=new Set(),special=s.specialRooms?.find(q=>q.x===r.x&&q.y===r.y);
+   let valid=true;
+   for(let yy=y;yy<y+2;yy++)for(let xx=x;xx<x+2;xx++){
+    if(s.map[yy]?.[xx]!=='.'||hasObject(xx,yy)||
+       (special&&xx===special.cx&&yy===special.cy)){valid=false;break}
+    blocked.add(K(xx,yy));
    }
-   occupied.add(K(xx,yy));
+   if(!valid||!leavesPathsOpen(r,blocked))continue;
+   const score=Math.abs(x+.5-r.cx)+Math.abs(y+.5-r.cy)+
+      ((x+y)%3)*.001; // stable tie-breaker, keep the tomb near the room center
+   if(score<bestScore){bestScore=score;best={x,y}}
   }
-  if(!valid||!leavesPathsOpen(occupied))continue;
-  // Keep the showcase close enough to be seen immediately, but to one side.
-  const distance=Math.abs(x+.5-start.x)+Math.abs(y+.5-start.y);
-  const score=distance*10 + Math.abs(y+.5-start.y)*2 + (x<start.x?1:0);
-  if(score<bestScore){bestScore=score;best={x,y}}
+  if(best)placed.push({
+   type:'sarcophagus',x:best.x,y:best.y,w:2,h:2,solid:true,interactive:false,
+   room:{x:r.x,y:r.y,w:r.w,h:r.h}
+  });
  }
- if(best)s._v18Layer2Decor.push({
-  type:'sarcophagus',x:best.x,y:best.y,w:2,h:2,solid:true,interactive:false,
-  room:{x:r.x,y:r.y,w:r.w,h:r.h}
- });
- return s._v18Layer2Decor;
+ return placed;
 }
 // The first pass obeys dungeon lighting; the subtle second pass restores
 // legibility only for currently visible, nearby parts of the stone prop.
 function drawV18Sarcophagi(c,relight=false){
  if(!s||!v18Sarcophagus.complete||!v18Sarcophagus.naturalWidth)return;
- for(const prop of v18FirstRoomDecor()){
+ for(const prop of v18RoomDecor()){
   if(!inc(prop.x,prop.y,c)&&!inc(prop.x+1,prop.y+1,c))continue;
   const cells=[[0,0],[1,0],[0,1],[1,1]];
   if(!cells.some(([dx,dy])=>s.seen.has(K(prop.x+dx,prop.y+dy))))continue;
