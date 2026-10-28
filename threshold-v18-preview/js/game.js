@@ -650,12 +650,55 @@ function portableTorchActive(){return torchLight()>0}
 function lightBand(){const l=torchLight();return l>75?'radiosa':l>50?'chiara':l>25?'fioca':l>0?'morente':'buio'}
 function darknessFactor(){return 1-torchLight()/TORCH_MAX_LIGHT}
 function activatePortableTorch(){if(!s)return;if((s.portableTorches||0)<=0){showToast('🔥 NESSUNA TORCIA');return}if(torchLight()>=TORCH_MAX_LIGHT){showToast('🔥 LUCE GIÀ AL MASSIMO');return}s.portableTorches--;const before=torchLight();s.torchLightLevel=Math.min(TORCH_MAX_LIGHT,before+TORCH_RESTORE);playSfx('event');burst('pickup',s.player.x,s.player.y,{glyph:'🔥',color:'#ffb34f'});log('🔥 Consumi una torcia: luce '+before+' → '+s.torchLightLevel+'.');showToast('🔥 LUCE '+s.torchLightLevel+'/100');updateVisibility();render()}
+// v18.14 — Every generated room receives a physical identity, including ordinary,
+// starting, staircase and boss rooms. Gameplay special rooms remain independent.
+const V18_ROOM_CATEGORIES={
+ armory:{name:'Armeria',icon:'⚔️',style:0},
+ archive:{name:'Archivio',icon:'📚',style:1},
+ crypt:{name:'Cripta',icon:'⚰️',style:2},
+ guardroom:{name:'Sala delle Guardie',icon:'🛡️',style:3},
+ sanctuary:{name:'Santuario',icon:'✦',style:4},
+ treasury:{name:'Tesoreria',icon:'🪙',style:5},
+ infirmary:{name:'Infermeria',icon:'🧪',style:6}
+};
+function v18AssignRoomCategories(rooms,specialRooms,start,far,floor){
+ const theme=dungeonThemeForFloor(floor)?.id||'castle';
+ const pools=theme==='temple'
+   ?['sanctuary','archive','treasury','infirmary','crypt','guardroom','armory']
+   :theme==='catacombs'
+   ?['crypt','sanctuary','treasury','archive','infirmary','guardroom','armory']
+   :['guardroom','armory','infirmary','treasury','archive','crypt','sanctuary'];
+ const tally=Object.fromEntries(pools.map(k=>[k,0]));
+ const out=[];
+ for(const room of rooms||[]){
+  const special=(specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y&&q.w===room.w&&q.h===room.h);
+  let type=special?.type;
+  if(!type){
+   if(room===start)type=theme==='catacombs'?'sanctuary':theme==='temple'?'archive':'guardroom';
+   else if(room===far)type=theme==='catacombs'?'crypt':theme==='temple'?'sanctuary':'guardroom';
+   else{
+    const min=Math.min(...pools.map(k=>tally[k]));
+    const choices=pools.filter(k=>tally[k]===min);
+    type=choices[envHash(room.x,room.y,900+floor)%choices.length];
+   }
+  }
+  if(!(type in V18_ROOM_CATEGORIES))type='guardroom';
+  tally[type]=(tally[type]||0)+1;
+  out.push({x:room.x,y:room.y,w:room.w,h:room.h,type,
+   name:special?.label||V18_ROOM_CATEGORIES[type].name});
+ }
+ return out;
+}
+function v18RoomCategory(room){
+ if(!room||!s)return null;
+ return (s.roomCategories||[]).find(q=>q.x===room.x&&q.y===room.y&&q.w===room.w&&q.h===room.h)||null;
+}
 function roomGeometryAt(x,y){return (s?.rooms||[]).find(r=>x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h)||null}
 function areaKindAt(x,y){return roomGeometryAt(x,y)?'room':'corridor'}
 function darkLootBonus(){return 1+darknessFactor()*.50}
 function safeDynamicSpotNear(x,y,kind){const candidates=[];for(let yy=Math.max(1,y-3);yy<=Math.min(WORLD-2,y+3);yy++)for(let xx=Math.max(1,x-3);xx<=Math.min(WORLD-2,x+3);xx++){if(s.map[yy]?.[xx]!=='.'||v18SolidDecorationAt(xx,yy))continue;if(kind&&areaKindAt(xx,yy)!==kind)continue;if(enemyAt(xx,yy)||s.traps.some(t=>!t.triggered&&t.x===xx&&t.y===yy)||s.coins.some(c=>c.x===xx&&c.y===yy)||s.loot.some(l=>l.x===xx&&l.y===yy))continue;if(xx===s.player.x&&yy===s.player.y)continue;candidates.push({x:xx,y:yy})}return candidates.length?choice(candidates):null}
 function applyDarknessToThreshold(kind,key){if(!s)return;s._darkThresholds=s._darkThresholds||new Set();if(s._darkThresholds.has(key))return;s._darkThresholds.add(key);const d=darknessFactor();if(d<=.25)return;const trapChance=.015+d*.095,lootChance=.06+d*.28,darkTrapCap=Math.min(3,1+Math.floor((s.floor-1)/2)),darkTrapCount=(s.traps||[]).filter(t=>t.darkSpawn&&!t.triggered).length;if(darkTrapCount<darkTrapCap&&Math.random()<trapChance){const p=safeDynamicSpotNear(s.player.x,s.player.y,kind);if(p){s.traps.push({x:p.x,y:p.y,triggered:false,revealed:false,darkSpawn:true});log('🪤 Nel buio la Soglia nasconde un nuovo pericolo.')}}if(Math.random()<lootChance){const p=safeDynamicSpotNear(s.player.x,s.player.y,kind);if(p){const value=Math.round((18+s.floor*7)*darkLootBonus());s.coins.push({x:p.x,y:p.y,value,darkSpawn:true});log('🪙 Nel buio qualcosa luccica oltre la Soglia.')}}}
-function crossPhysicalThreshold(fromX,fromY,toX,toY){if(!s)return;const a=areaKindAt(fromX,fromY),b=areaKindAt(toX,toY);if(a===b)return;playSfx('threshold');burst('thresholdDoor',toX,toY,{glyph:'⟐',color:'#bd9d71'});const before=torchLight();s.torchLightLevel=Math.max(0,before-TORCH_THRESHOLD_DRAIN);s._physicalThresholdCount=(s._physicalThresholdCount||0)+1;const room=roomGeometryAt(toX,toY),key=b+':'+(room?room.x+','+room.y:toX+','+toY);applyDarknessToThreshold(b,key);if(before>0&&s.torchLightLevel===0){playSfx('flameOut');showToast('🔥 LA LUCE SI SPEGNE');log('🔥 Attraversando la Soglia, la luce si spegne.')}else if(s._physicalThresholdCount===1)showToast('◇ PRIMA SOGLIA')}
+function crossPhysicalThreshold(fromX,fromY,toX,toY){if(!s)return;const a=areaKindAt(fromX,fromY),b=areaKindAt(toX,toY);if(a===b)return;playSfx('threshold');burst('thresholdDoor',toX,toY,{glyph:'⟐',color:'#bd9d71'});const before=torchLight();s.torchLightLevel=Math.max(0,before-TORCH_THRESHOLD_DRAIN);s._physicalThresholdCount=(s._physicalThresholdCount||0)+1;const room=roomGeometryAt(toX,toY),key=b+':'+(room?room.x+','+room.y:toX+','+toY);applyDarknessToThreshold(b,key);if(b==='room'&&room&&!roomAt(toX,toY)){const cat=v18RoomCategory(room);if(cat){s._v18EnteredRooms=s._v18EnteredRooms||new Set();const id=K(room.x,room.y);if(!s._v18EnteredRooms.has(id)){s._v18EnteredRooms.add(id);log((V18_ROOM_CATEGORIES[cat.type]?.icon||'🏛️')+' '+cat.name);showToast((V18_ROOM_CATEGORIES[cat.type]?.icon||'🏛️')+' '+cat.name)}}}if(before>0&&s.torchLightLevel===0){playSfx('flameOut');showToast('🔥 LA LUCE SI SPEGNE');log('🔥 Attraversando la Soglia, la luce si spegne.')}else if(s._physicalThresholdCount===1)showToast('◇ PRIMA SOGLIA')}
 function consumePortableTorchStep(){} // legacy: light now falls only when a physical threshold is crossed.
 function healingMultiplier(){let m=1;if(has('medic'))m*=1.25;if(hasBuff('healerRun'))m*=1.35;return m}
 function healPlayer(amount,full=false){if(!s)return 0;const before=s.hp;if(full)s.hp=s.maxHp;else s.hp=Math.min(s.maxHp,s.hp+Math.max(0,Math.round(amount*healingMultiplier())));const gained=s.hp-before;if(gained>0)burst('heal',s.player.x,s.player.y,{amount:gained});return gained}
@@ -948,7 +991,8 @@ function generateFloor(floor){
 
  let dangerDoor=null;if(floor>=2){const p=spot(5);if(p)dangerDoor={x:p.x,y:p.y,used:false,declined:false,rewarded:false,enemyId:null}}
  const torches=buildTorchSet(rooms,map,start,far,progressionGate,floor);
- return{map,rooms,player,stairs,open,enemies,loot,coins,chests,traps,artifactDrops,secrets,mechanism,startPos:{x:player.x,y:player.y},rareEvent,dangerDoor,keyPuzzle,specialRooms,torches,theme:dungeonThemeForFloor(floor),layoutStyle,seen:new Set(),visible:new Set(),_visionOverlayCache:null,_v18Layer2Decor:null,_v18WallShields:null}
+ const roomCategories=v18AssignRoomCategories(rooms,specialRooms,start,far,floor);
+ return{map,rooms,roomCategories,player,stairs,open,enemies,loot,coins,chests,traps,artifactDrops,secrets,mechanism,startPos:{x:player.x,y:player.y},rareEvent,dangerDoor,keyPuzzle,specialRooms,torches,theme:dungeonThemeForFloor(floor),layoutStyle,seen:new Set(),visible:new Set(),_visionOverlayCache:null,_v18Layer2Decor:null,_v18WallShields:null,_v18EnteredRooms:new Set()}
 }
 
 function startRun(){closeThresholdDialogue();closeMobileSheet();playSfx('start');const active=firstRun?new Set():new Set(deck),baseHp=resilienceMaxHp();s={floor:1,hp:baseHp,maxHp:baseHp,resilienceHpStart:baseHp,steps:0,kills:0,runCoins:0,alarm:0,instability:0,alarmStage:0,instStage:0,equippedUid:null,inventory:[],artifactBelt:[],artifactBuffs:{stone:0,blood:0,power:0},artifactUsedThisTurn:false,deck:active,buffs:new Set(),guard:false,riposteReady:false,atStairs:false,eventOpen:false,dangerOpen:false,rewardOpen:false,targetMode:false,targetIds:[],targetIndex:0,survivorUsed:false,fx:[],ambushId:null,floorAlerted:false,floorStealthCounted:false,discoveredRoles:new Set(),chains:{},stats:{backstabs:0,chests:0,goldCollected:0,axeKills:0,spearKills:0,hammerStuns:0,stealthFloors:0,specialRooms:0,minibossKills:0,bossKills:0},portableTorches:0,torchStepsRemaining:0,torchLightLevel:TORCH_START_LIGHT,_physicalThresholdCount:0,_darkThresholds:new Set(),missions:chooseMissions()};s.objectivesAtStart=new Set(OBJECTIVES.filter(o=>o.get(meta)>=o.target).map(o=>o.id));const starter=weaponItem('rustySword');s.inventory.push(starter,{kind:'heal',id:'small'});s.equippedUid=starter.uid;Object.assign(s,generateFloor(1));v18RoomDecor();initAmbientRoutines();root.querySelector('#welcome').classList.add('hidden');root.querySelector('#hub').classList.add('hidden');root.querySelector('#runSummary').classList.add('hidden');root.querySelector('#game').classList.remove('hidden');root.querySelector('#stairsPanel').classList.add('hidden');root.querySelector('#rewardPanel').classList.add('hidden');root.querySelector('#eventPanel').classList.add('hidden');root.querySelector('#puzzlePanel').classList.add('hidden');root.querySelector('#targetPanel').classList.add('hidden');root.querySelector('#log').innerHTML='';applyCartographer();applyPathfinder();updateVisibility();log('🚪 La run comincia.');log('🗝️ In questo piano è nascosta una Camera della Soglia opzionale.');render();showFloorSplash();if(!guideSeen)setTimeout(()=>openGuide(),350);root.focus()}
@@ -1840,12 +1884,8 @@ function v18ArchitecturalDoor(x,y,px,py){
 
 // v18.5 — shared room identity for painted decor and physical props.
 function v18RoomStyle(room){
- const theme=(s?.theme||dungeonThemeForFloor())?.id||'castle';
- const special=(s?.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y&&q.w===room.w&&q.h===room.h);
- // On the catacombs floor, burial chambers have precedence over random props.
- if(theme==='catacombs'&&(special?.type==='treasury'||special?.type==='sanctuary'))return 2;
- if(special?.type==='armory')return 0; // recognizable military room, with a physical weapons rack
- return envHash(room.x,room.y,801)%8;
+ const category=v18RoomCategory(room);
+ return V18_ROOM_CATEGORIES[category?.type]?.style??(envHash(room.x,room.y,801)%8);
 }
 // v18.2 — room identities: decoration follows room geometry, not random tile noise.
 // Props occupy existing walkable tiles only as artwork; they never change collision.
@@ -1864,7 +1904,7 @@ function v18RoomProps(x,y,px,py,room){
  else if(atBottom && room.w>=7&&room.h>=7&&seed%3===0)variant=3;
  if(variant<0)return;
  // The full-size Layer-2 sarcophagus replaces the tiny central crypt symbol.
- if(variant===0&&(style===2||style===1)&&v18RoomDecor().some(p=>p.room.x===room.x&&p.room.y===room.y))return;
+ if(variant===0&&v18RoomDecor().some(p=>p.room.x===room.x&&p.room.y===room.y))return;
  const theme=(s.theme||dungeonThemeForFloor())?.id||'castle';
  const warm=theme==='temple'?'#9b8761':theme==='catacombs'?'#746577':'#756756';
  const accent=theme==='temple'?'#bca36d':theme==='catacombs'?'#b093aa':'#ae9e83';
@@ -1927,258 +1967,122 @@ function v18SolidDecorationAt(x,y){
  if(!s)return null;
  return v18RoomDecor().find(p=>p.solid&&x>=p.x&&x<p.x+p.w&&y>=p.y&&y<p.y+p.h)||null;
 }
+// v18.14 — Category-driven furniture generator, reusing all previously drawn sprites.
+// Every room gets a category; all placeable furniture stays inside that category.
+const V18_ROOM_FURNITURE={
+ armory:[['weaponRack',2,1,'north'],['armorStand',1,1,'west'],['workbench',2,1,'south']],
+ archive:[['archiveBookshelf',2,1,'north'],['archiveWritingDesk',2,1,'south'],
+  ['archiveLectern',1,1,'west'],['archiveScrollCabinet',1,1,'east'],
+  ['archiveAstrolabe',1,1,'west'],['archiveMapChest',1,1,'east']],
+ guardroom:[['guardBunk',2,1,'north'],['guardStandard',1,1,'east'],
+  ['guardSpearBundle',1,1,'west'],['guardWarDrum',1,1,'south']],
+ infirmary:[['healingCot',2,1,'north'],['medicineCupboard',1,1,'west'],
+  ['healingHerbDryer',1,1,'east'],['healingBandageBasket',1,1,'south']],
+ sanctuary:[['votiveAltar',2,1,'north'],['incenseBrazier',1,1,'east'],
+  ['sanctuaryStoneIdol',1,1,'west'],['sanctuaryOfferingBowl',1,1,'south']],
+ treasury:[['treasurePedestal',2,1,'north'],['goldBalance',1,1,'west'],
+  ['treasuryGemChest',1,1,'east'],['treasuryCoinUrn',1,1,'south']],
+ crypt:[['sarcophagus',2,2,'north'],['sarcophagus',2,2,'south']]
+};
 function v18RoomDecor(){
  if(!s)return [];
  if(Array.isArray(s._v18Layer2Decor))return s._v18Layer2Decor;
- const placed=[];
- s._v18Layer2Decor=placed;
- const start=s.startPos||s.player;
- const same=(o,x,y)=>o&&o.x===x&&o.y===y;
- const exists=(list,x,y)=>Array.isArray(list)&&list.some(o=>same(o,x,y));
- const puzzleRoute=new Set(),puzzle=s.keyPuzzle;
+ const placed=[];s._v18Layer2Decor=placed;
+ const start=s.startPos||s.player,stairs=s.stairs,puzzle=s.keyPuzzle;
+ const same=(p,x,y)=>p&&p.x===x&&p.y===y;
+ const occupiedBy=(arr,x,y)=>Array.isArray(arr)&&arr.some(p=>same(p,x,y));
+ const puzzleRoute=new Set();
  if(puzzle?.anchor&&Array.isArray(puzzle.route)){
-  let x=puzzle.anchor.x,y=puzzle.anchor.y;
-  puzzleRoute.add(K(x,y));
-  for(const dir of puzzle.route){
-   const d=DIR[dir];if(!d)break;
-   x+=d.x;y+=d.y;puzzleRoute.add(K(x,y));
-  }
+  let x=puzzle.anchor.x,y=puzzle.anchor.y;puzzleRoute.add(K(x,y));
+  for(const name of puzzle.route){const d=DIR[name];if(!d)break;x+=d.x;y+=d.y;puzzleRoute.add(K(x,y))}
  }
- const hasObject=(x,y)=>{
-  return same(start,x,y)||same(s.stairs,x,y)||exists(s.enemies,x,y)||
-   exists(s.loot,x,y)||exists(s.coins,x,y)||exists(s.artifactDrops,x,y)||
-   exists(s.chests,x,y)||exists(s.traps,x,y)||exists(s.torches,x,y)||
-   exists(s.secrets,x,y)||same(s.mechanism?.switch,x,y)||
-   same(s.mechanism?.cache,x,y)||same(s.rareEvent,x,y)||
-   same(s.dangerDoor,x,y)||same(puzzle?.door,x,y)||
-   same(puzzle?.key,x,y)||same(puzzle?.tablet,x,y)||
-   same(puzzle?.decoder,x,y)||same(puzzle?.shrine,x,y)||
-   same(puzzle?.anchor,x,y)||same(puzzle?.finalSeal,x,y)||
-   exists(puzzle?.sigils,x,y)||puzzleRoute.has(K(x,y))||
-   placed.some(p=>x>=p.x&&x<p.x+p.w&&y>=p.y&&y<p.y+p.h);
+ const reserved=(x,y,room)=>{
+  if(Math.abs(x-start.x)+Math.abs(y-start.y)<=1||
+     Math.abs(x-stairs.x)+Math.abs(y-stairs.y)<=1)return true;
+  if(occupiedBy(s.enemies,x,y)||occupiedBy(s.loot,x,y)||
+     occupiedBy(s.coins,x,y)||occupiedBy(s.chests,x,y)||
+     occupiedBy(s.traps,x,y)||occupiedBy(s.artifactDrops,x,y)||
+     occupiedBy(s.torches,x,y)||occupiedBy(s.secrets,x,y)||
+     same(s.mechanism?.switch,x,y)||same(s.mechanism?.cache,x,y)||
+     same(s.rareEvent,x,y)||same(s.dangerDoor,x,y)||
+     same(puzzle?.door,x,y)||same(puzzle?.key,x,y)||
+     same(puzzle?.tablet,x,y)||same(puzzle?.decoder,x,y)||
+     same(puzzle?.shrine,x,y)||same(puzzle?.anchor,x,y)||
+     same(puzzle?.finalSeal,x,y)||occupiedBy(puzzle?.sigils,x,y)||
+     puzzleRoute.has(K(x,y)))return true;
+  // Keep a small central crossing for combat and room objectives.
+  const centerX=room.cx??Math.floor(room.x+room.w/2);
+  const centerY=room.cy??Math.floor(room.y+room.h/2);
+  if(x===centerX&&y===centerY)return true;
+  return placed.some(p=>x>=p.x&&x<p.x+p.w&&y>=p.y&&y<p.y+p.h);
  };
  const inRoom=(r,x,y)=>x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h;
- const leavesPathsOpen=(r,blocked)=>{
-  // All previously installed solid props in this room must also be impassable.
-  const occupied=new Set(blocked);
-  for(const prop of placed)if(inRoom(r,prop.x,prop.y)&&prop.solid)
-   for(let dy=0;dy<prop.h;dy++)for(let dx=0;dx<prop.w;dx++)
-    occupied.add(K(prop.x+dx,prop.y+dy));
-  let first=null;
-  for(let y=r.y;y<r.y+r.h&&!first;y++)for(let x=r.x;x<r.x+r.w;x++){
-   if(s.map[y]?.[x]!=='#'&&!occupied.has(K(x,y))){first=[x,y];break}
+ const leavesRoomConnected=(room,newCells)=>{
+  const blocked=new Set(newCells);
+  for(const p of placed)if(inRoom(room,p.x,p.y))
+   for(let dy=0;dy<p.h;dy++)for(let dx=0;dx<p.w;dx++)
+    blocked.add(K(p.x+dx,p.y+dy));
+  let first=null,free=0;
+  for(let y=room.y;y<room.y+room.h;y++)for(let x=room.x;x<room.x+room.w;x++){
+   if(s.map[y]?.[x]==='#'||blocked.has(K(x,y)))continue;
+   free++;if(!first)first=[x,y];
   }
+  if(free<Math.max(7,Math.floor(room.w*room.h*.60)))return false;
   if(!first)return false;
-  const seen=new Set([K(first[0],first[1])]),q=[first];
-  for(let i=0;i<q.length;i++){
-   const [x,y]=q[i];
+  const seen=new Set([K(...first)]),queue=[first];
+  for(let i=0;i<queue.length;i++){
+   const [x,y]=queue[i];
    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
-    const nx=x+dx,ny=y+dy,k=K(nx,ny);
-    if(inRoom(r,nx,ny)&&s.map[ny]?.[nx]!=='#'&&!occupied.has(k)&&!seen.has(k)){
-     seen.add(k);q.push([nx,ny]);
+    const nx=x+dx,ny=y+dy,key=K(nx,ny);
+    if(inRoom(room,nx,ny)&&s.map[ny]?.[nx]!=='#'&&
+       !blocked.has(key)&&!seen.has(key)){
+      seen.add(key);queue.push([nx,ny]);
     }
    }
   }
-  for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++){
-   const k=K(x,y);
-   if(s.map[y]?.[x]!=='#'&&!occupied.has(k)&&!seen.has(k))return false;
-  }
-  return true;
- };
- for(const r of s.rooms||[]){
-  if(!r||r.w<5||r.h<4)continue;
-  const special=(s.specialRooms||[]).find(q=>q.x===r.x&&q.y===r.y&&q.w===r.w&&q.h===r.h);
-  const style=v18RoomStyle(r),rack=special?.type==='armory',crypt=style===2,archive=style===1&&!special;
-  if(!rack&&!crypt&&!archive)continue;
-  if(inRoom(r,start.x,start.y)||inRoom(r,s.stairs.x,s.stairs.y))continue;
-  if(archive){
-   // v18.10: a single 2x1 shelf against the north interior wall of archives.
-   // Existing item/spawn/door/puzzle reservations and pathing remain unchanged.
-   let shelf=null,shelfScore=Infinity;
-   const yy=r.y+1;
-   for(let xx=r.x+1;xx<=r.x+r.w-3;xx++){
-    const blocked=new Set(),w=2;
-    let valid=true;
-    for(let dx=0;dx<w;dx++){
-     const x=xx+dx;
-     if(s.map[yy]?.[x]!=='.'||hasObject(x,yy)){valid=false;break}
-     blocked.add(K(x,yy));
-    }
-    if(!valid||!leavesPathsOpen(r,blocked))continue;
-    const score=Math.abs(xx+.5-r.cx)+(xx%3)*.001;
-    if(score<shelfScore){shelfScore=score;shelf={x:xx,y:yy}}
-   }
-   if(shelf)placed.push({
-    type:'archiveBookshelf',x:shelf.x,y:shelf.y,w:2,h:1,
-    solid:true,interactive:false,room:{x:r.x,y:r.y,w:r.w,h:r.h}
-   });
-   // v18.11 — a single writing desk opposite the archives' bookshelf.
-   // Reuse collision, puzzle reservations and cumulative path checks.
-   if(shelf&&r.w>=6&&r.h>=5){
-    const deskY=r.y+r.h-2;
-    let desk=null,deskScore=Infinity;
-    for(let xx=r.x+1;xx<=r.x+r.w-3;xx++){
-     const blocked=new Set(),w=2;
-     let valid=true;
-     for(let dx=0;dx<w;dx++){
-      const x=xx+dx;
-      if(s.map[deskY]?.[x]!=='.'||hasObject(x,deskY)){valid=false;break}
-      blocked.add(K(x,deskY));
-     }
-     if(!valid||!leavesPathsOpen(r,blocked))continue;
-     const score=Math.abs(xx+.5-r.cx)+((xx+2)%3)*.001;
-     if(score<deskScore){deskScore=score;desk={x:xx,y:deskY}}
-    }
-    if(desk)placed.push({
-     type:'archiveWritingDesk',x:desk.x,y:desk.y,w:2,h:1,
-     solid:true,interactive:false,room:{x:r.x,y:r.y,w:r.w,h:r.h}
-    });
-   }
-   continue;
-  }
-  const w=2,h=rack?1:2;
-  let best=null,bestScore=Infinity;
-  // Restrict props to the room interior, away from all wall entrances.
-  // Weapon racks stand against the north interior wall, never in doorways.
-  for(let y=r.y+1;y<=r.y+r.h-h-1;y++){
-   if(rack&&y!==r.y+1)continue;
-   for(let x=r.x+1;x<=r.x+r.w-w-1;x++){
-    const blocked=new Set();let valid=true;
-    for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++){
-     if(s.map[yy]?.[xx]!=='.'||hasObject(xx,yy)||
-        (special&&xx===special.cx&&yy===special.cy)){valid=false;break}
-     blocked.add(K(xx,yy));
-    }
-    if(!valid||!leavesPathsOpen(r,blocked))continue;
-    const score=rack?Math.abs(x+(w-1)/2-r.cx)+((x+y)%3)*.001:
-     Math.abs(x+.5-r.cx)+Math.abs(y+.5-r.cy)+((x+y)%3)*.001;
-    if(score<bestScore){bestScore=score;best={x,y}}
-   }
-  }
-  if(best)placed.push({
-   type:rack?'weaponRack':'sarcophagus',x:best.x,y:best.y,w,h,
-   solid:true,interactive:false,room:{x:r.x,y:r.y,w:r.w,h:r.h}
-  });
-  if(rack){
-   // v18.8: one 1x1 armor display next to a side wall of an armory.
-   // It must not overlap the weapons rack, any pickup, or the player's route.
-   let armor=null,armorScore=Infinity;
-   for(let yy=r.y+2;yy<r.y+r.h-1;yy++)
-    for(let xx=r.x+1;xx<r.x+r.w-1;xx++){
-     if(xx!==r.x+1&&xx!==r.x+r.w-2)continue;
-     if(s.map[yy]?.[xx]!=='.'||hasObject(xx,yy)||
-        (special&&xx===special.cx&&yy===special.cy))continue;
-     const block=new Set([K(xx,yy)]);
-     if(!leavesPathsOpen(r,block))continue;
-     const score=Math.abs(yy-(r.y+Math.floor(r.h/2)))+
-       (xx===r.x+1?0:0.12)+(Math.abs(xx-r.cx)*.005);
-     if(score<armorScore){armorScore=score;armor={x:xx,y:yy}}
-    }
-   if(armor)placed.push({
-    type:'armorStand',x:armor.x,y:armor.y,w:1,h:1,
-    solid:true,interactive:false,room:{x:r.x,y:r.y,w:r.w,h:r.h}
-   });
-   // v18.9: an individual 2x1 workbench against the south interior wall.
-   // Safe even when the rack and display armor were already placed.
-   let table=null,tableScore=Infinity;
-   const tableY=r.y+r.h-2;
-   for(let xx=r.x+1;xx<=r.x+r.w-3;xx++){
-    const block=new Set(),yy=tableY;
-    let valid=true;
-    for(let dx=0;dx<2;dx++){
-     const x=xx+dx;
-     if(s.map[yy]?.[x]!=='.'||hasObject(x,yy)||
-        (special&&x===special.cx&&yy===special.cy)){valid=false;break}
-     block.add(K(x,yy));
-    }
-    if(!valid||!leavesPathsOpen(r,block))continue;
-    const score=Math.abs(xx+.5-r.cx)+(xx%3)*.001;
-    if(score<tableScore){tableScore=score;table={x:xx,y:yy}}
-   }
-   if(table)placed.push({
-    type:'workbench',x:table.x,y:table.y,w:2,h:1,
-    solid:true,interactive:false,room:{x:r.x,y:r.y,w:r.w,h:r.h}
-   });
-  }
- }
- // v18.12 — ten new thematic objects, two per room identity.
- // Every object uses the same footprint, object reservation and BFS safeguards.
- const specs={
-  archive:[['archiveLectern',1,1,'left'],['archiveScrollCabinet',1,1,'right']],
-  guardroom:[['guardBunk',2,1,'south'],['guardStandard',1,1,'right']],
-  infirmary:[['healingCot',2,1,'south'],['medicineCupboard',1,1,'left']],
-  sanctuary:[['votiveAltar',2,1,'north'],['incenseBrazier',1,1,'right']],
-  treasury:[['treasurePedestal',2,1,'north'],['goldBalance',1,1,'left']]
+  return seen.size===free;
  };
  for(const room of s.rooms||[]){
-  if(!room||room.w<6||room.h<5)continue;
-  if(inRoom(room,start.x,start.y)||inRoom(room,s.stairs.x,s.stairs.y))continue;
-  const special=(s.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y&&q.w===room.w&&q.h===room.h);
-  const kind=special?.type||(!special&&v18RoomStyle(room)===1?'archive':null);
-  const group=specs[kind];
-  if(!group)continue;
-  for(const [type,w,h,prefer] of group){
-   let selected=null,low=Infinity;
+  if(!room||room.w<5||room.h<4)continue;
+  const kind=v18RoomCategory(room)?.type||'guardroom';
+  const objects=V18_ROOM_FURNITURE[kind]||V18_ROOM_FURNITURE.guardroom;
+  const startRoom=inRoom(room,start.x,start.y),stairsRoom=inRoom(room,stairs.x,stairs.y);
+  const bossRoom=!!(s.enemies||[]).find(e=>e.boss&&e.arena&&
+   e.arena.x===room.x&&e.arena.y===room.y);
+  const area=room.w*room.h;
+  let budget=area>=75?5:area>=54?4:area>=36?3:area>=26?2:1;
+  if(startRoom||stairsRoom)budget=Math.min(2,budget);
+  if(bossRoom)budget=1;
+  budget=Math.min(budget,objects.length);
+  const special=(s.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y);
+  for(const [type,w,h,edge] of objects){
+   if(placed.filter(p=>p.room.x===room.x&&p.room.y===room.y).length>=budget)break;
+   let best=null,bestScore=Infinity;
    for(let y=room.y+1;y<=room.y+room.h-h-1;y++)
     for(let x=room.x+1;x<=room.x+room.w-w-1;x++){
-     let valid=true;const blocked=new Set();
-     for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++){
+     let valid=true;const cells=new Set();
+     for(let dy=0;dy<h&&valid;dy++)for(let dx=0;dx<w;dx++){
       const xx=x+dx,yy=y+dy;
-      if(s.map[yy]?.[xx]!=='.'||hasObject(xx,yy)||
-        (special&&xx===special.cx&&yy===special.cy)){valid=false;break}
-      blocked.add(K(xx,yy));
+      if(s.map[yy]?.[xx]!=='.'||reserved(xx,yy,room)||
+         (special&&xx===special.cx&&yy===special.cy)){valid=false;break}
+      if(bossRoom&&Math.abs(xx-room.cx)+Math.abs(yy-room.cy)<=2){valid=false;break}
+      cells.add(K(xx,yy));
      }
-     if(!valid||!leavesPathsOpen(room,blocked))continue;
-     // Prefer a distinct side, keeping the centre and existing props clear.
-     const preference=prefer==='north'?y-room.y-1:
-       prefer==='south'?room.y+room.h-h-1-y:
-       prefer==='left'?x-room.x-1:room.x+room.w-w-1-x;
-     const score=preference*10+Math.abs(x+(w-1)/2-room.cx)*.35+
-       Math.abs(y+(h-1)/2-room.cy)*.35+((x*13+y*7)%5)*.001;
-     if(score<low){selected={x,y};low=score}
+     if(!valid||!leavesRoomConnected(room,cells))continue;
+     const sameRoom=placed.filter(p=>p.room.x===room.x&&p.room.y===room.y);
+     // Prefer objects at different sides; small rooms may still use adjacent furniture.
+     const neighbors=sameRoom.filter(p=>x<=p.x+p.w&&x+w>=p.x&&y<=p.y+p.h&&y+h>=p.y).length;
+     const edgeDistance=edge==='north'?y-room.y-1:
+      edge==='south'?room.y+room.h-h-1-y:
+      edge==='west'?x-room.x-1:room.x+room.w-w-1-x;
+     const score=edgeDistance*10+neighbors*5+
+      Math.abs(x+(w-1)/2-room.cx)*.3+
+      Math.abs(y+(h-1)/2-room.cy)*.3+
+      ((x*7+y*13)%5)*.001;
+     if(score<bestScore){bestScore=score;best={x,y}}
     }
-   if(selected)placed.push({
-    type,x:selected.x,y:selected.y,w,h,solid:true,interactive:false,
-    room:{x:room.x,y:room.y,w:room.w,h:room.h}
-   });
-  }
- }
- // v18.13 — 10 more object identities; keep room density proportional to floor area.
- // Larger rooms can hold two, medium rooms one, small rooms none.
- const additions={
-  archive:[['archiveAstrolabe','west'],['archiveMapChest','east']],
-  guardroom:[['guardSpearBundle','west'],['guardWarDrum','east']],
-  infirmary:[['healingHerbDryer','west'],['healingBandageBasket','east']],
-  sanctuary:[['sanctuaryStoneIdol','west'],['sanctuaryOfferingBowl','east']],
-  treasury:[['treasuryGemChest','west'],['treasuryCoinUrn','east']]
- };
- for(const room of s.rooms||[]){
-  if(!room||room.w<7||room.h<6||room.w*room.h<48)continue;
-  if(inRoom(room,start.x,start.y)||inRoom(room,s.stairs.x,s.stairs.y))continue;
-  const special=(s.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y&&q.w===room.w&&q.h===room.h);
-  const kind=special?.type||(!special&&v18RoomStyle(room)===1?'archive':null);
-  const entries=additions[kind];if(!entries)continue;
-  const maxExtra=room.w*room.h>=65?2:1;
-  for(const [type,side] of entries.slice(0,maxExtra)){
-   let candidate=null,bestScore=Infinity;
-   for(let y=room.y+1;y<room.y+room.h-1;y++)
-    for(let x=room.x+1;x<room.x+room.w-1;x++){
-     if(s.map[y]?.[x]!=='.'||hasObject(x,y)||
-        (special&&x===special.cx&&y===special.cy))continue;
-     const blocked=new Set([K(x,y)]);
-     if(!leavesPathsOpen(room,blocked))continue;
-     // Side-wall furniture, spaced away from other solid scenery.
-     const touching=placed.some(p=>inRoom(room,p.x,p.y)&&
-      x>=p.x-1&&x<=p.x+p.w&&y>=p.y-1&&y<=p.y+p.h);
-     if(touching)continue;
-     const sideDist=side==='west'?x-room.x-1:room.x+room.w-2-x;
-     const score=sideDist*10+Math.abs(y-room.cy)*1.2+
-       ((x*7+y*11)%5)*.001;
-     if(score<bestScore){bestScore=score;candidate={x,y}}
-    }
-   if(candidate)placed.push({
-    type,x:candidate.x,y:candidate.y,w:1,h:1,
-    solid:true,interactive:false,
+   if(best)placed.push({
+    type,x:best.x,y:best.y,w,h,solid:true,interactive:false,
     room:{x:room.x,y:room.y,w:room.w,h:room.h}
    });
   }
@@ -2614,7 +2518,7 @@ function v18WallShields(){
   (s.secrets||[]).some(t=>t.x===x&&t.y===y)||
   (s.dangerDoor&&s.dangerDoor.x===x&&s.dangerDoor.y===y)||
   (s.keyPuzzle?.door&&s.keyPuzzle.door.x===x&&s.keyPuzzle.door.y===y);
- for(const room of s.specialRooms||[]){
+ for(const room of s.roomCategories||[]){
   if(room.type!=='armory'&&room.type!=='guardroom')continue;
   const candidates=[];
   const consider=(x,y,insideX,insideY,side)=>{
@@ -2732,7 +2636,7 @@ function draw(){
 }
 function roomDiscovered(r){if(r.entered)return true;for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)if(s.seen.has(K(x,y)))return true;return false}
 function dangerDiscovered(){const d=s.dangerDoor;return !!(d&&d.seen)}
-function renderRoomLegend(){const box=root.querySelector('#roomLegend');if(!box)return;const chips=(s.specialRooms||[]).map(r=>roomDiscovered(r)?`<span class="room-chip discovered">${iconHTML(roomIconKey(r.type),'icon-inline icon-sm')} ${r.label||SPECIAL_ROOMS[r.type].name}</span>`:'<span class="room-chip unknown">? Stanza sconosciuta</span>');if(s.dangerDoor&&!s.dangerDoor.declined&&!s.dangerDoor.rewarded)chips.push(dangerDiscovered()?`<span class="room-chip discovered">${iconHTML('central_gate','icon-inline icon-sm')} Porta Pericolosa</span>`:'<span class="room-chip unknown">? Presenza sconosciuta</span>');const kp=s.keyPuzzle;if(kp?.door?.seen&&!kp.door.claimed)chips.push(`<span class="room-chip discovered">${iconHTML(kp.door.open?'open_door':'locked_door','icon-inline icon-sm')} ${kp.mandatory?'Varco Centrale':'Camera della Soglia'}</span>`);if((s.secrets||[]).some(q=>q.seen&&!q.opened))chips.push('<span class="room-chip discovered">≋ Parete sospetta</span>');if((s.secrets||[]).some(q=>q.opened))chips.push('<span class="room-chip discovered">✦ Camera segreta</span>');if(s.mechanism?.switch?.seen)chips.push(`<span class="room-chip discovered">⚙ ${s.mechanism.activated?'Deposito sbloccato':'Leva antica'}</span>`);box.innerHTML=chips.join('')}
+function renderRoomLegend(){const box=root.querySelector('#roomLegend');if(!box)return;const here=v18RoomCategory(roomGeometryAt(s.player.x,s.player.y)),chips=(s.specialRooms||[]).map(r=>roomDiscovered(r)?`<span class="room-chip discovered">${iconHTML(roomIconKey(r.type),'icon-inline icon-sm')} ${r.label||SPECIAL_ROOMS[r.type].name}</span>`:'<span class="room-chip unknown">? Stanza sconosciuta</span>');if(here)chips.unshift('<span class="room-chip discovered">'+(V18_ROOM_CATEGORIES[here.type]?.icon||'🏛️')+' '+here.name+'</span>');if(s.dangerDoor&&!s.dangerDoor.declined&&!s.dangerDoor.rewarded)chips.push(dangerDiscovered()?`<span class="room-chip discovered">${iconHTML('central_gate','icon-inline icon-sm')} Porta Pericolosa</span>`:'<span class="room-chip unknown">? Presenza sconosciuta</span>');const kp=s.keyPuzzle;if(kp?.door?.seen&&!kp.door.claimed)chips.push(`<span class="room-chip discovered">${iconHTML(kp.door.open?'open_door':'locked_door','icon-inline icon-sm')} ${kp.mandatory?'Varco Centrale':'Camera della Soglia'}</span>`);if((s.secrets||[]).some(q=>q.seen&&!q.opened))chips.push('<span class="room-chip discovered">≋ Parete sospetta</span>');if((s.secrets||[]).some(q=>q.opened))chips.push('<span class="room-chip discovered">✦ Camera segreta</span>');if(s.mechanism?.switch?.seen)chips.push(`<span class="room-chip discovered">⚙ ${s.mechanism.activated?'Deposito sbloccato':'Leva antica'}</span>`);box.innerHTML=chips.join('')}
 function renderFloorRule(){const box=root.querySelector('#floorRule'),sheetBox=root.querySelector('#floorRuleSheet');if(!box||!s)return;const r=floorRule(),theme=s.theme||dungeonThemeForFloor(s.floor),pal=themePalette();const roles=[...(s.discoveredRoles||new Set())];const html=`<div class="floor-rule-main" style="border-left:3px solid ${pal.accent};padding-left:9px"><div class="floor-rule-title">${r.icon} Piano ${s.floor}: ${r.name}</div><div class="floor-rule-desc">${r.desc}</div><div class="subtle" style="margin-top:4px">${theme.icon} <strong>${theme.name}</strong> · ${theme.desc}<br>🧩 Struttura: <strong>${LAYOUT_STYLE_LABELS[s.layoutStyle]||'Variabile'}</strong><br>🔥 Luce: <strong>ogni passaggio stanza ↔ corridoio consuma intensità</strong> · il buio aumenta rischio e bottino</div></div><div class="role-legend">${roles.map(id=>`<span class="role-chip">${iconHTML(roleIconKey(id),'icon-inline icon-sm')} ${ENEMY_ROLES[id]?.name||id}</span>`).join('')}</div>`;box.innerHTML=html;if(sheetBox)sheetBox.innerHTML=`<strong>${r.icon} ${r.name}</strong><br>${r.desc}<br><br>${theme.icon} <strong>${theme.name}</strong> · ${theme.desc}`}
 function previewText(){const f=eqWeapon().family;if(f==='spear')return '🔱 Raggio 2; muri e nemici bloccano.'+(has('spearMaster')?' Maestro: 50% danni al bersaglio dietro.':'');if(f==='axe')return '🪓 Colpisce tutte le 8 caselle adiacenti.'+(has('axeMaster')?' Maestro: multi-KO costa 1 durata.':'');if(f==='sword')return '🗡️ Attacco adiacente + Guardia.'+(has('swordMaster')?' Maestro: Guardia prepara Riposta.':'');if(f==='dagger')return '🔪 Verde = Backstab valido solo contro Ascia/Martello.'+(has('daggerMaster')?' Maestro: Backstab silenzioso.':'');if(f==='hammer')return '🔨 Freccia = spinta · STUN = arretramento bloccato. I boss resistono allo STUN.'+(has('hammerMaster')?' Maestro: spinta attiva Guardia.':'');return 'Attacco adiacente.'}
 function nearbyVisibleEnemy(){if(!s)return null;return s.enemies.filter(e=>e.hp>0&&s.visible.has(K(e.x,e.y))).sort((a,b)=>cheb(a,s.player)-cheb(b,s.player))[0]||null}
