@@ -8,6 +8,7 @@ on:
       - 'tools/artpass_v18_1.py'
       - 'tools/artpass_v18_2.py'
       - 'tools/artpass_v18_3_sarcophagus.py'
+      - 'tools/export_sarcophagus_png.py'
       - '.github/workflows/build-threshold-v18.yml'
 permissions:
   contents: write
@@ -23,11 +24,14 @@ jobs:
           python-version: '3.12'
       - name: Extract CSS, JavaScript and assets
         run: python tools/build_v18_preview.py
+      - name: Install image exporter
+        run: python -m pip install CairoSVG
       - name: Apply v18.1 dungeon art pass
         run: |
           python tools/artpass_v18_1.py
           python tools/artpass_v18_2.py
           python tools/artpass_v18_3_sarcophagus.py
+          python tools/export_sarcophagus_png.py
           node --check threshold-v18-preview/js/game.js
       - name: Commit preview separately from live game
         run: |
