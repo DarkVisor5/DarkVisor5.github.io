@@ -17,7 +17,7 @@ function drawV18Sarcophagi(c){
  if(s.floor===1){
   if(!s._sarcophagusShowcase){
    const p=s.player, origin=roomGeometryAt(p.x,p.y);
-   const offsets=[[2,0],[0,2],[-2,0],[0,-2],[1,1],[-1,1],[1,-1],[-1,-1],[1,0]];
+   const offsets=[[2,0],[1,1],[0,2],[-2,0],[0,-2],[-1,1],[1,-1],[-1,-1],[1,0]];
    for(const [dx,dy] of offsets){
     const x=p.x+dx,y=p.y+dy,r=roomGeometryAt(x,y);
     if(!inBounds(x,y)||s.map[y]?.[x]==='#'||!r||!origin||r.x!==origin.x||r.y!==origin.y)continue;
@@ -26,7 +26,7 @@ function drawV18Sarcophagi(c){
    if(!s._sarcophagusShowcase)s._sarcophagusShowcase={x:p.x,y:p.y};
   }
   const {x,y}=s._sarcophagusShowcase;
-  if(inc(x,y,c)&&s.visible.has(K(x,y))){
+  if(inc(x,y,c)){
    const pp=lp(x,y,c),w=CELL*1.65,h=CELL*2.5;
    ctx.save();ctx.globalAlpha=1;ctx.drawImage(v18Sarcophagus,pp.x+CELL/2-w/2,pp.y+CELL/2-h/2,w,h);ctx.restore();
   }
@@ -48,7 +48,7 @@ function drawV18Sarcophagi(c){
 }
 """
 js=js.replace(anchor,insert+"\n"+anchor,1)
-needle="drawTorchSconces(c,now);"
+needle="  drawForegroundDepth(c,now);"
 assert needle in js
 js=js.replace(needle,needle+"drawV18Sarcophagi(c);",1)
 p.write_text(js,encoding="utf8")
