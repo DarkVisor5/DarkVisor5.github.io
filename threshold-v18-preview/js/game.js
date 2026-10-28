@@ -659,15 +659,16 @@ const V18_ROOM_CATEGORIES={
  guardroom:{name:'Sala delle Guardie',icon:'🛡️',style:3},
  sanctuary:{name:'Santuario',icon:'✦',style:4},
  treasury:{name:'Tesoreria',icon:'🪙',style:5},
- infirmary:{name:'Infermeria',icon:'🧪',style:6}
+ infirmary:{name:'Infermeria',icon:'🧪',style:6},
+ warehouse:{name:'Magazzino',icon:'📦',style:4}
 };
 function v18AssignRoomCategories(rooms,specialRooms,start,far,floor){
  const theme=dungeonThemeForFloor(floor)?.id||'castle';
  const pools=theme==='temple'
-   ?['sanctuary','archive','treasury','infirmary','crypt','guardroom','armory']
+   ?['sanctuary','archive','treasury','infirmary','crypt','warehouse','guardroom','armory']
    :theme==='catacombs'
-   ?['crypt','sanctuary','treasury','archive','infirmary','guardroom','armory']
-   :['guardroom','armory','infirmary','treasury','archive','crypt','sanctuary'];
+   ?['crypt','sanctuary','treasury','archive','warehouse','infirmary','guardroom','armory']
+   :['guardroom','armory','warehouse','infirmary','treasury','archive','crypt','sanctuary'];
  const tally=Object.fromEntries(pools.map(k=>[k,0]));
  const out=[];
  for(const room of rooms||[]){
@@ -1367,7 +1368,7 @@ function interact(){
 }
 
 function completeStealthFloor(){if(!s.floorStealthCounted&&!s.floorAlerted){s.floorStealthCounted=true;s.stats.stealthFloors++;log('👻 Piano completato senza allerta.');checkMissions()}}
-function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':({archiveLectern:'LEGGIO',archiveScrollCabinet:'SCHEDARIO',guardBunk:'BRANDA',guardStandard:'STENDARDO',healingCot:'LETTINO',medicineCupboard:'ARMADIETTO',votiveAltar:'ALTARE',incenseBrazier:'BRACIERE',treasurePedestal:'TESORO',goldBalance:'BILANCIA',archiveAstrolabe:'ASTROLABIO',archiveMapChest:'CASSETTIERA',guardSpearBundle:'LANCE',guardWarDrum:'TAMBURO',healingHerbDryer:'ERBE',healingBandageBasket:'BENDE',sanctuaryStoneIdol:'STATUA',sanctuaryOfferingBowl:'COPPA VOTIVA',treasuryGemChest:'SCRIGNO DI GEMME',treasuryCoinUrn:'URNA D’ORO',cryptStele:'STELE FUNERARIA'}[solidProp.type]||'SARCOFAGO');s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
+function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':({archiveLectern:'LEGGIO',archiveScrollCabinet:'SCHEDARIO',guardBunk:'BRANDA',guardStandard:'STENDARDO',healingCot:'LETTINO',medicineCupboard:'ARMADIETTO',votiveAltar:'ALTARE',incenseBrazier:'BRACIERE',treasurePedestal:'TESORO',goldBalance:'BILANCIA',archiveAstrolabe:'ASTROLABIO',archiveMapChest:'CASSETTIERA',guardSpearBundle:'LANCE',guardWarDrum:'TAMBURO',healingHerbDryer:'ERBE',healingBandageBasket:'BENDE',sanctuaryStoneIdol:'STATUA',sanctuaryOfferingBowl:'COPPA VOTIVA',treasuryGemChest:'SCRIGNO DI GEMME',treasuryCoinUrn:'URNA D’ORO',cryptStele:'STELE FUNERARIA',storeSupplyShelf:'SCAFFALE',storeBarrelStack:'BARILI',storeCratePile:'CASSE',storeGrainSacks:'SACCHI',cryptTombSlab:'TOMBA',cryptAshUrn:'URNA CINERARIA',cryptGravestone:'LAPIDE',sanctuaryCandelabrum:'CANDELIERE',sanctuaryRuneStone:'PIETRA RUNICA',healingSurgicalTray:'STRUMENTI MEDICI'}[solidProp.type]||'SARCOFAGO');s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
 function useHealItem(item){if(!s||s.eventOpen||s.rewardOpen||!item||item.kind!=='heal')return;if(s.hp>=s.maxHp){log('❤️ Vita già al massimo.');return}const idx=s.inventory.indexOf(item);if(idx<0)return;playSfx('heal');const h=HEALS[item.id],gained=healPlayer(h.heal);s.inventory.splice(idx,1);meta.healsUsed++;saveMeta();log('🧪 '+h.name+': +'+gained+' HP.');render()}
 function useHeal(){if(!s||s.eventOpen||s.rewardOpen)return;const item=s.inventory.find(i=>i.kind==='heal');if(!item){log('Nessuna pozione.');return}useHealItem(item)}
 function discardItem(item){if(!s||!item)return;const idx=s.inventory.indexOf(item);if(idx<0)return;if(item.kind==='weapon'){const name=W[item.id].name,wasEq=s.equippedUid===item.uid;s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'weapon',id:item.id,uses:item.uses,seen:true});if(wasEq){const next=s.inventory.find(x=>x.kind==='weapon');s.equippedUid=next?next.uid:null}s.ambushId=null;log('🗑️ Lasci a terra '+name+' ('+item.uses+' KO rimasti).')}else{s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'heal',id:item.id,seen:true});log('🗑️ Lasci a terra '+HEALS[item.id].name+'.')}render()}
@@ -1977,12 +1978,18 @@ const V18_ROOM_FURNITURE={
  guardroom:[['guardBunk',2,1,'north'],['guardStandard',1,1,'east'],
   ['guardSpearBundle',1,1,'west'],['guardWarDrum',1,1,'south']],
  infirmary:[['healingCot',2,1,'north'],['medicineCupboard',1,1,'west'],
-  ['healingHerbDryer',1,1,'east'],['healingBandageBasket',1,1,'south']],
+  ['healingHerbDryer',1,1,'east'],['healingBandageBasket',1,1,'south'],
+  ['healingSurgicalTray',1,1,'north']],
  sanctuary:[['votiveAltar',2,1,'north'],['incenseBrazier',1,1,'east'],
-  ['sanctuaryStoneIdol',1,1,'west'],['sanctuaryOfferingBowl',1,1,'south']],
+  ['sanctuaryStoneIdol',1,1,'west'],['sanctuaryOfferingBowl',1,1,'south'],
+  ['sanctuaryCandelabrum',1,1,'north'],['sanctuaryRuneStone',1,1,'south']],
  treasury:[['treasurePedestal',2,1,'north'],['goldBalance',1,1,'west'],
   ['treasuryGemChest',1,1,'east'],['treasuryCoinUrn',1,1,'south']],
- crypt:[['sarcophagus',2,2,'north'],['sarcophagus',2,2,'south'],['cryptStele',1,1,'west']]
+ crypt:[['sarcophagus',2,2,'north'],['cryptTombSlab',2,1,'south'],
+  ['cryptAshUrn',1,1,'east'],['cryptGravestone',1,1,'west'],
+  ['sarcophagus',2,2,'south'],['cryptStele',1,1,'west']],
+ warehouse:[['storeSupplyShelf',2,1,'north'],['storeBarrelStack',2,1,'west'],
+  ['storeCratePile',2,1,'south'],['storeGrainSacks',1,1,'east']]
 };
 function v18RoomDecor(){
  if(!s)return [];
@@ -2055,7 +2062,12 @@ function v18RoomDecor(){
   if(bossRoom)budget=1;
   budget=Math.min(budget,objects.length);
   const special=(s.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y);
-  for(const [type,w,h,edge] of objects){
+  // Anchor the room with its signature furniture, then rotate secondary items.
+  // This exposes every sprite across different rooms instead of hiding late entries.
+  const signature=objects[0],secondary=objects.slice(1);
+  const shift=secondary.length?envHash(room.x,room.y,1415+s.floor)%secondary.length:0;
+  const ordered=[signature,...secondary.slice(shift),...secondary.slice(0,shift)];
+  for(const [type,w,h,edge] of ordered){
    if(placed.filter(p=>p.room.x===room.x&&p.room.y===room.y).length>=budget)break;
    let best=null,bestScore=Infinity;
    for(let y=room.y+1;y<=room.y+room.h-h-1;y++)
@@ -2466,6 +2478,98 @@ function drawV18ExtendedObject(type,px,py){
  }
  ctx.restore();
 }
+// v18.15 — Ten further original pixel-art furniture sprites from the first roadmap.
+// Coordinates are 32×32 pixels per map tile, and 64×32 for 2×1 scenery.
+function drawV18NewFurniture(type,px,py){
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
+ const P=(p,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.closePath();ctx.fill()};
+ const L=(p,c,w=1)=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.stroke()};
+ const w=['storeSupplyShelf','storeBarrelStack','storeCratePile','cryptTombSlab'].includes(type)?64:32,
+  oak='#765139',light='#c89b68',metal='#b0c4c8',gold='#d2b473',stone='#8b858c';
+ R(3,28,w-6,3,'rgba(0,0,0,.55)');
+ if(type==='storeBarrelStack'){
+  // Three individually bound oak casks; the third overlaps from behind.
+  const barrel=(x,y)=>{R(x+2,y+4,16,18,'#38261e');R(x+4,y+3,12,19,'#996943');
+   R(x+5,y+4,10,1,'#d6aa72');R(x+4,y+12,12,2,'#57616b');
+   R(x+4,y+19,12,2,'#64737a');R(x+6,y+7,2,11,'#bd8c58');
+   P([x+4,y+3,x+16,y+3,x+18,y+6,x+2,y+6],'#c79768');
+   R(x+8,y+5,4,2,'#7b5236');R(x+10,y+15,2,2,'#d1a26a');};
+  barrel(20,1);barrel(5,6);barrel(39,7);
+ }else if(type==='storeCratePile'){
+  const crate=(x,y,ww,hh)=>{R(x+1,y+2,ww,hh,'#372820');R(x,y,ww,hh-2,'#926340');
+   R(x+1,y+1,ww-2,2,'#c39a69');R(x+1,y+hh-5,ww-2,3,'#65442f');
+   R(x+2,y+4,3,hh-8,'#c08c59');R(x+ww-5,y+4,3,hh-8,'#593e30');
+   L([x+6,y+5,x+ww-7,y+hh-7],'#d2a56d',2);
+   L([x+ww-7,y+5,x+6,y+hh-7],'#573c2e',2)};
+  crate(7,3,23,22);crate(34,9,22,18);
+  R(29,15,6,11,'#3e2d22');
+ }else if(type==='storeGrainSacks'){
+  P([3,13,8,8,16,10,19,17,17,27,5,27],'#a48d6f');
+  P([11,12,19,7,26,12,29,21,27,27,13,27],'#c5ac86');
+  P([4,14,8,11,14,13,16,24,6,25],'#d6bb90');
+  R(8,10,7,2,'#7b5e4b');R(18,8,6,2,'#80644c');
+  L([7,18,13,21],'#8d755c',1);L([17,16,23,20],'#9a795e',1);
+  R(17,24,8,2,'#e2cba0');
+ }else if(type==='storeSupplyShelf'){
+  R(3,4,58,25,'#2d2420');R(5,5,54,21,'#79503a');
+  for(const y of [13,23]){R(6,y,52,3,'#402b21');R(6,y,52,1,'#bc9060')}
+  for(const x of [6,31,56]){R(x,5,3,23,'#ad7c4e');R(x+1,5,1,21,'#d3a56c')}
+  const box=(x,y,ww,hh)=>{R(x,y,ww,hh,'#9f774d');R(x+1,y+1,ww-2,2,'#d1a371');R(x+ww/2-1,y+2,2,hh-3,'#64442f')};
+  box(11,7,14,6);box(36,6,16,7);
+  R(10,17,9,6,'#758279');R(12,16,5,1,metal);
+  R(23,17,12,6,'#b7a17c');R(25,17,3,5,'#755942');
+  R(41,17,11,6,'#6c5a52');R(42,18,9,2,'#d5b786');
+  R(5,27,7,3,'#5f3d29');R(51,27,7,3,'#5f3d29');
+ }else if(type==='cryptTombSlab'){
+  R(6,12,52,17,'#3b373d');
+  P([8,8,53,8,58,13,54,24,10,24,5,17],'#66646c');
+  P([11,7,52,7,56,11,52,21,12,21,8,15],'#ada6a2');
+  R(13,9,38,2,'#d0c2b6');R(12,18,41,2,'#77737c');
+  R(31,11,3,9,'#554d59');R(27,14,11,3,'#554d59');
+  R(31,11,1,9,'#ded0b8');R(28,14,9,1,'#c9bba8');
+  R(10,23,8,5,'#5d5560');R(46,23,8,5,'#5d5560');
+  R(12,24,4,2,'#8b8389');R(48,24,4,2,'#8b8389');
+ }else if(type==='cryptAshUrn'){
+  R(11,6,10,4,'#a8a1a6');R(13,4,6,3,'#d3c8b9');
+  P([10,10,22,10,25,17,23,25,20,28,12,28,9,24,7,17],'#5e5866');
+  P([12,11,20,11,23,18,21,25,12,25,10,18],'#98919a');
+  R(13,13,6,1,'#d1bda8');R(15,15,3,8,'#5d5663');
+  R(12,22,9,2,'#c2a98c');R(11,26,11,3,'#514c57');
+  R(14,9,4,2,'#ebe0d2');R(17,12,2,1,'#dfd0bf');
+ }else if(type==='cryptGravestone'){
+  R(6,24,20,5,'#49444f');R(8,21,16,5,'#76717b');
+  P([9,22,9,12,11,8,15,6,20,8,23,12,23,22],'#817d88');
+  P([12,20,12,12,15,10,19,12,20,20],'#b5b0b1');
+  R(15,13,3,8,'#625d6a');R(12,16,9,3,'#625d6a');
+  R(16,13,1,8,'#e2d9cb');R(13,16,7,1,'#e2d9cb');
+  R(10,23,12,2,'#a59ca4');R(10,27,12,1,'#c2b9b0');
+ }else if(type==='sanctuaryCandelabrum'){
+  // Seven candles with visible flames, on a bronze altar stand.
+  R(14,19,4,9,'#8f6b41');R(9,27,14,3,'#d4ad6c');
+  R(7,15,19,3,'#ba9058');R(5,12,3,6,'#6a533d');
+  for(const [x,y] of [[6,9],[12,7],[18,7],[24,9]]){
+   R(x,y,3,7,'#e9d4a9');R(x+1,y-4,2,4,'#f4a851');
+   R(x+1,y-3,1,2,'#fff0b7');R(x,y+5,3,1,'#ac967c')}
+  R(12,18,9,2,'#efd19a');R(15,23,2,5,'#d0a46d');
+ }else if(type==='sanctuaryRuneStone'){
+  R(7,22,18,7,'#474451');
+  P([10,8,18,5,24,10,24,23,10,23,7,16],'#595767');
+  P([12,9,18,7,22,10,22,21,11,21],'#8d8891');
+  R(15,10,2,9,'#cfb88b');R(12,14,9,2,'#ddc39a');
+  R(17,11,3,2,'#eee3c1');R(10,23,14,1,'#b0a0a1');
+  R(13,26,9,2,'#85777f');
+ }else if(type==='healingSurgicalTray'){
+  R(8,19,16,9,'#49372c');R(10,26,12,3,'#90633f');
+  R(4,8,24,14,'#647b82');R(5,7,22,4,'#c5d1cf');R(6,11,20,9,'#303f48');
+  R(8,12,6,3,'#d4ded9');R(9,13,4,1,'#f8f5e9');
+  R(16,11,2,8,'#b5c0bb');R(20,11,2,8,'#d4d9ce');
+  R(18,10,5,2,'#93a4aa');R(7,18,18,1,'#b9c4bf');
+  R(7,5,3,3,'#8f5e54');R(8,4,2,2,'#e9d5ae');
+  R(22,15,3,3,'#b88075');
+ }
+ ctx.restore();
+}
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2500,6 +2604,7 @@ function drawV18RoomDecor(c,relight=false){
   else if(prop.type==='archiveWritingDesk')drawV18ArchiveWritingDesk(px,py);
   else if(['archiveLectern','archiveScrollCabinet','guardBunk','guardStandard','healingCot','medicineCupboard','votiveAltar','incenseBrazier','treasurePedestal','goldBalance'].includes(prop.type))drawV18ThemedObject(prop.type,px,py);
   else if(['archiveAstrolabe','archiveMapChest','guardSpearBundle','guardWarDrum','healingHerbDryer','healingBandageBasket','sanctuaryStoneIdol','sanctuaryOfferingBowl','treasuryGemChest','treasuryCoinUrn'].includes(prop.type))drawV18ExtendedObject(prop.type,px,py);
+  else if(['storeSupplyShelf','storeBarrelStack','storeCratePile','storeGrainSacks','cryptTombSlab','cryptAshUrn','cryptGravestone','sanctuaryCandelabrum','sanctuaryRuneStone','healingSurgicalTray'].includes(prop.type))drawV18NewFurniture(prop.type,px,py);
   else if(prop.type==='cryptStele')drawV18ExtendedObject('sanctuaryStoneIdol',px,py);
   else if(prop.type==='sarcophagus')
    ctx.drawImage(v18Sarcophagus,px+CELL*.175,py,CELL*1.65,CELL*2);
