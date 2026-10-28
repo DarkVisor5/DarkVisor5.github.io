@@ -1907,7 +1907,7 @@ function v18RoomProps(x,y,px,py,room){
 
 // v18.3 independent environment sprite. The artwork loads from an actual asset file.
 const v18Sarcophagus=new Image();
-v18Sarcophagus.src='./assets/sprites/sarcophagus_closed.svg';
+v18Sarcophagus.src='./assets/sprites/sarcophagus_closed.png';
 v18Sarcophagus.addEventListener('load',()=>{if(s)render()});
 function drawV18Sarcophagi(c){
  if(!s)return;
