@@ -1,0 +1,36 @@
+
+/* v17.6 — UX polish: clearer actions without changing game balance */
+.run-toast.toast-good{border-color:#557c60;background:#18261d}
+.run-toast.toast-warn{border-color:#8b6a34;background:#2a2114}
+.run-toast.toast-bad{border-color:#7a4449;background:#2b181b}
+.run-toast.toast-info{border-color:#425365;background:#202833}
+.action-ready{border-color:#678fc9!important;box-shadow:0 0 0 1px rgba(120,169,255,.15) inset}
+.action-urgent{border-color:#b86a6a!important;box-shadow:0 0 0 1px rgba(223,102,102,.14) inset}
+.context-matchup{font-weight:900}
+.context-matchup.good{color:#8ed79a}.context-matchup.bad{color:#ef9292}.context-matchup.neutral{color:#d9c789}
+.stat-card.pressure-warn{border-color:#786138}.stat-card.pressure-danger{border-color:#81484d;box-shadow:inset 0 0 0 1px rgba(223,102,102,.08)}
+.summary-verdict{margin-top:12px;padding:12px;border:1px solid #3f4d5a;border-radius:11px;background:#111820;line-height:1.4}
+.summary-verdict strong{display:block;font-size:15px}.summary-verdict span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+#healBtn .action-count,#mobileSheetBtn .action-count,#attackBtn .action-count{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;background:rgba(255,255,255,.08);font-size:10px;vertical-align:1px}
+@media(max-width:700px){
+ #dungeon-fixed.mobile-board-mode #combatHint{font-weight:700}
+ #dungeon-fixed.mobile-board-mode .controls .actions button{white-space:nowrap}
+}
+
+/* v17.7 — QA hardening: portrait quick-weapons must remain fully above fixed thumb controls. */
+@media (max-width:700px) and (orientation:portrait){
+  #dungeon-fixed.mobile-board-mode .controls{
+    bottom:env(safe-area-inset-bottom);
+    padding-top:2px;
+    padding-bottom:2px;
+  }
+  #dungeon-fixed.mobile-board-mode .dpad{
+    row-gap:0;
+    column-gap:4px;
+  }
+  #dungeon-fixed.mobile-board-mode .board-shell canvas{
+    width:calc(100% - env(safe-area-inset-bottom));
+    margin-left:auto;
+    margin-right:auto;
+  }
+}
