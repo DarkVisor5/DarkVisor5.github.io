@@ -1323,7 +1323,7 @@ function interact(){
 }
 
 function completeStealthFloor(){if(!s.floorStealthCounted&&!s.floorAlerted){s.floorStealthCounted=true;s.stats.stealthFloors++;log('👻 Piano completato senza allerta.');checkMissions()}}
-function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':'SARCOFAGO';s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
+function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':'SARCOFAGO';s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
 function useHealItem(item){if(!s||s.eventOpen||s.rewardOpen||!item||item.kind!=='heal')return;if(s.hp>=s.maxHp){log('❤️ Vita già al massimo.');return}const idx=s.inventory.indexOf(item);if(idx<0)return;playSfx('heal');const h=HEALS[item.id],gained=healPlayer(h.heal);s.inventory.splice(idx,1);meta.healsUsed++;saveMeta();log('🧪 '+h.name+': +'+gained+' HP.');render()}
 function useHeal(){if(!s||s.eventOpen||s.rewardOpen)return;const item=s.inventory.find(i=>i.kind==='heal');if(!item){log('Nessuna pozione.');return}useHealItem(item)}
 function discardItem(item){if(!s||!item)return;const idx=s.inventory.indexOf(item);if(idx<0)return;if(item.kind==='weapon'){const name=W[item.id].name,wasEq=s.equippedUid===item.uid;s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'weapon',id:item.id,uses:item.uses,seen:true});if(wasEq){const next=s.inventory.find(x=>x.kind==='weapon');s.equippedUid=next?next.uid:null}s.ambushId=null;log('🗑️ Lasci a terra '+name+' ('+item.uses+' KO rimasti).')}else{s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'heal',id:item.id,seen:true});log('🗑️ Lasci a terra '+HEALS[item.id].name+'.')}render()}
@@ -1864,7 +1864,7 @@ function v18RoomProps(x,y,px,py,room){
  else if(atBottom && room.w>=7&&room.h>=7&&seed%3===0)variant=3;
  if(variant<0)return;
  // The full-size Layer-2 sarcophagus replaces the tiny central crypt symbol.
- if(variant===0&&style===2&&v18RoomDecor().some(p=>p.room.x===room.x&&p.room.y===room.y))return;
+ if(variant===0&&(style===2||style===1)&&v18RoomDecor().some(p=>p.room.x===room.x&&p.room.y===room.y))return;
  const theme=(s.theme||dungeonThemeForFloor())?.id||'castle';
  const warm=theme==='temple'?'#9b8761':theme==='catacombs'?'#746577':'#756756';
  const accent=theme==='temple'?'#bca36d':theme==='catacombs'?'#b093aa':'#ae9e83';
@@ -1988,9 +1988,32 @@ function v18RoomDecor(){
  for(const r of s.rooms||[]){
   if(!r||r.w<5||r.h<4)continue;
   const special=(s.specialRooms||[]).find(q=>q.x===r.x&&q.y===r.y&&q.w===r.w&&q.h===r.h);
-  const rack=special?.type==='armory',crypt=v18RoomStyle(r)===2;
-  if(!rack&&!crypt)continue;
+  const style=v18RoomStyle(r),rack=special?.type==='armory',crypt=style===2,archive=style===1&&!special;
+  if(!rack&&!crypt&&!archive)continue;
   if(inRoom(r,start.x,start.y)||inRoom(r,s.stairs.x,s.stairs.y))continue;
+  if(archive){
+   // v18.10: a single 2x1 shelf against the north interior wall of archives.
+   // Existing item/spawn/door/puzzle reservations and pathing remain unchanged.
+   let shelf=null,shelfScore=Infinity;
+   const yy=r.y+1;
+   for(let xx=r.x+1;xx<=r.x+r.w-3;xx++){
+    const blocked=new Set(),w=2;
+    let valid=true;
+    for(let dx=0;dx<w;dx++){
+     const x=xx+dx;
+     if(s.map[yy]?.[x]!=='.'||hasObject(x,yy)){valid=false;break}
+     blocked.add(K(x,yy));
+    }
+    if(!valid||!leavesPathsOpen(r,blocked))continue;
+    const score=Math.abs(xx+.5-r.cx)+(xx%3)*.001;
+    if(score<shelfScore){shelfScore=score;shelf={x:xx,y:yy}}
+   }
+   if(shelf)placed.push({
+    type:'archiveBookshelf',x:shelf.x,y:shelf.y,w:2,h:1,
+    solid:true,interactive:false,room:{x:r.x,y:r.y,w:r.w,h:r.h}
+   });
+   continue;
+  }
   const w=2,h=rack?1:2;
   let best=null,bestScore=Infinity;
   // Restrict props to the room interior, away from all wall entrances.
@@ -2177,6 +2200,38 @@ function drawV18Workbench(px,py){
  ctx.fillStyle='#dfbd83';ctx.fillRect(17,22,2,1);ctx.fillRect(53,19,2,1);
  ctx.restore();
 }
+// v18.10 — Archive bookshelf, original 64×32 pixel art.
+function drawV18ArchiveBookshelf(px,py){
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ // A raised, deep oak bookshelf with visible planks, supports and shadow.
+ ctx.fillStyle='rgba(3,4,8,.54)';ctx.fillRect(3,6,59,25);
+ ctx.fillStyle='#251a16';ctx.fillRect(2,3,60,25);
+ ctx.fillStyle='#4a2f23';ctx.fillRect(4,4,56,22);
+ ctx.fillStyle='#a77a4c';ctx.fillRect(4,4,56,3);
+ ctx.fillStyle='#c29a67';ctx.fillRect(6,5,52,1);
+ ctx.fillStyle='#2b2220';ctx.fillRect(7,8,50,15);
+ // Shelves seen from above: two book rows, divided by oak runners.
+ ctx.fillStyle='#8b5e3b';ctx.fillRect(7,14,50,2);ctx.fillRect(7,23,50,3);
+ ctx.fillStyle='#c49961';ctx.fillRect(7,14,50,1);ctx.fillRect(7,23,50,1);
+ const colors=['#974d4b','#627b64','#4c637d','#a38b4e','#80647d','#ae7955','#475e60'];
+ for(let row=0;row<2;row++){
+  const baseY=row===0?8:17;
+  for(let i=0;i<17;i++){
+   const x=8+i*3,seed=(i*11+row*7)%colors.length,height=(i%5===0?5:6);
+   ctx.fillStyle=colors[seed];ctx.fillRect(x,baseY+(6-height),2,height);
+   ctx.fillStyle='#d1b98a';ctx.fillRect(x,baseY+(6-height),1,1);
+   if(i%4===0){ctx.fillStyle='#cab68d';ctx.fillRect(x+1,baseY+3,1,1)}
+  }
+ }
+ // Vertical frame and central joint; prevents books looking like floor loot.
+ ctx.fillStyle='#8d633e';ctx.fillRect(3,5,4,21);ctx.fillRect(57,5,4,21);
+ ctx.fillStyle='#bc925d';ctx.fillRect(4,5,1,20);ctx.fillRect(58,5,1,20);
+ ctx.fillStyle='#66442e';ctx.fillRect(31,7,2,16);
+ ctx.fillStyle='#d0aa76';ctx.fillRect(31,7,1,15);
+ ctx.fillStyle='#65422d';ctx.fillRect(4,26,6,3);ctx.fillRect(54,26,6,3);
+ ctx.fillStyle='#d0b78a';ctx.fillRect(9,25,46,1);
+ ctx.restore();
+}
 // Draw the same static prop in the normal lighting pass and again with a
 // near-player visibility lift, clipped to revealed tiles and its own room.
 function drawV18RoomDecor(c,relight=false){
@@ -2209,6 +2264,7 @@ function drawV18RoomDecor(c,relight=false){
   if(prop.type==='weaponRack')drawV18WeaponRack(px,py);
   else if(prop.type==='armorStand')drawV18ArmorStand(px,py);
   else if(prop.type==='workbench')drawV18Workbench(px,py);
+  else if(prop.type==='archiveBookshelf')drawV18ArchiveBookshelf(px,py);
   else if(prop.type==='sarcophagus')
    ctx.drawImage(v18Sarcophagus,px+CELL*.175,py,CELL*1.65,CELL*2);
   ctx.restore();
