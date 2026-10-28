@@ -63,8 +63,8 @@ _Prima di una release stabile_
 ## Stato del progetto al 28/10/2026
 
 - **Versione stabile:** v17, da non modificare in questa roadmap.
-- **Versione sperimentale:** Threshold v18.15 in threshold-v18-preview/.
-- **Lavoro Layer 2 già avviato e implementato:** armerie, archivi, cripte, santuari, infermerie, caserme/sale guardie, magazzini e categorie delle stanze con arredi tematici.
+- **Versione sperimentale:** Threshold v18.16 in threshold-v18-preview/.
+- **Lavoro Layer 2 già avviato e implementato:** otto categorie di stanze (armerie, archivi, cripte, santuari, infermerie, sale delle guardie/caserme, tesorerie, magazzini) con **10 tipologie di arredi distinte ciascuna: 80 in totale**. La v18.16 ha introdotto 43 nuovi arredi con sagome specifiche e maggiore varietà di composizione.
 - **Punto da completare nel Layer 2:** passaggio a tileset distinti e coerenti per pavimenti e muri; valutazione dell'arredo delle caserme (bauli) e controlli visivi reali in browser.
 - **Layer 3:** oggetti attuali prevalentemente decorativi/solidi; introdurre esplicitamente le interazioni richieste dalla roadmap senza assumere che vecchi meccanismi soddisfino automaticamente ciascuna voce.
 - **Altre fasi:** implementazione e stato di avanzamento da valutare singolarmente rispetto a queste definizioni.
@@ -76,3 +76,11 @@ _Prima di una release stabile_
 3. Oggetti solidi non devono bloccare scale, porte, puzzle, nemici o percorsi.
 4. Verificare codice, generazione, resa mobile e immagini in-game quando disponibili.
 5. Annotare l'avanzamento effettivo; non confondere gli elementi selezionati nella checklist con quelli già implementati.
+
+## Checkpoint v18.16 — ampliamento degli arredi (28/10/2026)
+
+- Otto categorie × dieci tipi diversi = **80 arredi di catalogo** (tra nuovi e preesistenti).
+- Nuovi tipi aggiunti nella v18.16: **43**.
+- Composizione variabile tra stanze della stessa categoria; non sono collocati tutti e dieci contemporaneamente.
+- Verifiche simulate: 200 mappe, 2.400 stanze, nessun errore nei controlli di collisione e connettività; tutti i dieci tipi di ogni categoria sono comparsi almeno una volta.
+- Rimane necessario il collaudo visuale nel browser pubblicato e sui dispositivi mobile.
