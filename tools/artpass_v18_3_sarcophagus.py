@@ -11,8 +11,26 @@ const v18Sarcophagus=new Image();
 v18Sarcophagus.src='./assets/sprites/sarcophagus_closed.svg';
 v18Sarcophagus.addEventListener('load',()=>{if(s)render()});
 function drawV18Sarcophagi(c){
- if(!v18Sarcophagus.complete||!v18Sarcophagus.naturalWidth||!s?.rooms)return;
- const rooms=s.rooms;
+ if(!v18Sarcophagus.complete||!v18Sarcophagus.naturalWidth||!s)return;
+ // Temporary first-room showcase. Position saved on first draw, never follows player.
+ if(s.floor===1){
+  if(!s._sarcophagusShowcase){
+   const p=s.player, origin=roomGeometryAt(p.x,p.y);
+   const offsets=[[2,0],[0,2],[-2,0],[0,-2],[1,1],[-1,1],[1,-1],[-1,-1],[1,0]];
+   for(const [dx,dy] of offsets){
+    const x=p.x+dx,y=p.y+dy,r=roomGeometryAt(x,y);
+    if(!inBounds(x,y)||s.map[y]?.[x]==='#'||!r||!origin||r.x!==origin.x||r.y!==origin.y)continue;
+    s._sarcophagusShowcase={x,y};break;
+   }
+   if(!s._sarcophagusShowcase)s._sarcophagusShowcase={x:p.x,y:p.y};
+  }
+  const {x,y}=s._sarcophagusShowcase;
+  if(inc(x,y,c)&&s.visible.has(K(x,y))){
+   const pp=lp(x,y,c),w=CELL*1.65,h=CELL*2.5;
+   ctx.save();ctx.globalAlpha=1;ctx.drawImage(v18Sarcophagus,pp.x+CELL/2-w/2,pp.y+CELL/2-h/2,w,h);ctx.restore();
+  }
+ }
+ const rooms=s.rooms||[];
  for(const r of rooms){
   if(!r||r.w<4||r.h<4||!Number.isFinite(r.x)||!Number.isFinite(r.y))continue;
   if(envHash(r.x,r.y,801)%8!==2)continue; // only crypt identity
