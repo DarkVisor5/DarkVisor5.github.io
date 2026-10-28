@@ -17,7 +17,7 @@
 <path fill="#a59b8c" d="M27 40L30 38H34L38 42L41 65L43 70H20L23 62Z"/>
 <path fill="#5a5654" d="M29 39L31 42L29 64L25 69H21L26 46ZM34 40L37 46L41 69H35L33 60Z"/>
 <path fill="#857b76" d="M31 44L35 69H29L31 48Z"/>
-<path fill="#c0b5a6" d="M24 46L28 49L31 46L33 51L35 49L39 46" stroke="#b2a696" stroke-width="2" fill="none"/>
+<path d="M24 46L28 49L31 46L33 51L35 49L39 46" stroke="#b2a696" stroke-width="2" fill="none"/>
 <path fill="#443e3c" d="M24 65L27 61L29 69H25ZM37 61L40 65L39 69H36Z"/>
 <!-- erosion / engraved border chips -->
 <path fill="#c5b9a8" opacity=".6" d="M16 18H18V27H16ZM46 24H48V38H46ZM16 60H18V73H16ZM45 58H47V70H45Z"/>
