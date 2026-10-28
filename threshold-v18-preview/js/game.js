@@ -1791,7 +1791,51 @@ function drawWorldAmbience(c,now=animNow()){
   if((s.floor>=4||themeId==='catacombs')){ctx.globalAlpha=.045;ctx.fillStyle='#b9c6d2';const drift=(now/5000)%1;for(let i=0;i<3;i++){const yy=canvas.height*(.28+i*.22),xx=((drift+i*.31)%1)*canvas.width;ctx.beginPath();ctx.ellipse(xx,yy,canvas.width*.22,CELL*.32,0,0,Math.PI*2);ctx.fill()}}
   ctx.restore();
 }
-function drawWallTile(vx,vy,visible,x,y){const px=vx*CELL,py=vy*CELL,pal=themePalette(),base=visible?pal.wallVisible:pal.wallSeen,edge=visible?pal.wallEdgeVisible:pal.wallEdgeSeen,mortar=visible?pal.mortarVisible:pal.mortarSeen,highlight=visible?pal.highlightVisible:pal.highlightSeen;ctx.fillStyle=base;ctx.fillRect(px,py,CELL,CELL);ctx.strokeStyle=edge;ctx.lineWidth=1.5;ctx.strokeRect(px+.75,py+.75,CELL-1.5,CELL-1.5);const rowOffset=((y&1)?8:3),rowOffset2=((x&1)?12:6);ctx.strokeStyle=mortar;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+1,py+10.5);ctx.lineTo(px+CELL-1,py+10.5);ctx.moveTo(px+1,py+20.5);ctx.lineTo(px+CELL-1,py+20.5);ctx.moveTo(px+rowOffset+.5,py+1);ctx.lineTo(px+rowOffset+.5,py+10);ctx.moveTo(px+rowOffset2+.5,py+10);ctx.lineTo(px+rowOffset2+.5,py+20);ctx.moveTo(px+(CELL-rowOffset)+.5,py+20);ctx.lineTo(px+(CELL-rowOffset)+.5,py+CELL-1);ctx.stroke();ctx.fillStyle=highlight;const h=((x*73856093)^(y*19349663))>>>0;ctx.fillRect(px+5+(h%7),py+4+((h>>>3)%5),4,2);ctx.fillRect(px+17+((h>>>5)%5),py+14+((h>>>8)%4),3,2);ctx.fillRect(px+8+((h>>>11)%6),py+24+((h>>>14)%3),4,2);if(visible&&h%7===0){ctx.strokeStyle=pal.highlightVisible;ctx.beginPath();ctx.moveTo(px+7+(h%8),py+7+((h>>>4)%5));ctx.lineTo(px+10+(h%8),py+11+((h>>>4)%5));ctx.stroke()}drawWallDecor(x,y,px,py,visible)}
+function drawWallTile(vx,vy,visible,x,y){const px=vx*CELL,py=vy*CELL,pal=themePalette(),base=visible?pal.wallVisible:pal.wallSeen,edge=visible?pal.wallEdgeVisible:pal.wallEdgeSeen,mortar=visible?pal.mortarVisible:pal.mortarSeen,highlight=visible?pal.highlightVisible:pal.highlightSeen;ctx.fillStyle=base;ctx.fillRect(px,py,CELL,CELL);ctx.strokeStyle=edge;ctx.lineWidth=1.5;ctx.strokeRect(px+.75,py+.75,CELL-1.5,CELL-1.5);const rowOffset=((y&1)?8:3),rowOffset2=((x&1)?12:6);ctx.strokeStyle=mortar;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+1,py+10.5);ctx.lineTo(px+CELL-1,py+10.5);ctx.moveTo(px+1,py+20.5);ctx.lineTo(px+CELL-1,py+20.5);ctx.moveTo(px+rowOffset+.5,py+1);ctx.lineTo(px+rowOffset+.5,py+10);ctx.moveTo(px+rowOffset2+.5,py+10);ctx.lineTo(px+rowOffset2+.5,py+20);ctx.moveTo(px+(CELL-rowOffset)+.5,py+20);ctx.lineTo(px+(CELL-rowOffset)+.5,py+CELL-1);ctx.stroke();ctx.fillStyle=highlight;const h=((x*73856093)^(y*19349663))>>>0;ctx.fillRect(px+5+(h%7),py+4+((h>>>3)%5),4,2);ctx.fillRect(px+17+((h>>>5)%5),py+14+((h>>>8)%4),3,2);ctx.fillRect(px+8+((h>>>11)%6),py+24+((h>>>14)%3),4,2);if(visible&&h%7===0){ctx.strokeStyle=pal.highlightVisible;ctx.beginPath();ctx.moveTo(px+7+(h%8),py+7+((h>>>4)%5));ctx.lineTo(px+10+(h%8),py+11+((h>>>4)%5));ctx.stroke()}drawWallDecor(x,y,px,py,visible);if(visible){ctx.save();ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(px+1,py+CELL-5,CELL-2,4);ctx.fillStyle='rgba(235,224,204,.10)';ctx.fillRect(px+2,py+2,CELL-4,2);ctx.restore()}}
+
+
+// v18.1 — Visual art pass: deterministic material, depth and architectural thresholds.
+// Canvas decoration only: movement, collision, visibility, spawning and balance unchanged.
+function v18Stone(x,y,px,py,room){
+ const h=envHash(x,y,117),theme=(s.theme||dungeonThemeForFloor())?.id||'castle';
+ ctx.save();
+ if(room){
+  // A restrained stone bevel, shared by neighboring tiles instead of random noise.
+  ctx.fillStyle=theme==='temple'?'rgba(211,176,109,.08)':theme==='catacombs'?'rgba(164,138,166,.065)':'rgba(169,179,185,.075)';
+  ctx.fillRect(px+2,py+2,CELL-4,2);
+  ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(px+2,py+CELL-4,CELL-4,2);
+  ctx.strokeStyle='rgba(0,0,0,.27)';ctx.lineWidth=1;
+  if(((x+y)&1)===0){ctx.beginPath();ctx.moveTo(px+CELL*.10,py+CELL*.54);ctx.lineTo(px+CELL*.87,py+CELL*.54);ctx.stroke()}
+  // Rare handmade motifs, no new interactive object.
+  if(h%29===0){const cx=px+CELL/2,cy=py+CELL/2;ctx.strokeStyle=theme==='temple'?'rgba(212,187,120,.27)':'rgba(183,172,177,.19)';
+   ctx.lineWidth=1.25;ctx.beginPath();ctx.arc(cx,cy,CELL*.23,0,Math.PI*2);ctx.moveTo(cx-CELL*.13,cy);ctx.lineTo(cx+CELL*.13,cy);ctx.moveTo(cx,cy-CELL*.13);ctx.lineTo(cx,cy+CELL*.13);ctx.stroke()}
+ }else{
+  // Corridors are worn, narrow and architectural rather than only darker tiles.
+  ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px+1,py+1,CELL-2,CELL-2);
+  ctx.strokeStyle='rgba(12,14,16,.46)';ctx.lineWidth=2;ctx.strokeRect(px+2,py+2,CELL-4,CELL-4);
+  if(((x+y)&1)===0){ctx.strokeStyle='rgba(180,172,155,.12)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+CELL*.22,py+CELL*.53);ctx.lineTo(px+CELL*.78,py+CELL*.53);ctx.stroke()}
+ }
+ ctx.restore();
+}
+function v18ArchitecturalDoor(x,y,px,py){
+ if(!s?.visible?.has(K(x,y)))return;
+ // Paint threshold jambs on passable tiles that join corridor and room.
+ const room=!!roomGeometryAt(x,y),neighbors=[[1,0],[-1,0],[0,1],[0,-1]];
+ let threshold=false;
+ for(const [dx,dy] of neighbors){
+  const nx=x+dx,ny=y+dy;
+  if(!inBounds(nx,ny)||s.map[ny]?.[nx]==='#')continue;
+  if(!!roomGeometryAt(nx,ny)!==room){threshold=true;break}
+ }
+ if(!threshold)return;
+ const theme=(s.theme||dungeonThemeForFloor())?.id||'castle';
+ ctx.save();ctx.strokeStyle=theme==='temple'?'rgba(210,178,116,.49)':theme==='catacombs'?'rgba(169,139,187,.46)':'rgba(178,168,146,.48)';
+ ctx.lineWidth=2.5;ctx.strokeRect(px+3,py+3,CELL-6,CELL-6);
+ ctx.strokeStyle='rgba(5,6,9,.76)';ctx.lineWidth=1;ctx.strokeRect(px+5.5,py+5.5,CELL-11,CELL-11);
+ ctx.fillStyle='rgba(220,192,137,.30)';
+ for(let j=0;j<3;j++)ctx.fillRect(px+CELL*.40+j*CELL*.065,py+CELL*.45,Math.max(1,CELL*.026),CELL*.11);
+ ctx.restore();
+}
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#07090d';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.textAlign='center';ctx.textBaseline='middle';const c=camera(),now=performance.now(),cine=cinemaState(now);ctx.save();ctx.translate(canvas.width/2+cine.dx,canvas.height/2+cine.dy);ctx.scale(cine.zoom,cine.zoom);ctx.translate(-canvas.width/2,-canvas.height/2);
@@ -1817,6 +1861,8 @@ function draw(){
         if(themeId==='catacombs'&&((x+y*2)%6===0)){ctx.beginPath();ctx.moveTo(px+CELL*.32,py+CELL*.28);ctx.lineTo(px+CELL*.48,py+CELL*.44);ctx.lineTo(px+CELL*.39,py+CELL*.62);ctx.stroke()}
         ctx.restore()
         drawFloorDecor(x,y,px,py,visible,sr);
+        v18Stone(x,y,px,py,!!roomGeometryAt(x,y));
+        v18ArchitecturalDoor(x,y,px,py);
       }
       if(sr&&visible){
         ctx.strokeStyle='rgba(255,255,255,.10)';ctx.lineWidth=1.2;ctx.strokeRect(px+2.5,py+2.5,CELL-5,CELL-5)
