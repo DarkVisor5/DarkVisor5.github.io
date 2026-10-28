@@ -1367,7 +1367,7 @@ function interact(){
 }
 
 function completeStealthFloor(){if(!s.floorStealthCounted&&!s.floorAlerted){s.floorStealthCounted=true;s.stats.stealthFloors++;log('👻 Piano completato senza allerta.');checkMissions()}}
-function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':({archiveLectern:'LEGGIO',archiveScrollCabinet:'SCHEDARIO',guardBunk:'BRANDA',guardStandard:'STENDARDO',healingCot:'LETTINO',medicineCupboard:'ARMADIETTO',votiveAltar:'ALTARE',incenseBrazier:'BRACIERE',treasurePedestal:'TESORO',goldBalance:'BILANCIA',archiveAstrolabe:'ASTROLABIO',archiveMapChest:'CASSETTIERA',guardSpearBundle:'LANCE',guardWarDrum:'TAMBURO',healingHerbDryer:'ERBE',healingBandageBasket:'BENDE',sanctuaryStoneIdol:'STATUA',sanctuaryOfferingBowl:'COPPA VOTIVA',treasuryGemChest:'SCRIGNO DI GEMME',treasuryCoinUrn:'URNA D’ORO'}[solidProp.type]||'SARCOFAGO');s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
+function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':({archiveLectern:'LEGGIO',archiveScrollCabinet:'SCHEDARIO',guardBunk:'BRANDA',guardStandard:'STENDARDO',healingCot:'LETTINO',medicineCupboard:'ARMADIETTO',votiveAltar:'ALTARE',incenseBrazier:'BRACIERE',treasurePedestal:'TESORO',goldBalance:'BILANCIA',archiveAstrolabe:'ASTROLABIO',archiveMapChest:'CASSETTIERA',guardSpearBundle:'LANCE',guardWarDrum:'TAMBURO',healingHerbDryer:'ERBE',healingBandageBasket:'BENDE',sanctuaryStoneIdol:'STATUA',sanctuaryOfferingBowl:'COPPA VOTIVA',treasuryGemChest:'SCRIGNO DI GEMME',treasuryCoinUrn:'URNA D’ORO',cryptStele:'STELE FUNERARIA'}[solidProp.type]||'SARCOFAGO');s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
 function useHealItem(item){if(!s||s.eventOpen||s.rewardOpen||!item||item.kind!=='heal')return;if(s.hp>=s.maxHp){log('❤️ Vita già al massimo.');return}const idx=s.inventory.indexOf(item);if(idx<0)return;playSfx('heal');const h=HEALS[item.id],gained=healPlayer(h.heal);s.inventory.splice(idx,1);meta.healsUsed++;saveMeta();log('🧪 '+h.name+': +'+gained+' HP.');render()}
 function useHeal(){if(!s||s.eventOpen||s.rewardOpen)return;const item=s.inventory.find(i=>i.kind==='heal');if(!item){log('Nessuna pozione.');return}useHealItem(item)}
 function discardItem(item){if(!s||!item)return;const idx=s.inventory.indexOf(item);if(idx<0)return;if(item.kind==='weapon'){const name=W[item.id].name,wasEq=s.equippedUid===item.uid;s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'weapon',id:item.id,uses:item.uses,seen:true});if(wasEq){const next=s.inventory.find(x=>x.kind==='weapon');s.equippedUid=next?next.uid:null}s.ambushId=null;log('🗑️ Lasci a terra '+name+' ('+item.uses+' KO rimasti).')}else{s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'heal',id:item.id,seen:true});log('🗑️ Lasci a terra '+HEALS[item.id].name+'.')}render()}
@@ -1982,7 +1982,7 @@ const V18_ROOM_FURNITURE={
   ['sanctuaryStoneIdol',1,1,'west'],['sanctuaryOfferingBowl',1,1,'south']],
  treasury:[['treasurePedestal',2,1,'north'],['goldBalance',1,1,'west'],
   ['treasuryGemChest',1,1,'east'],['treasuryCoinUrn',1,1,'south']],
- crypt:[['sarcophagus',2,2,'north'],['sarcophagus',2,2,'south']]
+ crypt:[['sarcophagus',2,2,'north'],['sarcophagus',2,2,'south'],['cryptStele',1,1,'west']]
 };
 function v18RoomDecor(){
  if(!s)return [];
@@ -2500,6 +2500,7 @@ function drawV18RoomDecor(c,relight=false){
   else if(prop.type==='archiveWritingDesk')drawV18ArchiveWritingDesk(px,py);
   else if(['archiveLectern','archiveScrollCabinet','guardBunk','guardStandard','healingCot','medicineCupboard','votiveAltar','incenseBrazier','treasurePedestal','goldBalance'].includes(prop.type))drawV18ThemedObject(prop.type,px,py);
   else if(['archiveAstrolabe','archiveMapChest','guardSpearBundle','guardWarDrum','healingHerbDryer','healingBandageBasket','sanctuaryStoneIdol','sanctuaryOfferingBowl','treasuryGemChest','treasuryCoinUrn'].includes(prop.type))drawV18ExtendedObject(prop.type,px,py);
+  else if(prop.type==='cryptStele')drawV18ExtendedObject('sanctuaryStoneIdol',px,py);
   else if(prop.type==='sarcophagus')
    ctx.drawImage(v18Sarcophagus,px+CELL*.175,py,CELL*1.65,CELL*2);
   ctx.restore();
@@ -2519,7 +2520,6 @@ function v18WallShields(){
   (s.dangerDoor&&s.dangerDoor.x===x&&s.dangerDoor.y===y)||
   (s.keyPuzzle?.door&&s.keyPuzzle.door.x===x&&s.keyPuzzle.door.y===y);
  for(const room of s.roomCategories||[]){
-  if(room.type!=='armory'&&room.type!=='guardroom')continue;
   const candidates=[];
   const consider=(x,y,insideX,insideY,side)=>{
    if(!inBounds(x,y)||!inBounds(insideX,insideY))return;
@@ -2541,7 +2541,7 @@ function v18WallShields(){
   candidates.sort((a,b)=>a.score-b.score||a.y-b.y||a.x-b.x);
   if(candidates.length){
    const p=candidates[0];
-   out.push({type:'wallShield',x:p.x,y:p.y,side:p.side,roomType:room.type,
+   out.push({type:room.type==='armory'||room.type==='guardroom'?'wallShield':'roomEmblem',x:p.x,y:p.y,side:p.side,roomType:room.type,
      solid:false,interactive:false});
   }
  }
@@ -2572,6 +2572,36 @@ function drawV18WallShieldSprite(px,py){
  ctx.restore();
 }
 // Separate from solid furniture: the shield is fixed to a stone wall tile.
+// v18.14: compact, non-solid category glyph on the true stone wall.
+function drawV18RoomEmblemSprite(px,py,kind){
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ ctx.fillStyle='rgba(3,5,8,.6)';ctx.fillRect(5,4,23,25);
+ ctx.fillStyle='#4b3c32';ctx.fillRect(6,4,20,23);
+ ctx.fillStyle='#ba9867';ctx.fillRect(8,6,16,2);ctx.fillRect(8,23,16,2);
+ ctx.fillStyle='#282b36';ctx.fillRect(8,8,16,15);
+ if(kind==='archive'){
+  ctx.fillStyle='#bd8262';ctx.fillRect(10,11,5,10);
+  ctx.fillStyle='#6e8792';ctx.fillRect(16,10,6,11);
+  ctx.fillStyle='#f0d7a4';ctx.fillRect(11,12,3,1);ctx.fillRect(17,11,4,1);
+ }else if(kind==='crypt'){
+  ctx.fillStyle='#c3b5b3';ctx.fillRect(14,9,5,13);
+  ctx.fillRect(11,13,11,3);ctx.fillStyle='#7d7080';ctx.fillRect(15,10,2,11);
+ }else if(kind==='infirmary'){
+  ctx.fillStyle='#a3cfb5';ctx.fillRect(14,10,5,12);
+  ctx.fillRect(10,14,13,4);ctx.fillStyle='#dce9d4';ctx.fillRect(15,11,2,10);
+ }else if(kind==='sanctuary'){
+  ctx.fillStyle='#e8d4a0';ctx.fillRect(14,11,4,11);ctx.fillRect(11,15,10,3);
+  ctx.fillStyle='#f1e4be';ctx.fillRect(15,8,2,4);
+ }else if(kind==='treasury'){
+  ctx.fillStyle='#d4a956';ctx.beginPath();ctx.arc(16,16,7,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#6e5436';ctx.fillRect(15,11,2,10);
+  ctx.fillRect(12,13,8,2);ctx.fillRect(12,17,8,2);
+ }else{
+  ctx.fillStyle='#c9bc9b';ctx.fillRect(11,11,10,10);
+  ctx.fillStyle='#7c8d93';ctx.fillRect(13,13,6,6);
+ }
+ ctx.restore();
+}
 function drawV18WallShields(c,relight=false){
  if(!s)return;
  for(const prop of v18WallShields()){
@@ -2586,7 +2616,8 @@ function drawV18WallShields(c,relight=false){
   ctx.globalAlpha=relight?(.15+.63*lift):(visible?1:.34);
   if(relight)ctx.filter='brightness(1.45) contrast(1.14)';
   ctx.imageSmoothingEnabled=false;
-  drawV18WallShieldSprite(px,py);
+  if(prop.type==='wallShield')drawV18WallShieldSprite(px,py);
+  else drawV18RoomEmblemSprite(px,py,prop.roomType);
   ctx.restore();
  }
 }
