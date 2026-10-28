@@ -9,6 +9,7 @@ on:
       - 'tools/artpass_v18_2.py'
       - 'tools/artpass_v18_3_sarcophagus.py'
       - 'tools/export_sarcophagus_png.py'
+      - 'threshold-v18-preview/assets/sprites/sarcophagus_closed.svg'
       - '.github/workflows/build-threshold-v18.yml'
 permissions:
   contents: write
