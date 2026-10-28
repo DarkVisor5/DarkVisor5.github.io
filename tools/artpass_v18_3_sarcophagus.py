@@ -48,7 +48,7 @@ function drawV18Sarcophagi(c){
 }
 """
 js=js.replace(anchor,insert+"\n"+anchor,1)
-needle="  drawTorchSconces(c,now);"
+needle="drawTorchSconces(c,now);"
 assert needle in js
 js=js.replace(needle,needle+"drawV18Sarcophagi(c);",1)
 p.write_text(js,encoding="utf8")
