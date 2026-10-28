@@ -11,7 +11,8 @@ const v18Sarcophagus=new Image();
 v18Sarcophagus.src='./assets/sprites/sarcophagus_closed.svg';
 v18Sarcophagus.addEventListener('load',()=>{if(s)render()});
 function drawV18Sarcophagi(c){
- if(!v18Sarcophagus.complete||!v18Sarcophagus.naturalWidth||!s)return;
+ if(!s)return;
+ if(!v18Sarcophagus.complete||!v18Sarcophagus.naturalWidth)return;
  // Temporary first-room showcase. Position saved on first draw, never follows player.
  if(s.floor===1){
   if(!s._sarcophagusShowcase){
@@ -47,8 +48,8 @@ function drawV18Sarcophagi(c){
 }
 """
 js=js.replace(anchor,insert+"\n"+anchor,1)
-needle="  drawDungeonAtmosphere(c);"
+needle="  drawTorchSconces(c,now);"
 assert needle in js
-js=js.replace(needle,"  drawV18Sarcophagi(c);\n"+needle,1)
+js=js.replace(needle,needle+"drawV18Sarcophagi(c);",1)
 p.write_text(js,encoding="utf8")
 print("v18.3 crypt sarcophagus sprite wired")
