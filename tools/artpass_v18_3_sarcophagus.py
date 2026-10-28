@@ -13,7 +13,7 @@ v18Sarcophagus.addEventListener('load',()=>{if(s)render()});
 function drawV18Sarcophagi(c){
  if(!s)return;
  if(!v18Sarcophagus.complete||!v18Sarcophagus.naturalWidth)return;
- // Temporary first-room showcase. Position saved on first draw, never follows player.
+ // Fixed world-space placement: selected once per run; camera moves around the prop.
  if(s.floor===1){
   if(!s._sarcophagusShowcase){
    const p=s.player, origin=roomGeometryAt(p.x,p.y);
@@ -48,8 +48,9 @@ function drawV18Sarcophagi(c){
 }
 """
 js=js.replace(anchor,insert+"\n"+anchor,1)
-needle="  drawForegroundDepth(c,now);"
+needle="  drawDungeonAtmosphere(c);"
 assert needle in js
-js=js.replace(needle,needle+"drawV18Sarcophagi(c);",1)
+# Layer 2 (map-bound decorations) is rendered after Layer 1 terrain and before lighting/interactive objects.
+js=js.replace(needle,"  drawV18Sarcophagi(c); // LAYER 2: fixed world-space room decoration\n"+needle,1)
 p.write_text(js,encoding="utf8")
 print("v18.3 crypt sarcophagus sprite wired")
