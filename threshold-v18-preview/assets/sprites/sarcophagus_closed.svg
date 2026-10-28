@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96" viewBox="0 0 64 96" shape-rendering="crispEdges">
+<defs><linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9a9288"/><stop offset=".36" stop-color="#69635f"/><stop offset=".8" stop-color="#3c3b41"/><stop offset="1" stop-color="#24252a"/></linearGradient></defs>
+<!-- external drop shadow, transparent background -->
+<path fill="#07080a" opacity=".65" d="M11 8H53V13H58V86H55V91H11V88H6V16H11Z"/>
+<path fill="#27282d" d="M15 4H49L56 11V84L50 92H13L7 84V12Z"/>
+<path fill="#746d68" d="M15 4H48L54 11V82L48 88H14L10 82V12Z"/>
+<path fill="#aaa198" d="M17 6H46L51 12V79L46 85H17L12 80V13Z"/>
+<path fill="url(#stone)" d="M17 9H45L49 14V78L44 82H18L15 78V15Z"/>
+<path fill="#2c2d31" d="M19 13H42L45 17V75L42 79H20L18 76V17Z"/>
+<path fill="#8d8279" d="M21 15H41L44 18V74L40 77H22L20 74V18Z"/>
+<path fill="#504c4d" d="M24 19H38L41 24V66L38 72H25L22 66V24Z"/>
+<!-- carved hood and face -->
+<path fill="#24262b" d="M23 29V25L27 21H35L40 26V34L37 38H26Z"/>
+<path fill="#b6aaa0" d="M26 24L30 21H34L38 25L39 34L35 31L33 27H30L27 32L24 35Z"/>
+<path fill="#655f5e" d="M28 28H35V37L32 40H29L26 36Z"/><path fill="#1d2025" d="M28 32H30V34H28ZM34 32H36V34H34Z"/>
+<!-- robe effigy -->
+<path fill="#a59b8c" d="M27 40L30 38H34L38 42L41 65L43 70H20L23 62Z"/>
+<path fill="#5a5654" d="M29 39L31 42L29 64L25 69H21L26 46ZM34 40L37 46L41 69H35L33 60Z"/>
+<path fill="#857b76" d="M31 44L35 69H29L31 48Z"/>
+<path fill="#c0b5a6" d="M24 46L28 49L31 46L33 51L35 49L39 46" stroke="#b2a696" stroke-width="2" fill="none"/>
+<path fill="#443e3c" d="M24 65L27 61L29 69H25ZM37 61L40 65L39 69H36Z"/>
+<!-- erosion / engraved border chips -->
+<path fill="#c5b9a8" opacity=".6" d="M16 18H18V27H16ZM46 24H48V38H46ZM16 60H18V73H16ZM45 58H47V70H45Z"/>
+<path fill="#292b30" d="M13 35H16V39H13ZM48 49H52V53H48ZM16 8H22V10H16ZM39 84H46V86H39Z"/>
+<!-- skull pedestal -->
+<rect x="14" y="84" width="36" height="6" fill="#373237"/><path d="M24 85H40V91H36V93H28V91H24Z" fill="#a69a89"/>
+<path fill="#29272a" d="M27 87H30V90H27ZM34 87H37V90H34ZM31 91H33V93H31Z"/>
+<path fill="#dad0ba" opacity=".38" d="M13 13H15V78H13ZM17 5H46V7H17Z"/>
+</svg>
