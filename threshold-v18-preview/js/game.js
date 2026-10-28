@@ -653,7 +653,7 @@ function activatePortableTorch(){if(!s)return;if((s.portableTorches||0)<=0){show
 function roomGeometryAt(x,y){return (s?.rooms||[]).find(r=>x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h)||null}
 function areaKindAt(x,y){return roomGeometryAt(x,y)?'room':'corridor'}
 function darkLootBonus(){return 1+darknessFactor()*.50}
-function safeDynamicSpotNear(x,y,kind){const candidates=[];for(let yy=Math.max(1,y-3);yy<=Math.min(WORLD-2,y+3);yy++)for(let xx=Math.max(1,x-3);xx<=Math.min(WORLD-2,x+3);xx++){if(s.map[yy]?.[xx]!=='.')continue;if(kind&&areaKindAt(xx,yy)!==kind)continue;if(enemyAt(xx,yy)||s.traps.some(t=>!t.triggered&&t.x===xx&&t.y===yy)||s.coins.some(c=>c.x===xx&&c.y===yy)||s.loot.some(l=>l.x===xx&&l.y===yy))continue;if(xx===s.player.x&&yy===s.player.y)continue;candidates.push({x:xx,y:yy})}return candidates.length?choice(candidates):null}
+function safeDynamicSpotNear(x,y,kind){const candidates=[];for(let yy=Math.max(1,y-3);yy<=Math.min(WORLD-2,y+3);yy++)for(let xx=Math.max(1,x-3);xx<=Math.min(WORLD-2,x+3);xx++){if(s.map[yy]?.[xx]!=='.'||v18SolidDecorationAt(xx,yy))continue;if(kind&&areaKindAt(xx,yy)!==kind)continue;if(enemyAt(xx,yy)||s.traps.some(t=>!t.triggered&&t.x===xx&&t.y===yy)||s.coins.some(c=>c.x===xx&&c.y===yy)||s.loot.some(l=>l.x===xx&&l.y===yy))continue;if(xx===s.player.x&&yy===s.player.y)continue;candidates.push({x:xx,y:yy})}return candidates.length?choice(candidates):null}
 function applyDarknessToThreshold(kind,key){if(!s)return;s._darkThresholds=s._darkThresholds||new Set();if(s._darkThresholds.has(key))return;s._darkThresholds.add(key);const d=darknessFactor();if(d<=.25)return;const trapChance=.015+d*.095,lootChance=.06+d*.28,darkTrapCap=Math.min(3,1+Math.floor((s.floor-1)/2)),darkTrapCount=(s.traps||[]).filter(t=>t.darkSpawn&&!t.triggered).length;if(darkTrapCount<darkTrapCap&&Math.random()<trapChance){const p=safeDynamicSpotNear(s.player.x,s.player.y,kind);if(p){s.traps.push({x:p.x,y:p.y,triggered:false,revealed:false,darkSpawn:true});log('🪤 Nel buio la Soglia nasconde un nuovo pericolo.')}}if(Math.random()<lootChance){const p=safeDynamicSpotNear(s.player.x,s.player.y,kind);if(p){const value=Math.round((18+s.floor*7)*darkLootBonus());s.coins.push({x:p.x,y:p.y,value,darkSpawn:true});log('🪙 Nel buio qualcosa luccica oltre la Soglia.')}}}
 function crossPhysicalThreshold(fromX,fromY,toX,toY){if(!s)return;const a=areaKindAt(fromX,fromY),b=areaKindAt(toX,toY);if(a===b)return;playSfx('threshold');burst('thresholdDoor',toX,toY,{glyph:'⟐',color:'#bd9d71'});const before=torchLight();s.torchLightLevel=Math.max(0,before-TORCH_THRESHOLD_DRAIN);s._physicalThresholdCount=(s._physicalThresholdCount||0)+1;const room=roomGeometryAt(toX,toY),key=b+':'+(room?room.x+','+room.y:toX+','+toY);applyDarknessToThreshold(b,key);if(before>0&&s.torchLightLevel===0){playSfx('flameOut');showToast('🔥 LA LUCE SI SPEGNE');log('🔥 Attraversando la Soglia, la luce si spegne.')}else if(s._physicalThresholdCount===1)showToast('◇ PRIMA SOGLIA')}
 function consumePortableTorchStep(){} // legacy: light now falls only when a physical threshold is crossed.
@@ -951,11 +951,11 @@ function generateFloor(floor){
  return{map,rooms,player,stairs,open,enemies,loot,coins,chests,traps,artifactDrops,secrets,mechanism,startPos:{x:player.x,y:player.y},rareEvent,dangerDoor,keyPuzzle,specialRooms,torches,theme:dungeonThemeForFloor(floor),layoutStyle,seen:new Set(),visible:new Set(),_visionOverlayCache:null}
 }
 
-function startRun(){closeThresholdDialogue();closeMobileSheet();playSfx('start');const active=firstRun?new Set():new Set(deck),baseHp=resilienceMaxHp();s={floor:1,hp:baseHp,maxHp:baseHp,resilienceHpStart:baseHp,steps:0,kills:0,runCoins:0,alarm:0,instability:0,alarmStage:0,instStage:0,equippedUid:null,inventory:[],artifactBelt:[],artifactBuffs:{stone:0,blood:0,power:0},artifactUsedThisTurn:false,deck:active,buffs:new Set(),guard:false,riposteReady:false,atStairs:false,eventOpen:false,dangerOpen:false,rewardOpen:false,targetMode:false,targetIds:[],targetIndex:0,survivorUsed:false,fx:[],ambushId:null,floorAlerted:false,floorStealthCounted:false,discoveredRoles:new Set(),chains:{},stats:{backstabs:0,chests:0,goldCollected:0,axeKills:0,spearKills:0,hammerStuns:0,stealthFloors:0,specialRooms:0,minibossKills:0,bossKills:0},portableTorches:0,torchStepsRemaining:0,torchLightLevel:TORCH_START_LIGHT,_physicalThresholdCount:0,_darkThresholds:new Set(),missions:chooseMissions()};s.objectivesAtStart=new Set(OBJECTIVES.filter(o=>o.get(meta)>=o.target).map(o=>o.id));const starter=weaponItem('rustySword');s.inventory.push(starter,{kind:'heal',id:'small'});s.equippedUid=starter.uid;Object.assign(s,generateFloor(1));initAmbientRoutines();root.querySelector('#welcome').classList.add('hidden');root.querySelector('#hub').classList.add('hidden');root.querySelector('#runSummary').classList.add('hidden');root.querySelector('#game').classList.remove('hidden');root.querySelector('#stairsPanel').classList.add('hidden');root.querySelector('#rewardPanel').classList.add('hidden');root.querySelector('#eventPanel').classList.add('hidden');root.querySelector('#puzzlePanel').classList.add('hidden');root.querySelector('#targetPanel').classList.add('hidden');root.querySelector('#log').innerHTML='';applyCartographer();applyPathfinder();updateVisibility();log('🚪 La run comincia.');log('🗝️ In questo piano è nascosta una Camera della Soglia opzionale.');render();showFloorSplash();if(!guideSeen)setTimeout(()=>openGuide(),350);root.focus()}
+function startRun(){closeThresholdDialogue();closeMobileSheet();playSfx('start');const active=firstRun?new Set():new Set(deck),baseHp=resilienceMaxHp();s={floor:1,hp:baseHp,maxHp:baseHp,resilienceHpStart:baseHp,steps:0,kills:0,runCoins:0,alarm:0,instability:0,alarmStage:0,instStage:0,equippedUid:null,inventory:[],artifactBelt:[],artifactBuffs:{stone:0,blood:0,power:0},artifactUsedThisTurn:false,deck:active,buffs:new Set(),guard:false,riposteReady:false,atStairs:false,eventOpen:false,dangerOpen:false,rewardOpen:false,targetMode:false,targetIds:[],targetIndex:0,survivorUsed:false,fx:[],ambushId:null,floorAlerted:false,floorStealthCounted:false,discoveredRoles:new Set(),chains:{},stats:{backstabs:0,chests:0,goldCollected:0,axeKills:0,spearKills:0,hammerStuns:0,stealthFloors:0,specialRooms:0,minibossKills:0,bossKills:0},portableTorches:0,torchStepsRemaining:0,torchLightLevel:TORCH_START_LIGHT,_physicalThresholdCount:0,_darkThresholds:new Set(),missions:chooseMissions()};s.objectivesAtStart=new Set(OBJECTIVES.filter(o=>o.get(meta)>=o.target).map(o=>o.id));const starter=weaponItem('rustySword');s.inventory.push(starter,{kind:'heal',id:'small'});s.equippedUid=starter.uid;Object.assign(s,generateFloor(1));v18FirstRoomDecor();initAmbientRoutines();root.querySelector('#welcome').classList.add('hidden');root.querySelector('#hub').classList.add('hidden');root.querySelector('#runSummary').classList.add('hidden');root.querySelector('#game').classList.remove('hidden');root.querySelector('#stairsPanel').classList.add('hidden');root.querySelector('#rewardPanel').classList.add('hidden');root.querySelector('#eventPanel').classList.add('hidden');root.querySelector('#puzzlePanel').classList.add('hidden');root.querySelector('#targetPanel').classList.add('hidden');root.querySelector('#log').innerHTML='';applyCartographer();applyPathfinder();updateVisibility();log('🚪 La run comincia.');log('🗝️ In questo piano è nascosta una Camera della Soglia opzionale.');render();showFloorSplash();if(!guideSeen)setTimeout(()=>openGuide(),350);root.focus()}
 function applyCartographer(){if(!has('cartographer'))return;const r=choice(s.rooms.slice(1));if(!r)return;for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)s.seen.add(K(x,y));log('🗺️ Cartografo rivela una stanza.')}
 function applyPathfinder(){if(!has('pathfinder')||!s?.stairs)return;s.seen.add(K(s.stairs.x,s.stairs.y));if(s.keyPuzzle?.door?.mandatory)s.keyPuzzle.door.seen=true;log('🧭 Bussola spezzata: le scale sono segnate sulla mappa.')}
 function inBounds(x,y){return x>=0&&y>=0&&x<WORLD&&y<WORLD}
-function isWall(x,y){const pd=s?.keyPuzzle?.door;return !inBounds(x,y)||s.map[y][x]==='#'||!!(pd&&!pd.open&&x===pd.x&&y===pd.y)}
+function isWall(x,y){const pd=s?.keyPuzzle?.door;return !inBounds(x,y)||s.map[y][x]==='#'||!!(pd&&!pd.open&&x===pd.x&&y===pd.y)||!!v18SolidDecorationAt(x,y)}
 function visionRadius(){return (s.instability>=75?4:6)+(has('farsight')?1:0)}
 function supercoverLine(x0,y0,x1,y1){
   const pts=[{x:x0,y:y0}],dx=x1-x0,dy=y1-y0,nx=Math.abs(dx),ny=Math.abs(dy),sx=dx===0?0:(dx>0?1:-1),sy=dy===0?0:(dy>0?1:-1);
@@ -1008,7 +1008,7 @@ function faceToward(e,pos){const dx=pos.x-e.x,dy=pos.y-e.y;if(dx===0&&dy===0)ret
 function matchup(a,b){if(a==='unarmed'||a===b)return 1;if(F[a].beats.includes(b))return 1.35;return has('duelist')?0.85:0.65}function enemyMult(a,b){if(b==='unarmed'||a===b)return 1;if(F[a].beats.includes(b))return 1.2;return .8}function mastery(f){const id=f==='spear'?'spearMaster':f==='sword'?'swordMaster':f==='dagger'?'daggerMaster':f==='axe'?'axeMaster':'hammerMaster';return has(id)?1.15:1}
 function setAlert(e){const changed=e.state!=='alerted';if(changed)s.floorAlerted=true;e.state='alerted';e.search=3;e.lastSeen={x:s.player.x,y:s.player.y};if(changed)burst('alert',e.x,e.y)}function setSuspicious(e,pos,turns=2){if(e.state==='alerted')return;const changed=e.state!=='suspicious';e.state='suspicious';e.search=Math.max(e.search,turns);e.lastSeen={x:pos.x,y:pos.y};if(changed)burst('suspicious',e.x,e.y)}function reactToHit(e){if(e.hp<=0)return;beginEnemyHit(e,s.player.x,s.player.y);setAlert(e);e.search=4;faceToward(e,s.player);log('❗ Il nemico si gira e va in Allerta.')}function makeNoise(radius){for(const e of s.enemies){if(e.hp<=0||e.state==='alerted')continue;if(dist(e,s.player)<=radius)setSuspicious(e,s.player,2)}}
 function bossArenaContains(e,x,y){return !e.boss||!e.arena||(x>=e.arena.x&&x<e.arena.x+e.arena.w&&y>=e.arena.y&&y<e.arena.y+e.arena.h)}
-function enemyTileBlocked(e,x,y){const pd=s?.keyPuzzle?.door;return !inBounds(x,y)||s.map[y]?.[x]==='#'||!!(pd&&!pd.open&&x===pd.x&&y===pd.y)||!bossArenaContains(e,x,y)||!!enemyAt(x,y,e.id)||(x===s.player.x&&y===s.player.y)}
+function enemyTileBlocked(e,x,y){const pd=s?.keyPuzzle?.door;return !inBounds(x,y)||s.map[y]?.[x]==='#'||!!(pd&&!pd.open&&x===pd.x&&y===pd.y)||!!v18SolidDecorationAt(x,y)||!bossArenaContains(e,x,y)||!!enemyAt(x,y,e.id)||(x===s.player.x&&y===s.player.y)}
 function nextStepToward(e,target){
  if(!target)return null;
  const dirs=Object.values(DIR),goals=[];
@@ -1026,7 +1026,7 @@ function nextStepToward(e,target){
  return null
 }
 function stepToward(e,target){const p=nextStepToward(e,target);if(!p||enemyTileBlocked(e,p.x,p.y))return false;const ox=e.x,oy=e.y;faceToward(e,p);e.x=p.x;e.y=p.y;beginEnemyMove(e,ox,oy,e.x,e.y);return true}
-function flankerTarget(e){const candidates=Object.values(DIR).map(d=>({x:s.player.x+d.x,y:s.player.y+d.y})).filter(p=>inBounds(p.x,p.y)&&s.map[p.y]?.[p.x]!=='#'&&!enemyAt(p.x,p.y,e.id)&&(p.x!==s.player.x||p.y!==s.player.y));if(!candidates.length)return s.player;const approachX=Math.sign(e.x-s.player.x),approachY=Math.sign(e.y-s.player.y);const lateral=candidates.filter(p=>{const rx=p.x-s.player.x,ry=p.y-s.player.y;return rx*approachX+ry*approachY===0});const pool=lateral.length?lateral:candidates;return pool.sort((a,b)=>dist(e,a)-dist(e,b))[0]}
+function flankerTarget(e){const candidates=Object.values(DIR).map(d=>({x:s.player.x+d.x,y:s.player.y+d.y})).filter(p=>inBounds(p.x,p.y)&&s.map[p.y]?.[p.x]!=='#'&&!v18SolidDecorationAt(p.x,p.y)&&!enemyAt(p.x,p.y,e.id)&&(p.x!==s.player.x||p.y!==s.player.y));if(!candidates.length)return s.player;const approachX=Math.sign(e.x-s.player.x),approachY=Math.sign(e.y-s.player.y);const lateral=candidates.filter(p=>{const rx=p.x-s.player.x,ry=p.y-s.player.y;return rx*approachX+ry*approachY===0});const pool=lateral.length?lateral:candidates;return pool.sort((a,b)=>dist(e,a)-dist(e,b))[0]}
 function callerAlarm(e){if(e.role!=='caller'||e.called)return;playSfx('alarm');e.called=true;s.alarm=Math.min(100,s.alarm+8);for(const other of s.enemies){if(other.id!==e.id&&other.hp>0&&other.state!=='alerted'&&dist(other,e)<=7)setSuspicious(other,s.player,3)}threatEvents();log('📯 Una Vedetta dà l’allarme: +8 Allarme.');showToast('📯 VEDETTA: +8 ALLARME')}
 /* v17.1 — ambient AI: Pokémon-style calm routines, autonomous from player turns. */
 const AMBIENT_AI_MS=850;
@@ -1062,7 +1062,7 @@ function ambientRoomTarget(e,a){
  const r=a.homeRoom||ambientRoomFor(e);if(!r)return null;
  a.homeRoom={x:r.x,y:r.y,w:r.w,h:r.h};const candidates=[];
  for(let y=r.y+1;y<r.y+r.h-1;y++)for(let x=r.x+1;x<r.x+r.w-1;x++){
-  if((x===e.x&&y===e.y)||s.map[y]?.[x]==='#'||enemyAt(x,y,e.id)||(x===s.player.x&&y===s.player.y))continue;
+  if((x===e.x&&y===e.y)||s.map[y]?.[x]==='#'||v18SolidDecorationAt(x,y)||enemyAt(x,y,e.id)||(x===s.player.x&&y===s.player.y))continue;
   candidates.push({x,y})
  }
  return candidates.length?choice(candidates):null
@@ -1118,7 +1118,7 @@ function ambientAITick(){
 setInterval(ambientAITick,AMBIENT_AI_MS);
 // Idle breathing/bobbing is visual-only and capped at 12 fps.
 setInterval(()=>{if(!s||prefersReducedMotion()||document.visibilityState!=='visible')return;const game=root.querySelector('#game');if(game&&!game.classList.contains('hidden')&&!s.eventOpen&&!s.rewardOpen&&!guideOpen)draw()},83);
-function occupiedForSpawn(x,y){if(x===s.player.x&&y===s.player.y)return true;if(x===s.stairs.x&&y===s.stairs.y)return true;if(enemyAt(x,y))return true;if(s.loot.some(o=>o.x===x&&o.y===y)||s.coins.some(o=>o.x===x&&o.y===y)||(s.artifactDrops||[]).some(o=>o.x===x&&o.y===y)||s.chests.some(o=>!o.opened&&o.x===x&&o.y===y)||s.traps.some(o=>!o.triggered&&o.x===x&&o.y===y))return true;if(s.mechanism&&((s.mechanism.switch.x===x&&s.mechanism.switch.y===y)||(s.mechanism.cache.x===x&&s.mechanism.cache.y===y)))return true;if(s.rareEvent&&!s.rareEvent.used&&s.rareEvent.x===x&&s.rareEvent.y===y)return true;if(s.dangerDoor&&!s.dangerDoor.declined&&!s.dangerDoor.rewarded&&s.dangerDoor.x===x&&s.dangerDoor.y===y)return true;return false}function freeSpot(min){const a=s.open.filter(p=>dist(p,s.player)>=min&&!occupiedForSpawn(p.x,p.y));return a.length?choice(a):null}
+function occupiedForSpawn(x,y){if(v18SolidDecorationAt(x,y))return true;if(x===s.player.x&&y===s.player.y)return true;if(x===s.stairs.x&&y===s.stairs.y)return true;if(enemyAt(x,y))return true;if(s.loot.some(o=>o.x===x&&o.y===y)||s.coins.some(o=>o.x===x&&o.y===y)||(s.artifactDrops||[]).some(o=>o.x===x&&o.y===y)||s.chests.some(o=>!o.opened&&o.x===x&&o.y===y)||s.traps.some(o=>!o.triggered&&o.x===x&&o.y===y))return true;if(s.mechanism&&((s.mechanism.switch.x===x&&s.mechanism.switch.y===y)||(s.mechanism.cache.x===x&&s.mechanism.cache.y===y)))return true;if(s.rareEvent&&!s.rareEvent.used&&s.rareEvent.x===x&&s.rareEvent.y===y)return true;if(s.dangerDoor&&!s.dangerDoor.declined&&!s.dangerDoor.rewarded&&s.dangerDoor.x===x&&s.dangerDoor.y===y)return true;return false}function freeSpot(min){const a=s.open.filter(p=>dist(p,s.player)>=min&&!occupiedForSpawn(p.x,p.y));return a.length?choice(a):null}
 function addGold(amount,count=true){let v=amount;if(has('merchant'))v=Math.round(v*1.2);if(hasBuff('greedRun'))v=Math.round(v*1.25);s.runCoins+=v;if(count)s.stats.goldCollected+=v;return v}function checkMissions(){for(const m of s.missions){if(!m.done&&m.get(s)>=m.target){m.done=true;s.runCoins+=m.reward;meta.totalMissions++;saveMeta();log('🎯 '+m.name+' completata · +'+m.reward+' oro.');showToast('🎯 '+m.name+' · +'+m.reward+' oro')}}}
 function addThreat(move,combat){if(move){s.steps++;let gain=0;if(!(s.floor===1&&s.steps<=10)&&s.steps%3===0)gain=1;if(s.floor===4&&s.steps%6===0)gain+=1;if(has('light')&&s.steps%6===0)gain=Math.max(0,gain-1);s.instability=Math.min(100,s.instability+gain)}if(combat){let a=has('silent')?2:3;if(hasBuff('quietRun'))a=Math.max(1,a-1);if(s.floor===3&&bossAlive())a+=1;s.alarm=Math.min(100,s.alarm+a)}threatEvents()}function threatEvents(){const a=Math.floor(s.alarm/25),i=Math.floor(s.instability/25);if(!dangerEliteActive()){while(s.alarmStage<a){s.alarmStage++;const p=freeSpot(6);if(!p)break;const tier=s.alarmStage===1?'blue':s.alarmStage===2?'yellow':s.alarmStage===3?'purple':'red',e=makeEnemy(p.x,p.y,tier);e.state='suspicious';e.lastSeen={x:s.player.x,y:s.player.y};e.search=2;s.enemies.push(e);playSfx('alarm');log('⚠️ L’Allarme richiama un '+tier+'.')}}while(s.instStage<i){s.instStage++;for(let n=0;n<(s.instStage===2?2:s.instStage===4?3:1);n++){const p=freeSpot(3);if(!p)break;s.traps.push({x:p.x,y:p.y,triggered:false,revealed:false})}playSfx('instability');log('▲ L’Instabilità crea nuove trappole.')}}
 function consumeWeaponUid(uid){if(!uid)return;const i=s.inventory.find(x=>x.kind==='weapon'&&x.uid===uid);if(!i)return;if(s.artifactBuffs?.power>0)return;if((has('careful')&&Math.random()<.30)||(hasBuff('durableRun')&&Math.random()<.25)){log('👐 Durata preservata.');return}i.uses--;if(i.uses<=0){const name=W[i.id].name;s.inventory.splice(s.inventory.indexOf(i),1);if(s.equippedUid===uid){const n=s.inventory.find(x=>x.kind==='weapon');s.equippedUid=n?n.uid:null}playSfx('break');log('💥 '+name+' si rompe.')}}
@@ -1323,7 +1323,7 @@ function interact(){
 }
 
 function completeStealthFloor(){if(!s.floorStealthCounted&&!s.floorAlerted){s.floorStealthCounted=true;s.stats.stealthFloors++;log('👻 Piano completato senza allerta.');checkMissions()}}
-function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
+function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}if(v18SolidDecorationAt(nx,ny)){if(!s._v18DecorBlockedHint){s._v18DecorBlockedHint=true;showToast('⛔ SARCOFAGO · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
 function useHealItem(item){if(!s||s.eventOpen||s.rewardOpen||!item||item.kind!=='heal')return;if(s.hp>=s.maxHp){log('❤️ Vita già al massimo.');return}const idx=s.inventory.indexOf(item);if(idx<0)return;playSfx('heal');const h=HEALS[item.id],gained=healPlayer(h.heal);s.inventory.splice(idx,1);meta.healsUsed++;saveMeta();log('🧪 '+h.name+': +'+gained+' HP.');render()}
 function useHeal(){if(!s||s.eventOpen||s.rewardOpen)return;const item=s.inventory.find(i=>i.kind==='heal');if(!item){log('Nessuna pozione.');return}useHealItem(item)}
 function discardItem(item){if(!s||!item)return;const idx=s.inventory.indexOf(item);if(idx<0)return;if(item.kind==='weapon'){const name=W[item.id].name,wasEq=s.equippedUid===item.uid;s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'weapon',id:item.id,uses:item.uses,seen:true});if(wasEq){const next=s.inventory.find(x=>x.kind==='weapon');s.equippedUid=next?next.uid:null}s.ambushId=null;log('🗑️ Lasci a terra '+name+' ('+item.uses+' KO rimasti).')}else{s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'heal',id:item.id,seen:true});log('🗑️ Lasci a terra '+HEALS[item.id].name+'.')}render()}
@@ -1909,47 +1909,87 @@ function v18RoomProps(x,y,px,py,room){
 const v18Sarcophagus=new Image();
 v18Sarcophagus.src='./assets/sprites/sarcophagus_closed.png';
 v18Sarcophagus.addEventListener('load',()=>{if(s)render()});
+// A Layer-2 decoration has a footprint independent from its sprite artwork.
+// Interactable (Layer-3) objects use a separate interaction system.
+function v18SolidDecorationAt(x,y){
+ if(!s||s.floor!==1)return null;
+ return v18FirstRoomDecor().find(p=>p.solid&&x>=p.x&&x<p.x+p.w&&y>=p.y&&y<p.y+p.h)||null;
+}
 function v18FirstRoomDecor(){
  if(!s||s.floor!==1)return [];
- // Create decorations once per run. Never recalculate their position as the player moves.
- if(s._v18Layer2Decor)return s._v18Layer2Decor;
- const p=s.player, r=roomGeometryAt(p.x,p.y);
- if(!r||!Number.isFinite(r.x)||!Number.isFinite(r.y)||r.w<3||r.h<4)return [];
- const candidates=[[2,0],[-2,0],[0,2],[0,-2],[2,1],[-2,1],[1,1],[-1,1],[1,-1],[-1,-1]];
- let chosen=null;
- for(const [dx,dy] of candidates){
-  const x=p.x+dx,y=p.y+dy;
-  // The entire 1.5 × 2.0 tile sprite must fit inside the room.
-  if(x<r.x+1||x>r.x+r.w-2||y<r.y+1||y>r.y+r.h-2)continue;
-  if(!inBounds(x,y)||s.map[y]?.[x]==='#')continue;
-  const parent=roomGeometryAt(x,y);
-  if(!parent||parent.x!==r.x||parent.y!==r.y)continue;
-  if(x===p.x&&y===p.y)continue;
-  chosen={x,y};break;
+ if(Array.isArray(s._v18Layer2Decor))return s._v18Layer2Decor;
+ const start=s.startPos||s.player,r=roomGeometryAt(start.x,start.y);
+ s._v18Layer2Decor=[]; // cache even when no safe placement is possible
+ if(!r||r.w<5||r.h<4)return s._v18Layer2Decor;
+ const inRoom=(x,y)=>x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h;
+ const same=(o,x,y)=>o&&o.x===x&&o.y===y;
+ const exists=(list,x,y)=>Array.isArray(list)&&list.some(o=>same(o,x,y));
+ const hasObject=(x,y)=>{
+  if(same(start,x,y)||same(s.stairs,x,y)||exists(s.enemies,x,y)||exists(s.loot,x,y)||
+     exists(s.coins,x,y)||exists(s.artifactDrops,x,y)||exists(s.chests,x,y)||
+     exists(s.traps,x,y)||exists(s.torches,x,y)||exists(s.secrets,x,y)||
+     same(s.mechanism?.switch,x,y)||same(s.mechanism?.cache,x,y)||
+     same(s.rareEvent,x,y)||same(s.dangerDoor,x,y)||
+     same(s.keyPuzzle?.door,x,y))return true;
+  return false;
+ };
+ const passableRoom=(x,y,blocked)=>{
+  return inRoom(x,y)&&s.map[y]?.[x]!== '#'&&!blocked.has(K(x,y));
+ };
+ const leavesPathsOpen=(blocked)=>{
+  // Start room must keep all existing floor tiles connected, including doors.
+  const seen=new Set([K(start.x,start.y)]),q=[[start.x,start.y]];
+  for(let i=0;i<q.length;i++){
+   const [x,y]=q[i];
+   for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+    const nx=x+dx,ny=y+dy,k=K(nx,ny);
+    if(!seen.has(k)&&passableRoom(nx,ny,blocked)){seen.add(k);q.push([nx,ny]);}
+   }
+  }
+  for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++){
+   const k=K(x,y);
+   if(s.map[y]?.[x]!=='#'&&!blocked.has(k)&&!seen.has(k))return false;
+  }
+  return true;
+ };
+ let best=null,bestScore=Infinity;
+ for(let y=r.y;y<=r.y+r.h-2;y++)for(let x=r.x;x<=r.x+r.w-2;x++){
+  const occupied=new Set();let valid=true;
+  for(let yy=y;yy<y+2;yy++)for(let xx=x;xx<x+2;xx++){
+   if(s.map[yy]?.[xx]!=='.'||hasObject(xx,yy)){valid=false;break}
+   // Do not cover an entrance from corridor to the room.
+   if(xx===r.x||yy===r.y||xx===r.x+r.w-1||yy===r.y+r.h-1){
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+     const nx=xx+dx,ny=yy+dy;
+     if(!inRoom(nx,ny)&&s.map[ny]?.[nx]==='.'){valid=false;break}
+    }
+   }
+   occupied.add(K(xx,yy));
+  }
+  if(!valid||!leavesPathsOpen(occupied))continue;
+  // Keep the showcase close enough to be seen immediately, but to one side.
+  const distance=Math.abs(x+.5-start.x)+Math.abs(y+.5-start.y);
+  const score=distance*10 + Math.abs(y+.5-start.y)*2 + (x<start.x?1:0);
+  if(score<bestScore){bestScore=score;best={x,y}}
  }
- if(!chosen){
-  const x=Math.floor(r.x+r.w/2),y=Math.floor(r.y+r.h/2);
-  if(x!==p.x||y!==p.y)chosen={x,y};
- }
- if(!chosen)return [];
- s._v18Layer2Decor=[{type:'sarcophagus',x:chosen.x,y:chosen.y,room:{x:r.x,y:r.y,w:r.w,h:r.h}}];
+ if(best)s._v18Layer2Decor.push({
+  type:'sarcophagus',x:best.x,y:best.y,w:2,h:2,solid:true,interactive:false,
+  room:{x:r.x,y:r.y,w:r.w,h:r.h}
+ });
  return s._v18Layer2Decor;
 }
 function drawV18Sarcophagi(c){
  if(!s||!v18Sarcophagus.complete||!v18Sarcophagus.naturalWidth)return;
- // Layer 2: one map-bound prop for the visual test. No extra auto-generated copies.
  for(const prop of v18FirstRoomDecor()){
-  if(!inc(prop.x,prop.y,c)||!s.seen.has(K(prop.x,prop.y)))continue;
-  const pp=lp(prop.x,prop.y,c),r=prop.room;
-  const w=CELL*1.5,h=CELL*2;
-  ctx.save();
-  ctx.beginPath();
-  // Hard clip to the actual room. Nothing can leak into walls or corridors.
+  if(!inc(prop.x,prop.y,c)&&!inc(prop.x+1,prop.y+1,c))continue;
+  if(!s.seen.has(K(prop.x,prop.y))&&!s.seen.has(K(prop.x+1,prop.y+1)))continue;
+  const r=prop.room;
+  // Artwork lies *within* the same 2×2 grid footprint used for collision.
+  const px=(prop.x-c.sx)*CELL+CELL*.175,py=(prop.y-c.sy)*CELL;
+  ctx.save();ctx.beginPath();
   ctx.rect((r.x-c.sx)*CELL+1,(r.y-c.sy)*CELL+1,r.w*CELL-2,r.h*CELL-2);
-  ctx.clip();
-  ctx.globalAlpha=1;
-  ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(v18Sarcophagus,pp.x+CELL/2-w/2,pp.y+CELL/2-h/2,w,h);
+  ctx.clip();ctx.globalAlpha=1;ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(v18Sarcophagus,px,py,CELL*1.65,CELL*2);
   ctx.restore();
  }
 }
