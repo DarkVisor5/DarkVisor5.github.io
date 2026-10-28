@@ -1323,7 +1323,7 @@ function interact(){
 }
 
 function completeStealthFloor(){if(!s.floorStealthCounted&&!s.floorAlerted){s.floorStealthCounted=true;s.stats.stealthFloors++;log('👻 Piano completato senza allerta.');checkMissions()}}
-function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':'SARCOFAGO';s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
+function move(dx,dy){if(!s||s.atStairs||s.eventOpen||s.rewardOpen)return;if(dx>0)s.player.facing='right';else if(dx<0)s.player.facing='left';else if(dy>0)s.player.facing='down';else if(dy<0)s.player.facing='up';if(s.targetMode)cancelTargeting(false);s.ambushId=null;const nx=s.player.x+dx,ny=s.player.y+dy;if(nx<0||ny<0||nx>=WORLD||ny>=WORLD)return;const secret=(s.secrets||[]).find(q=>!q.opened&&q.x===nx&&q.y===ny);if(secret&&secret.seen){openSecret(secret);return}if(s.map[ny][nx]==='#'){if(collectWallTorchAt(nx,ny))return;return}const solidProp=v18SolidDecorationAt(nx,ny);if(solidProp){const hint=solidProp.type==='weaponRack'?'RASTRELLIERA':solidProp.type==='armorStand'?'ARMATURA':solidProp.type==='workbench'?'TAVOLO DA LAVORO':solidProp.type==='archiveBookshelf'?'LIBRERIA':solidProp.type==='archiveWritingDesk'?'SCRITTOIO':({archiveLectern:'LEGGIO',archiveScrollCabinet:'SCHEDARIO',guardBunk:'BRANDA',guardStandard:'STENDARDO',healingCot:'LETTINO',medicineCupboard:'ARMADIETTO',votiveAltar:'ALTARE',incenseBrazier:'BRACIERE',treasurePedestal:'TESORO',goldBalance:'BILANCIA'}[solidProp.type]||'SARCOFAGO');s._v18DecorBlockedHints=s._v18DecorBlockedHints||new Set();if(!s._v18DecorBlockedHints.has(solidProp.type)){s._v18DecorBlockedHints.add(solidProp.type);showToast('⛔ '+hint+' · PASSAGGIO BLOCCATO')}return}const pd=s.keyPuzzle?.door;if(pd&&!pd.open&&nx===pd.x&&ny===pd.y){pd.seen=true;const kp=s.keyPuzzle,[a,b,c]=lockedDoorHelp(kp);log('🔒 '+b);if(puzzleKnown(kp.floor)){showToast(compactPuzzleMessage(kp,'door'))}else if(!pd.explained){pd.explained=true;openPuzzlePanel(a,b,c)}else showToast(pd.progression?'🔒 VARCO SIGILLATO · SEGUI LA SOGLIA':'🔒 CAMERA SIGILLATA · TROVA LA CHIAVE');return}const target=enemyAt(nx,ny);if(target){if(eqWeapon().family==='axe'){axeAttack();return}const ts=validTargets().filter(e=>targetAttackable(e));if(ts.length<=1){attackSingle(target);return}s.targetMode=true;s.targetIds=ts.map(e=>e.id);s.targetIndex=Math.max(0,ts.findIndex(e=>e.id===target.id));log('🎯 Più bersagli a portata: scegli chi colpire.');render();return}if(eqWeapon().family==='spear'){const fx=s.player.x+dx*2,fy=s.player.y+dy*2,far=inBounds(fx,fy)?enemyAt(fx,fy):null;if(far&&targetAttackable(far)){log('🔱 Affondo a distanza.');attackSingle(far);return}}const px0=s.player.x,py0=s.player.y;s.player.x=nx;s.player.y=ny;beginPlayerMove(px0,py0,nx,ny);playSfx(areaKindAt(nx,ny)==='corridor'?'stepCorridor':'stepRoom');crossPhysicalThreshold(px0,py0,nx,ny);onPuzzleStep(dx,dy);updateVisibility();interact();if(!s)return;if(s.eventOpen){addThreat(true,false);enemyTurn();if(s){updateVisibility();checkMissions();render()}return}if(s.map[ny][nx]==='>'){if(bossAlive()){log('🔒 Le scale sono sigillate finché il boss del piano è vivo.');showToast('🔒 SCONFIGGI IL BOSS');addThreat(true,false);enemyTurn();if(s){updateVisibility();render()}return}completeStealthFloor();playSfx('stairs');s.atStairs=true;root.querySelector('#stairsPanel').classList.remove('hidden');render();return}addThreat(true,false);let ambush=null;if(eqWeapon().family==='dagger')ambush=s.enemies.find(e=>canBackstab(e));if(ambush){s.ambushId=ambush.id;log('🔪 Imboscata pronta.')}enemyTurn(ambush?ambush.id:null);if(!s)return;updateVisibility();checkMissions();render()}
 function useHealItem(item){if(!s||s.eventOpen||s.rewardOpen||!item||item.kind!=='heal')return;if(s.hp>=s.maxHp){log('❤️ Vita già al massimo.');return}const idx=s.inventory.indexOf(item);if(idx<0)return;playSfx('heal');const h=HEALS[item.id],gained=healPlayer(h.heal);s.inventory.splice(idx,1);meta.healsUsed++;saveMeta();log('🧪 '+h.name+': +'+gained+' HP.');render()}
 function useHeal(){if(!s||s.eventOpen||s.rewardOpen)return;const item=s.inventory.find(i=>i.kind==='heal');if(!item){log('Nessuna pozione.');return}useHealItem(item)}
 function discardItem(item){if(!s||!item)return;const idx=s.inventory.indexOf(item);if(idx<0)return;if(item.kind==='weapon'){const name=W[item.id].name,wasEq=s.equippedUid===item.uid;s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'weapon',id:item.id,uses:item.uses,seen:true});if(wasEq){const next=s.inventory.find(x=>x.kind==='weapon');s.equippedUid=next?next.uid:null}s.ambushId=null;log('🗑️ Lasci a terra '+name+' ('+item.uses+' KO rimasti).')}else{s.inventory.splice(idx,1);s.loot.push({x:s.player.x,y:s.player.y,kind:'heal',id:item.id,seen:true});log('🗑️ Lasci a terra '+HEALS[item.id].name+'.')}render()}
@@ -2101,6 +2101,48 @@ function v18RoomDecor(){
    });
   }
  }
+ // v18.12 — ten new thematic objects, two per room identity.
+ // Every object uses the same footprint, object reservation and BFS safeguards.
+ const specs={
+  archive:[['archiveLectern',1,1,'left'],['archiveScrollCabinet',1,1,'right']],
+  guardroom:[['guardBunk',2,1,'south'],['guardStandard',1,1,'right']],
+  infirmary:[['healingCot',2,1,'south'],['medicineCupboard',1,1,'left']],
+  sanctuary:[['votiveAltar',2,1,'north'],['incenseBrazier',1,1,'right']],
+  treasury:[['treasurePedestal',2,1,'north'],['goldBalance',1,1,'left']]
+ };
+ for(const room of s.rooms||[]){
+  if(!room||room.w<6||room.h<5)continue;
+  if(inRoom(room,start.x,start.y)||inRoom(room,s.stairs.x,s.stairs.y))continue;
+  const special=(s.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y&&q.w===room.w&&q.h===room.h);
+  const kind=special?.type||(!special&&v18RoomStyle(room)===1?'archive':null);
+  const group=specs[kind];
+  if(!group)continue;
+  for(const [type,w,h,prefer] of group){
+   let selected=null,low=Infinity;
+   for(let y=room.y+1;y<=room.y+room.h-h-1;y++)
+    for(let x=room.x+1;x<=room.x+room.w-w-1;x++){
+     let valid=true;const blocked=new Set();
+     for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++){
+      const xx=x+dx,yy=y+dy;
+      if(s.map[yy]?.[xx]!=='.'||hasObject(xx,yy)||
+        (special&&xx===special.cx&&yy===special.cy)){valid=false;break}
+      blocked.add(K(xx,yy));
+     }
+     if(!valid||!leavesPathsOpen(room,blocked))continue;
+     // Prefer a distinct side, keeping the centre and existing props clear.
+     const preference=prefer==='north'?y-room.y-1:
+       prefer==='south'?room.y+room.h-h-1-y:
+       prefer==='left'?x-room.x-1:room.x+room.w-w-1-x;
+     const score=preference*10+Math.abs(x+(w-1)/2-room.cx)*.35+
+       Math.abs(y+(h-1)/2-room.cy)*.35+((x*13+y*7)%5)*.001;
+     if(score<low){selected={x,y};low=score}
+    }
+   if(selected)placed.push({
+    type,x:selected.x,y:selected.y,w,h,solid:true,interactive:false,
+    room:{x:room.x,y:room.y,w:room.w,h:room.h}
+   });
+  }
+ }
  return placed;
 }
 // Original pixel-art prop. 64x32 grid, rendered without image smoothing.
@@ -2313,6 +2355,75 @@ function drawV18ArchiveWritingDesk(px,py){
 }
 // Draw the same static prop in the normal lighting pass and again with a
 // near-player visibility lift, clipped to revealed tiles and its own room.
+// v18.12 — ten distinct pixel-art props, sharing the original 32px tile grid.
+function drawV18ThemedObject(type,px,py){
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ const R=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(x,y,w,h)};
+ const P=(points,color)=>{ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(points[0],points[1]);for(let i=2;i<points.length;i+=2)ctx.lineTo(points[i],points[i+1]);ctx.closePath();ctx.fill()};
+ const wood='#6c4932',bright='#b88b5a',gold='#dec07c',silver='#b8c8cc',shadow='#25212a';
+ const wide=['guardBunk','healingCot','votiveAltar','treasurePedestal'].includes(type),w=wide?64:32;
+ R(3,27,w-6,4,'rgba(0,0,0,.50)');
+ if(type==='archiveLectern'){
+  R(10,18,12,12,'#442e26');R(13,20,7,9,wood);R(7,12,18,8,'#382b23');
+  P([6,12,20,7,27,13,13,19],bright);P([9,12,20,9,24,13,13,17],'#f0d9a5');
+  R(12,12,8,1,'#fff2c6');R(14,14,8,1,'#8f785a');R(14,16,5,1,'#8f785a');
+  R(15,25,4,4,bright);
+ }else if(type==='archiveScrollCabinet'){
+  R(5,5,22,24,'#35251f');R(7,4,18,24,wood);R(8,6,16,2,bright);
+  for(let y of [9,16,23]){R(9,y,14,5,'#291c19');for(let i=0;i<3;i++){R(10+i*4,y+1,3,3,'#e2c89e');R(11+i*4,y+1,1,3,'#a27a51')}}
+  R(7,28,5,2,bright);R(21,28,5,2,bright);
+ }else if(type==='guardBunk'){
+  R(4,8,56,21,'#433126');R(6,9,52,17,bright);R(8,10,48,14,'#2c4053');
+  R(9,11,12,12,'#b4bbb6');R(10,12,10,10,'#e3e0cc');
+  R(22,11,33,12,'#516b7d');R(22,12,32,2,'#7a91a0');R(52,13,3,10,'#b7a578');
+  R(6,26,6,3,wood);R(52,26,6,3,wood);
+ }else if(type==='guardStandard'){
+  R(15,3,3,26,bright);R(10,26,13,3,wood);R(12,29,9,1,gold);
+  P([9,6,24,6,23,22,16,18,9,22],'#773b40');
+  R(10,7,12,2,gold);R(15,10,3,10,gold);R(12,13,9,3,gold);
+  R(11,21,2,2,'#c3896a');R(20,21,2,2,'#c3896a');
+ }else if(type==='healingCot'){
+  R(4,7,56,22,wood);R(6,9,52,17,'#96a7a7');R(8,11,46,13,'#b8c6bd');
+  R(9,11,12,13,'#f1e9d4');R(22,11,33,12,'#d2dfd4');
+  R(24,13,29,2,'#e5eee5');R(7,26,6,3,bright);R(51,26,6,3,bright);
+  R(35,17,3,5,'#a76667');R(34,18,5,2,'#a76667');
+ }else if(type==='medicineCupboard'){
+  R(5,4,22,25,'#3b2822');R(7,5,18,22,bright);R(9,8,14,16,'#243f48');
+  R(10,10,12,2,silver);R(10,18,12,2,silver);
+  for(const [x,y,c] of [[11,13,'#9dbcbc'],[17,13,'#a96571'],[11,21,'#9db3a0'],[17,21,'#d0ac72']]){
+   R(x,y-2,4,5,c);R(x+1,y-3,2,1,gold);
+  }
+  R(8,27,5,2,wood);R(21,27,5,2,wood);
+ }else if(type==='votiveAltar'){
+  R(7,10,50,19,'#50505c');R(5,8,54,7,'#777b83');R(5,8,54,2,'#b9ae9c');
+  R(9,16,46,12,'#48414e');R(28,16,8,11,'#a38b7f');R(31,17,2,9,gold);
+  R(10,5,5,4,gold);R(50,5,5,4,gold);
+  for(const x of [12,51]){R(x-2,3,4,5,'#f2d38b');R(x-1,1,2,4,'#fbe8bc')}
+  R(22,9,20,3,'#d1baa0');R(30,9,4,7,'#e9d9b9');
+ }else if(type==='incenseBrazier'){
+  R(13,20,6,8,wood);R(9,27,14,2,gold);
+  P([5,14,27,14,23,21,9,21],'#986c49');
+  R(6,12,20,4,'#ddac67');R(10,17,12,2,'#55383d');
+  R(10,11,4,2,'#e6aa75');R(16,9,5,3,'#d9a4af');
+  R(12,4,3,6,'#8e7895');R(18,2,3,7,'#a996b9');
+  R(14,0,2,3,'#c3a9c8');
+ }else if(type==='treasurePedestal'){
+  R(4,15,56,13,'#57505a');R(4,15,56,3,'#a09a9d');R(8,20,48,8,'#49414b');
+  R(13,9,15,7,'#b18a4d');R(29,7,19,9,'#d7b15f');
+  R(15,8,14,3,'#f2d68b');R(31,6,16,3,'#ffe0a2');
+  R(21,13,18,4,'#98693a');R(39,12,10,4,'#dfbd77');
+  R(12,27,7,2,shadow);R(46,27,7,2,shadow);
+ }else if(type==='goldBalance'){
+  R(13,5,6,23,wood);R(10,27,14,2,gold);
+  R(6,9,21,3,gold);R(15,6,2,18,'#e9c783');R(11,5,10,2,'#fff0b9');
+  R(7,12,1,8,silver);R(24,12,1,8,silver);
+  P([3,20,13,20,11,24,5,24],'#d6b16e');
+  P([20,20,30,20,28,24,22,24],'#d6b16e');
+  R(6,19,5,1,'#fff0b9');R(23,19,5,1,'#fff0b9');
+  R(13,3,6,3,'#ecce88');
+ }
+ ctx.restore();
+}
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2345,6 +2456,7 @@ function drawV18RoomDecor(c,relight=false){
   else if(prop.type==='workbench')drawV18Workbench(px,py);
   else if(prop.type==='archiveBookshelf')drawV18ArchiveBookshelf(px,py);
   else if(prop.type==='archiveWritingDesk')drawV18ArchiveWritingDesk(px,py);
+  else if(['archiveLectern','archiveScrollCabinet','guardBunk','guardStandard','healingCot','medicineCupboard','votiveAltar','incenseBrazier','treasurePedestal','goldBalance'].includes(prop.type))drawV18ThemedObject(prop.type,px,py);
   else if(prop.type==='sarcophagus')
    ctx.drawImage(v18Sarcophagus,px+CELL*.175,py,CELL*1.65,CELL*2);
   ctx.restore();
