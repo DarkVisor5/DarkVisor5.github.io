@@ -43,7 +43,7 @@ for(const room of roomSamples){
   lp:(x,y,c)=>({x:(x-c.sx)*34,y:(y-c.sy)*34})
  };
  vm.createContext(context);
- vm.runInContext(code+ '\\nglobalThis.qaDraw=drawV18Sarcophagi;globalThis.qaProps=v18FirstRoomDecor;globalThis.qaSolid=v18SolidDecorationAt;',context);
+ vm.runInContext(code+ '\nglobalThis.qaDraw=drawV18Sarcophagi;globalThis.qaProps=v18FirstRoomDecor;globalThis.qaSolid=v18SolidDecorationAt;',context);
  const props=context.qaProps();
  assert.equal(props.length,1,'A visible 2x2 sarcophagus should fit the starting room '+JSON.stringify(room));
  const o=props[0];
@@ -75,7 +75,7 @@ for(const room of roomSamples){
  // Real movement handler: walking onto any occupied tile does not advance a turn.
  context.s.eventOpen=false;context.s.rewardOpen=false;context.s.atStairs=false;context.s.targetMode=false;
  context.s.secrets=[];context.s.ambushId=null;
- vm.runInContext(source.slice(moveStart,moveEnd)+'\\nglobalThis.qaMove=move;',context);
+ vm.runInContext(source.slice(moveStart,moveEnd)+'\nglobalThis.qaMove=move;',context);
  const adjacent=queue.find(([x,y])=>Math.abs(x-o.x)+Math.abs(y-o.y)<=3&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>context.qaSolid(x+dx,y+dy)));
  assert(adjacent,'Expected accessible adjacent cell');
  const [ax,ay]=adjacent;
