@@ -9,7 +9,6 @@ on:
       - 'tools/artpass_v18_2.py'
       - 'tools/artpass_v18_3_sarcophagus.py'
       - 'tools/export_sarcophagus_png.py'
-      - 'tools/add_sarcophagus_showcase.py'
       - 'threshold-v18-preview/assets/sprites/sarcophagus_closed.svg'
       - '.github/workflows/build-threshold-v18.yml'
 permissions:
@@ -34,7 +33,6 @@ jobs:
           python tools/artpass_v18_2.py
           python tools/artpass_v18_3_sarcophagus.py
           python tools/export_sarcophagus_png.py
-          python tools/add_sarcophagus_showcase.py
           node --check threshold-v18-preview/js/game.js
       - name: Commit preview separately from live game
         run: |
