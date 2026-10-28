@@ -7,6 +7,7 @@ on:
       - 'tools/build_v18_preview.py'
       - 'tools/artpass_v18_1.py'
       - 'tools/artpass_v18_2.py'
+      - 'tools/artpass_v18_3_sarcophagus.py'
       - '.github/workflows/build-threshold-v18.yml'
 permissions:
   contents: write
@@ -26,6 +27,7 @@ jobs:
         run: |
           python tools/artpass_v18_1.py
           python tools/artpass_v18_2.py
+          python tools/artpass_v18_3_sarcophagus.py
           node --check threshold-v18-preview/js/game.js
       - name: Commit preview separately from live game
         run: |
