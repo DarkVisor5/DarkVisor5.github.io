@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Threshold v18.20 · Lotto 3</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b121c;color:#f5e6d0;font:15px system-ui,Segoe UI,sans-serif}
+main{max-width:1090px;padding:24px 18px 60px;margin:auto}
+h1{font-size:clamp(25px,4vw,40px);margin:0 0 8px}h2{font-size:22px;margin:30px 0 12px}p{color:#b9c8d8;line-height:1.45}a{color:#9edcff}.muted{color:#96aabf;font-size:13px}
+nav{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0 25px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:12px}
+.card{background:#17232f;border:1px solid #3b5269;border-radius:12px;padding:14px;min-width:0}
+.card strong{display:block;font-size:15px;min-height:44px}.card small{color:#9eafc2}
+canvas{display:block;image-rendering:pixelated;max-width:100%;height:auto}
+.sprite{width:192px;height:96px;image-rendering:pixelated;margin:auto}
+.room{width:100%;aspect-ratio:9/7;border-radius:5px;image-rendering:pixelated}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px;border:1px solid #3b5269;border-radius:12px;background:#17232f}
+input{width:200px}label{font-weight:650}em{font-style:normal;color:#e6c986}
+</style></head>
+<body><main>
+<h1>Threshold v18.20 · Lotto 3</h1>
+<p>Otto nuovi arredi in pixel art, oltre a pavimenti più puliti, pareti meno ripetitive e illuminazione alleggerita. Questa è una <strong>galleria dimostrativa degli asset reali</strong>, non uno screenshot del dungeon generato.</p>
+<nav><a href="./?v=1820-lotto3">🎮 Apri il gioco v18.20</a><a href="https://github.com/DarkVisor5/DarkVisor5.github.io">Codice GitHub</a></nav>
+<div class="bar"><label for="light">Oscurità simulata</label><input type="range" id="light" min="0" max="85" value="38"><em id="lightLabel">38%</em><span class="muted">La luce effettiva nel gioco dipende da torce, posizione e ostacoli.</span></div>
+<h2>Otto sprite alla scala del gioco e ×4</h2>
+<div class="grid" id="sprites"></div>
+<h2>Sei stanze · prova di leggibilità</h2>
+<p>I pavimenti usano colori e motivi indicativi delle sei categorie; le disposizioni sono dimostrative, per mostrare gli sprite a dimensione reale sotto diverse condizioni di luce.</p>
+<div class="cats" id="rooms"></div>
+</main>
+<script>
+const defs=[
+['guardStandard','Stendardo delle guardie','Sala delle guardie',1],
+['archiveLectern','Leggio aperto','Archivio',1],
+['treasurePedestal','Piedistallo del tesoro','Tesoreria',2],
+['sanctuaryStoneIdol','Idolo di pietra','Santuario',1],
+['armoryTrainingDummy',"Manichino d'allenamento",'Armeria',1],
+['healingAnatomyChart','Tavola anatomica','Infermeria',1],
+['treasuryJewelryStand','Espositore di gioielli','Tesoreria',1],
+['cryptOfferingNiche','Nicchia funeraria','Cripta',1]
+];
+const themes=[
+['Sala delle guardie','#435b75',[0,4]],['Archivio','#77563a',[1]],
+['Tesoreria','#48444f',[2,6]],['Santuario','#8e806c',[3]],
+['Infermeria','#879d9d',[5]],['Cripta','#575c61',[7]]];
+const atlas=new Image();atlas.src='./assets/sprites/v18_20_lotto3_readability_atlas.png?v=1820';
+const spriteArea=document.getElementById('sprites'),roomArea=document.getElementById('rooms');
+function blit(c,id,x,y,w=1){const rw=defs[id][3]===2?64:32; c.drawImage(atlas,(id%4)*64+(rw===32?16:0),Math.floor(id/4)*32,rw,32,x,y,w*34,34)}
+function render(){
+ if(!atlas.complete||!atlas.naturalWidth){return}
+ spriteArea.innerHTML='';roomArea.innerHTML='';
+ for(let i=0;i<defs.length;i++){
+ const [key,name,cat,w]=defs[i],card=document.createElement('div');card.className='card';
+ card.innerHTML='<strong>'+name+'</strong><small>'+cat+' · '+(w===2?'64×32':'32×32')+' pixel</small><canvas class="sprite" width="192" height="96"></canvas>';
+ spriteArea.append(card);const c=card.querySelector('canvas').getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#37424d';c.fillRect(0,0,192,96);c.strokeStyle='#455262';for(let j=0;j<192;j+=32){c.beginPath();c.moveTo(j,0);c.lineTo(j,96);c.stroke()}
+ const sx=(192-(w*34*4))/2; // render at 4× using native 34px game tiles
+ const rw=defs[i][3]===2?64:32;c.drawImage(atlas,(i%4)*64+(rw===32?16:0),Math.floor(i/4)*32,rw,32,Math.max(0,sx),10,(w===2?128:90),76);
+ }
+ for(const [name,color,ids] of themes){
+ const card=document.createElement('div');card.className='card';card.innerHTML='<strong>'+name+'</strong><canvas class="room" width="306" height="238"></canvas>';
+ roomArea.append(card);const c=card.querySelector('canvas').getContext('2d');c.imageSmoothingEnabled=false;
+ for(let y=0;y<7;y++)for(let x=0;x<9;x++){
+ c.fillStyle=(x===0||x===8||y===0||y===6)?'#2b333b':color;c.fillRect(x*34,y*34,34,34);
+ c.strokeStyle=(x===0||x===8||y===0||y===6)?'#17222d':'rgba(12,20,27,.3)';c.strokeRect(x*34+.5,y*34+.5,33,33);
+ if(x===0||x===8||y===0||y===6){c.fillStyle='#49545b';c.fillRect(x*34+4,y*34+6,26,14)}
+ }
+ ids.forEach((id,i)=>blit(c,id,(i===0?3:5)*34,(i===0?2:4)*34,defs[id][3]));
+ c.fillStyle='rgba(1,2,5,'+(Number(document.getElementById('light').value)/100)+')';c.fillRect(0,0,306,238);
+ }
+}
+atlas.onload=render;
+atlas.onerror=()=>{spriteArea.innerHTML='<p>Impossibile caricare l’atlante: controlla la connessione e ricarica.</p>'};
+document.getElementById('light').addEventListener('input',e=>{document.getElementById('lightLabel').textContent=e.target.value+'%';render()});
+</script></body></html>
