@@ -1702,7 +1702,7 @@ function drawThreatVisuals(now=animNow()){
 function drawTorchDarkness(c,now=animNow()){
   if(!s)return;
   ctx.save();
-  ctx.fillStyle=mobileUI()?'rgba(1,2,5,.83)':'rgba(1,2,5,.88)';
+  ctx.fillStyle=mobileUI()?'rgba(1,2,5,.76)':'rgba(1,2,5,.80)';
   ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.globalCompositeOperation='destination-out';
   const pvs=playerVisualState(now),pp=lpFloat(pvs.x,pvs.y,c);punchLight(pp.x+CELL/2,pp.y+CELL/2,CELL*(mobileUI()?1.52:1.38));
@@ -1950,9 +1950,14 @@ function drawV18CategoryWall(x,y,vx,vy,visible){
  ctx.fillStyle=mat.wall;ctx.fillRect(3,4,26,21);
  ctx.fillStyle=mat.lighter;ctx.fillRect(4,5,24,2);
  ctx.fillStyle=mat.dark;ctx.fillRect(4,24,24,3);
- ctx.fillStyle=mat.accent;ctx.fillRect(6,8,2,12);ctx.fillRect(24,8,2,12);
+ ctx.fillStyle=mat.accent;
+ // Pillars are architectural accents, not a column on every wall tile.
+ if((h%4)===0){ctx.fillRect(6,8,2,12);ctx.fillRect(24,8,2,12)}
+ else ctx.fillRect(7,18,18,1);
  const center=(c)=>{ctx.fillStyle=c;ctx.fillRect(14,10,4,10);ctx.fillRect(10,14,12,3)};
- switch(kind){
+ // One recognizable room emblem about every sixth wall tile.
+ // Repeating a full emblem on each block obscured the dungeon architecture.
+ if((h%6)===0)switch(kind){
   case 'armory':ctx.fillStyle='#9ba9ae';ctx.fillRect(12,11,8,5);ctx.fillRect(15,8,2,16);break;
   case 'archive':ctx.fillStyle='#302722';ctx.fillRect(9,9,15,14);for(let i=0;i<4;i++){ctx.fillStyle=['#b48b57','#608190','#96705c','#c5ad79'][i];ctx.fillRect(10+i*3,11,2,10)}break;
   case 'guardroom':ctx.fillStyle='#273a55';ctx.fillRect(11,8,11,13);center('#d1b071');break;
@@ -2867,6 +2872,20 @@ const V18_LOTTO2_TILES={
 const V18_LOTTO2_ATLAS=new Image();
 V18_LOTTO2_ATLAS.addEventListener('load',()=>{if(s)render()});
 V18_LOTTO2_ATLAS.src='./assets/sprites/v18_19_lotto2_readability_atlas.png';
+// v18.20 — Lotto 3: final readability and restrained thematic decoration.
+const V18_LOTTO3_TILES={
+ guardStandard:0,
+ archiveLectern:1,
+ treasurePedestal:2,
+ sanctuaryStoneIdol:3,
+ armoryTrainingDummy:4,
+ healingAnatomyChart:5,
+ treasuryJewelryStand:6,
+ cryptOfferingNiche:7
+};
+const V18_LOTTO3_ATLAS=new Image();
+V18_LOTTO3_ATLAS.addEventListener('load',()=>{if(s)render()});
+V18_LOTTO3_ATLAS.src='./assets/sprites/v18_20_lotto3_readability_atlas.png';
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2894,10 +2913,14 @@ function drawV18RoomDecor(c,relight=false){
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
   ctx.imageSmoothingEnabled=false;
+  const lotto3=V18_LOTTO3_TILES[prop.type];
   const lotto2=V18_LOTTO2_TILES[prop.type];
   const tile=V18_REDESIGNED_TILES[prop.type];
   const polished=V18_POLISHED_SPRITES[prop.type];
-  if(lotto2!==undefined&&V18_LOTTO2_ATLAS.complete&&V18_LOTTO2_ATLAS.naturalWidth){
+  if(lotto3!==undefined&&V18_LOTTO3_ATLAS.complete&&V18_LOTTO3_ATLAS.naturalWidth){
+   const w=prop.type==='treasurePedestal'?64:32;
+   ctx.drawImage(V18_LOTTO3_ATLAS,(lotto3%4)*64+(w===32?16:0),Math.floor(lotto3/4)*32,w,32,px,py,CELL*prop.w,CELL*prop.h);
+  }else if(lotto2!==undefined&&V18_LOTTO2_ATLAS.complete&&V18_LOTTO2_ATLAS.naturalWidth){
    const w=prop.type==='storeSupplyShelf'?64:32;
    ctx.drawImage(V18_LOTTO2_ATLAS,(lotto2%4)*64+(w===32?16:0),Math.floor(lotto2/4)*32,w,32,px,py,CELL*prop.w,CELL*prop.h);
   }else if(tile!==undefined&&V18_REDESIGNED_ATLAS.complete&&V18_REDESIGNED_ATLAS.naturalWidth)
@@ -3057,10 +3080,16 @@ function draw(){
         if(themeId==='temple'&&((x*3+y)%7===0)){ctx.beginPath();ctx.arc(px+CELL/2,py+CELL/2,Math.max(3,CELL*.12),0,Math.PI*2);ctx.stroke()}
         if(themeId==='catacombs'&&((x+y*2)%6===0)){ctx.beginPath();ctx.moveTo(px+CELL*.32,py+CELL*.28);ctx.lineTo(px+CELL*.48,py+CELL*.44);ctx.lineTo(px+CELL*.39,py+CELL*.62);ctx.stroke()}
         ctx.restore()
-        drawFloorDecor(x,y,px,py,visible,sr);
-        v18Stone(x,y,px,py,!!roomGeometryAt(x,y));
+        // The eight themed rooms already have complete material patterns.
+        // Keep generic floor wear, motifs and miniature decorations in
+        // corridors or uncategorized rooms only; never obscure parquet, tile or marble.
+        const themedRoom=geomRoom&&v18RoomCategory(geomRoom);
+        if(!themedRoom){
+          drawFloorDecor(x,y,px,py,visible,sr);
+          v18Stone(x,y,px,py,!!geomRoom);
+          v18RoomProps(x,y,px,py,geomRoom);
+        }
         v18ArchitecturalDoor(x,y,px,py);
-        v18RoomProps(x,y,px,py,roomGeometryAt(x,y));
       }
       if(sr&&visible){
         ctx.strokeStyle='rgba(255,255,255,.10)';ctx.lineWidth=1.2;ctx.strokeRect(px+2.5,py+2.5,CELL-5,CELL-5)
