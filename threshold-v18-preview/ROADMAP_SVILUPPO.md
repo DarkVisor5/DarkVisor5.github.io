@@ -103,3 +103,16 @@ _Prima di una release stabile_
 - QA: JavaScript valido, atlante PNG presente su GitHub, rendering delle 8 finestre corretto (una 64×32), 5/5 piani generati e disegnati dal motore senza eccezioni.
 - Galleria di confronto dedicata: `threshold-v18-preview/lotto3-gallery.html`.
 - **Ancora necessario**: screenshot e playtest del sito GitHub Pages in un browser reale e su dispositivi mobile; la galleria è illustrativa e non sostituisce questo test.
+
+## Checkpoint v18.21 — Torcia e orientamento (29/10/2026)
+
+- Feedback tester: l'oscurità intenzionale era troppo forte per capire **dove si può camminare**, anche dopo i Lotti grafici 1–3.
+- Ribilanciamento luce: avvio **85/100** (da 70), costo soglia **8** (da 10), recupero da torcia **45** (da 40), costo discesa piano **12** (da 15).
+- Raggio torcia mobile/desktop aumentato di circa mezza casella a piena carica; lieve potenziamento a bassa luce.
+- Anche a torcia esaurita resta un alone personale di circa 2 caselle (invece di 1,4–1,5), senza estendere il raggio **logico** di visione (6 caselle).
+- `drawLocalWayfinding` evidenzia soltanto caselle **già visibili, libere e vicine** (distanza Manhattan ≤2). Non rivela zone dietro muri né la mappa, il bottino o gli avversari nascosti.
+- Luci di corridoio un po' meno rare; effetto di oscurità appena ammorbidito (mobile 0,74; desktop 0,78).
+- Quando la luce è sotto 35, l'interfaccia spiega come ricaricare la torcia interagendo con una torcia a muro.
+- Nessun intervento su HP, IA nemica, trappole, ricompense, collisioni, generazione della mappa e controllo di visibilità.
+- QA eseguito sul motore v18.21 con canvas simulato: sintassi valida, avvio a 85 luce, attraversamento della soglia -8, nuovo overlay testato anche a luce zero, generazione e rendering **5/5 piani** senza eccezioni.
+- **Ancora da verificare in browser e su smartphone:** leggibilità reale con torce, frame rate e feedback dei tester. La v17 stabile è separata e invariata.
