@@ -2687,6 +2687,22 @@ function drawV18CatalogFurniture(type,px,py){
   R(x,y,2,1,i%2?light:accent)}
  ctx.restore();
 }
+// v18.16.1 — The five approved, improved pixel-art sprites (Lotto 1).
+// Actual transparent PNG assets, not the artwork presentation sheet.
+const V18_POLISHED_SPRITE_FILES={
+ storeGrainSacks:'./assets/sprites/lotto1_grain_sacks.png',
+ guardWarDrum:'./assets/sprites/lotto1_war_drum.png',
+ sanctuaryOfferingBowl:'./assets/sprites/lotto1_offering_bowl.png',
+ sanctuaryRuneStone:'./assets/sprites/lotto1_runestone.png',
+ healingSurgicalTray:'./assets/sprites/lotto1_surgical_kit.png'
+};
+const V18_POLISHED_SPRITES={};
+for(const [type,path] of Object.entries(V18_POLISHED_SPRITE_FILES)){
+ const img=new Image();
+ img.addEventListener('load',()=>{if(s)render()});
+ img.src=path;
+ V18_POLISHED_SPRITES[type]=img;
+}
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2714,7 +2730,9 @@ function drawV18RoomDecor(c,relight=false){
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
   ctx.imageSmoothingEnabled=false;
-  if(V18_FURNITURE_ART[prop.type])drawV18CatalogFurniture(prop.type,px,py);
+  const polished=V18_POLISHED_SPRITES[prop.type];
+  if(polished?.complete&&polished.naturalWidth)ctx.drawImage(polished,px,py,CELL*prop.w,CELL*prop.h);
+  else if(V18_FURNITURE_ART[prop.type])drawV18CatalogFurniture(prop.type,px,py);
   else if(prop.type==='weaponRack')drawV18WeaponRack(px,py);
   else if(prop.type==='armorStand')drawV18ArmorStand(px,py);
   else if(prop.type==='workbench')drawV18Workbench(px,py);
