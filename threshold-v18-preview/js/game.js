@@ -1839,6 +1839,134 @@ function drawWorldAmbience(c,now=animNow()){
 function drawWallTile(vx,vy,visible,x,y){const px=vx*CELL,py=vy*CELL,pal=themePalette(),base=visible?pal.wallVisible:pal.wallSeen,edge=visible?pal.wallEdgeVisible:pal.wallEdgeSeen,mortar=visible?pal.mortarVisible:pal.mortarSeen,highlight=visible?pal.highlightVisible:pal.highlightSeen;ctx.fillStyle=base;ctx.fillRect(px,py,CELL,CELL);ctx.strokeStyle=edge;ctx.lineWidth=1.5;ctx.strokeRect(px+.75,py+.75,CELL-1.5,CELL-1.5);const rowOffset=((y&1)?8:3),rowOffset2=((x&1)?12:6);ctx.strokeStyle=mortar;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+1,py+10.5);ctx.lineTo(px+CELL-1,py+10.5);ctx.moveTo(px+1,py+20.5);ctx.lineTo(px+CELL-1,py+20.5);ctx.moveTo(px+rowOffset+.5,py+1);ctx.lineTo(px+rowOffset+.5,py+10);ctx.moveTo(px+rowOffset2+.5,py+10);ctx.lineTo(px+rowOffset2+.5,py+20);ctx.moveTo(px+(CELL-rowOffset)+.5,py+20);ctx.lineTo(px+(CELL-rowOffset)+.5,py+CELL-1);ctx.stroke();ctx.fillStyle=highlight;const h=((x*73856093)^(y*19349663))>>>0;ctx.fillRect(px+5+(h%7),py+4+((h>>>3)%5),4,2);ctx.fillRect(px+17+((h>>>5)%5),py+14+((h>>>8)%4),3,2);ctx.fillRect(px+8+((h>>>11)%6),py+24+((h>>>14)%3),4,2);if(visible&&h%7===0){ctx.strokeStyle=pal.highlightVisible;ctx.beginPath();ctx.moveTo(px+7+(h%8),py+7+((h>>>4)%5));ctx.lineTo(px+10+(h%8),py+11+((h>>>4)%5));ctx.stroke()}drawWallDecor(x,y,px,py,visible);if(visible){ctx.save();ctx.fillStyle='rgba(0,0,0,.24)';ctx.fillRect(px+1,py+CELL-5,CELL-2,4);ctx.fillStyle='rgba(235,224,204,.10)';ctx.fillRect(px+2,py+2,CELL-4,2);ctx.restore()}}
 
 
+// v18.17 — Architectural Layer 1: per-room material and decorative architecture.
+// These motifs tile with the room's grid, do not create hitboxes, and cannot
+// overwrite doors, enemies, interactables or the rendered Layer-2 furniture.
+const V18_ROOM_MATERIALS={
+ armory:{base:'#32383d',lighter:'#57646a',dark:'#222c32',joint:'#191f25',accent:'#b37442',wall:'#465057'},
+ archive:{base:'#594332',lighter:'#866344',dark:'#362b25',joint:'#30241d',accent:'#b99a65',wall:'#654730'},
+ guardroom:{base:'#384c63',lighter:'#57718a',dark:'#253648',joint:'#213044',accent:'#ba9d64',wall:'#445772'},
+ infirmary:{base:'#667c7e',lighter:'#a4b4ac',dark:'#425b60',joint:'#3b5556',accent:'#d5caad',wall:'#7a9897'},
+ sanctuary:{base:'#7f715f',lighter:'#ab9a7f',dark:'#554b49',joint:'#4d4140',accent:'#d5b46e',wall:'#8b795f'},
+ treasury:{base:'#373740',lighter:'#585361',dark:'#24242d',joint:'#171823',accent:'#c59b4d',wall:'#4f4654'},
+ crypt:{base:'#46484f',lighter:'#676c72',dark:'#30323a',joint:'#242732',accent:'#8f9692',wall:'#4b525a'},
+ warehouse:{base:'#674934',lighter:'#9a7249',dark:'#483526',joint:'#352518',accent:'#bd9a67',wall:'#62432d'}
+};
+function v18TileRoomMaterial(x,y){
+ const room=roomGeometryAt(x,y);
+ return room&&V18_ROOM_MATERIALS[v18RoomCategory(room)?.type]
+  ?{room,kind:v18RoomCategory(room).type,mat:V18_ROOM_MATERIALS[v18RoomCategory(room).type]}:null;
+}
+function drawV18CategoryFloor(x,y,px,py,visible){
+ const data=v18TileRoomMaterial(x,y);if(!data)return;
+ const {room,kind,mat}=data,h=envHash(x,y,1701),r=(h>>>8)%5;
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ ctx.globalAlpha=visible?1:.52;
+ ctx.fillStyle=mat.base;ctx.fillRect(0,0,32,32);
+ const R=(a,b,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(a,b,w,h)};
+ const line=(coords,c,w=1)=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(coords[0],coords[1]);for(let i=2;i<coords.length;i+=2)ctx.lineTo(coords[i],coords[i+1]);ctx.stroke()};
+ const tx=x-room.x,ty=y-room.y,cx=Math.floor(room.w/2);
+ switch(kind){
+  case 'archive': // warm parquet, wood grain and joined border
+   R(1,1,30,30,((x+y)&1)?'#674c35':'#77563a');
+   R(1,12,30,2,mat.joint);R(1,26,30,2,mat.joint);
+   R((x%3)*9+2,2,2,10,mat.lighter);
+   R(3+(r*4),16,17,1,'rgba(201,160,111,.26)');
+   R(4,28,23,1,mat.accent);
+   if((x%4)===0)R(25,4,2,3,mat.dark);
+   break;
+  case 'warehouse': // broad workshop planks and nailed cross braces
+   R(1,1,30,30,(y%2)?'#684932':'#735038');
+   R(0,16,32,2,'#3b2b20');R(0,31,32,1,mat.dark);
+   R((x%2)*13+4,3,13,1,'rgba(199,149,92,.24)');
+   R((x%3)*7+8,24,2,2,'#312923');
+   if(ty===1||ty===room.h-2)R(2,2,28,3,'rgba(132,87,48,.45)');
+   break;
+  case 'armory': // dark riveted basalt, forged-iron joints
+   R(1,1,30,30,(r===2)?'#40484d':'#343b40');
+   R(0,0,32,2,'#626e70');R(0,30,32,2,mat.joint);
+   R(0,0,2,32,mat.joint);R(30,0,2,32,mat.joint);
+   R(5,5,3,3,'#718084');R(25,25,3,3,mat.dark);
+   if((x+y)%4===0){line([8,15,17,18,24,14],mat.joint);R(19,14,3,2,mat.accent)}
+   break;
+  case 'guardroom': // regular blue flagstones, ceremonial brass edge
+   R(1,1,30,30,((x+y)%3===0)?'#435b75':'#354961');
+   R(0,0,32,2,mat.joint);R(0,30,32,2,mat.joint);
+   R(0,0,2,32,mat.joint);R(30,0,2,32,mat.joint);
+   R(3,3,16,2,'rgba(155,179,204,.22)');
+   if((tx+ty)%5===0){R(13,12,7,7,mat.accent);R(15,14,3,3,mat.dark)}
+   break;
+  case 'infirmary': // glazed clean square tiles, teal joints
+   R(1,1,30,30,(r===0)?'#a5b7af':'#879d9d');
+   R(0,0,32,2,'#415d60');R(0,30,32,2,'#415d60');
+   R(0,0,2,32,'#415d60');R(30,0,2,32,'#415d60');
+   R(4,4,22,2,'rgba(236,239,223,.24)');
+   if((tx+ty*2)%7===0){R(14,10,4,13,'#a45b5f');R(10,14,12,4,'#a45b5f')}
+   break;
+  case 'sanctuary': // limestone marble and a continuous votive aisle
+   R(1,1,30,30,(r===0)?'#a5967e':'#8e806c');
+   R(0,0,32,2,mat.dark);R(0,30,32,2,mat.dark);
+   R(0,0,2,32,mat.dark);R(30,0,2,32,mat.dark);
+   line([6,4,11,8,18,5], 'rgba(214,206,188,.26)');
+   if(tx===cx||tx===cx-1){R(4,0,24,32,'#71403d');R(4,0,2,32,'#c4a165');R(26,0,2,32,'#c4a165');}
+   else if((tx+ty)%5===0){R(14,13,4,6,mat.accent);R(12,15,8,2,mat.accent)}
+   break;
+  case 'treasury': // black slate, connected golden geometric inlays
+   R(1,1,30,30,(r===1)?'#48444f':'#393640');
+   R(0,0,32,1,'#8b6e42');R(0,31,32,1,'#8b6e42');
+   R(0,0,1,32,'#8b6e42');R(31,0,1,32,'#8b6e42');
+   line([16,4,28,16,16,28,4,16,16,4],mat.accent,1);
+   if((tx+ty)%3===0){R(15,13,3,6,mat.accent);R(13,15,7,2,mat.accent)}
+   break;
+  case 'crypt': // cold broken burial slabs with fine cracks
+   R(1,1,30,30,(r===2)?'#575c61':'#464952');
+   R(0,0,32,2,mat.joint);R(0,30,32,2,mat.joint);
+   R(0,0,2,32,mat.joint);R(30,0,2,32,mat.joint);
+   line([7,2,11,9,9,15,20,24,19,31],mat.dark,1.5);
+   if((x+2*y)%8===0){R(14,11,4,11,'#899597');R(11,15,10,3,'#899597')}
+   if(r===1)R(21,5,5,3,'rgba(100,135,109,.35)');
+   break;
+ }
+ // A material border tracks room geometry, not random floor-wide overlays.
+ const onEdge=tx===0||ty===0||tx===room.w-1||ty===room.h-1;
+ if(onEdge){ctx.strokeStyle=mat.accent;ctx.globalAlpha=(visible?.38:.15);ctx.lineWidth=1.5;
+  if(tx===0){ctx.beginPath();ctx.moveTo(3,3);ctx.lineTo(3,29);ctx.stroke()}
+  if(tx===room.w-1){ctx.beginPath();ctx.moveTo(29,3);ctx.lineTo(29,29);ctx.stroke()}
+  if(ty===0){ctx.beginPath();ctx.moveTo(3,3);ctx.lineTo(29,3);ctx.stroke()}
+  if(ty===room.h-1){ctx.beginPath();ctx.moveTo(3,29);ctx.lineTo(29,29);ctx.stroke()}
+ }
+ ctx.restore();
+}
+function drawV18CategoryWall(x,y,vx,vy,visible){
+ // Walls are outside the room rectangle. Only dress adjacent, revealed walls.
+ let category=null;
+ for(const [dx,dy] of [[0,1],[0,-1],[1,0],[-1,0]]){
+  const info=v18TileRoomMaterial(x+dx,y+dy);if(info){category=info;break}
+ }
+ if(!category)return;
+ const {kind,mat}=category,px=vx*CELL,py=vy*CELL,h=envHash(x,y,1723);
+ ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ ctx.globalAlpha=visible?1:.38;
+ ctx.fillStyle=mat.wall;ctx.fillRect(3,4,26,21);
+ ctx.fillStyle=mat.lighter;ctx.fillRect(4,5,24,2);
+ ctx.fillStyle=mat.dark;ctx.fillRect(4,24,24,3);
+ ctx.fillStyle=mat.accent;ctx.fillRect(6,8,2,12);ctx.fillRect(24,8,2,12);
+ const center=(c)=>{ctx.fillStyle=c;ctx.fillRect(14,10,4,10);ctx.fillRect(10,14,12,3)};
+ switch(kind){
+  case 'armory':ctx.fillStyle='#9ba9ae';ctx.fillRect(12,11,8,5);ctx.fillRect(15,8,2,16);break;
+  case 'archive':ctx.fillStyle='#302722';ctx.fillRect(9,9,15,14);for(let i=0;i<4;i++){ctx.fillStyle=['#b48b57','#608190','#96705c','#c5ad79'][i];ctx.fillRect(10+i*3,11,2,10)}break;
+  case 'guardroom':ctx.fillStyle='#273a55';ctx.fillRect(11,8,11,13);center('#d1b071');break;
+  case 'infirmary':center('#e3ddd0');break;
+  case 'sanctuary':center('#d4b279');ctx.fillStyle='#eee1b5';ctx.fillRect(15,8,2,5);break;
+  case 'treasury':ctx.fillStyle='#15181d';ctx.fillRect(10,8,12,14);ctx.fillStyle='#c7a354';ctx.fillRect(11,12,10,2);ctx.fillRect(14,9,4,10);break;
+  case 'crypt':ctx.fillStyle='#2a2a32';ctx.fillRect(10,9,12,13);ctx.fillStyle='#a7a5a5';ctx.fillRect(14,11,4,8);ctx.fillRect(12,14,8,3);break;
+  case 'warehouse':ctx.fillStyle='#3c2920';ctx.fillRect(11,8,10,15);ctx.fillStyle='#b48c5b';ctx.fillRect(12,10,8,2);ctx.fillRect(12,19,8,2);break;
+ }
+ // Dim wall details instead of placing full-height opaque repeated furnishings.
+ if((h%5)===0){ctx.fillStyle='rgba(0,0,0,.19)';ctx.fillRect(8,8,3,11)}
+ ctx.restore();
+}
+
 // v18.1 — Visual art pass: deterministic material, depth and architectural thresholds.
 // Canvas decoration only: movement, collision, visibility, spawning and balance unchanged.
 function v18Stone(x,y,px,py,room){
@@ -2874,10 +3002,10 @@ function draw(){
       sr=(s.specialRooms||[]).find(r=>x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h);
       if(sr&&tile!=='#')color=specialRoomTint(sr.type,visible)
     }
-    if(seen&&tile==='#')drawWallTile(vx,vy,visible,x,y);else{
+    if(seen&&tile==='#'){drawWallTile(vx,vy,visible,x,y);drawV18CategoryWall(x,y,vx,vy,visible);}else{
       const px=vx*CELL,py=vy*CELL;
       ctx.fillStyle=color;ctx.fillRect(px,py,CELL,CELL);
-      const geomRoom=roomGeometryAt(x,y);if(tile!=='#'&&!geomRoom&&seen){ctx.save();ctx.fillStyle=visible?'rgba(4,8,12,.19)':'rgba(0,0,0,.14)';ctx.fillRect(px+2,py+2,CELL-4,CELL-4);ctx.strokeStyle=visible?'rgba(185,199,210,.10)':'rgba(120,130,140,.05)';ctx.lineWidth=1;ctx.beginPath();if(((x+y)&1)===0){ctx.moveTo(px+CELL*.15,py+CELL*.5);ctx.lineTo(px+CELL*.85,py+CELL*.5)}else{ctx.moveTo(px+CELL*.5,py+CELL*.15);ctx.lineTo(px+CELL*.5,py+CELL*.85)}ctx.stroke();ctx.restore()}
+      const geomRoom=roomGeometryAt(x,y);if(tile!=='#'&&geomRoom&&seen)drawV18CategoryFloor(x,y,px,py,visible);if(tile!=='#'&&!geomRoom&&seen){ctx.save();ctx.fillStyle=visible?'rgba(4,8,12,.19)':'rgba(0,0,0,.14)';ctx.fillRect(px+2,py+2,CELL-4,CELL-4);ctx.strokeStyle=visible?'rgba(185,199,210,.10)':'rgba(120,130,140,.05)';ctx.lineWidth=1;ctx.beginPath();if(((x+y)&1)===0){ctx.moveTo(px+CELL*.15,py+CELL*.5);ctx.lineTo(px+CELL*.85,py+CELL*.5)}else{ctx.moveTo(px+CELL*.5,py+CELL*.15);ctx.lineTo(px+CELL*.5,py+CELL*.85)}ctx.stroke();ctx.restore()}
       if(visible){
         ctx.strokeStyle=pal.grid;ctx.strokeRect(px,py,CELL,CELL);
         const themeId=(s.theme||dungeonThemeForFloor())?.id;
