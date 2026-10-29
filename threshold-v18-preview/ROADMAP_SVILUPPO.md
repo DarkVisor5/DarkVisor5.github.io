@@ -92,3 +92,14 @@ _Prima di una release stabile_
 - I layer ambientali non aggiungono ostacoli; scala, puzzle e personaggi rimangono sopra il pavimento, e l'illuminazione esistente continua a operare.
 - QA statico: sintassi JavaScript verificata; cinque asset PNG confermati su GitHub; renderer di ogni categoria verificato isolatamente; 150 mappe e 1.800 stanze simulate con 5.296 arredi senza fallimenti dei controlli di sovrapposizione e raggiungibilità.
 - **Da verificare**: collaudo visivo del sito GitHub Pages pubblicato e su smartphone prima di considerare finito il polish.
+
+## Checkpoint v18.20 — Lotto 3, leggibilità e materiali (29/10/2026)
+
+- Terzo lotto grafico: **otto sprite nuovi** con sagome più distinguibili e atlante trasparente (32×32, tranne il piedistallo 64×32): stendardo delle guardie, leggio, piedistallo del tesoro, idolo di pietra, manichino d'allenamento, tavola anatomica, espositore di gioielli, nicchia funeraria.
+- I due lotti precedenti restano installati; la v18.20 aggiunge un terzo atlas e conserva il fallback dei disegni originari.
+- Pareti tematiche: meno emblemi ripetuti (circa 1/6 dei blocchi) e pilastri meno fitti.
+- Pavimenti: eliminati gli overlay generici delle stanze categorizzate, mantenendoli nei corridoi, senza alterare la mappa logica.
+- Leggibilità: oscurità canvas ridotta da 0,88 a 0,80 desktop e da 0,83 a 0,76 mobile; invariati raggi, torce, visibilità logica e rischi del buio.
+- QA: JavaScript valido, atlante PNG presente su GitHub, rendering delle 8 finestre corretto (una 64×32), 5/5 piani generati e disegnati dal motore senza eccezioni.
+- Galleria di confronto dedicata: `threshold-v18-preview/lotto3-gallery.html`.
+- **Ancora necessario**: screenshot e playtest del sito GitHub Pages in un browser reale e su dispositivi mobile; la galleria è illustrativa e non sostituisce questo test.
