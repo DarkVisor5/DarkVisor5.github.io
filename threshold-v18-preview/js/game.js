@@ -2822,7 +2822,12 @@ const V18_POLISHED_SPRITE_FILES={
  guardWarDrum:'./assets/sprites/lotto1_war_drum.png',
  sanctuaryOfferingBowl:'./assets/sprites/lotto1_offering_bowl.png',
  sanctuaryRuneStone:'./assets/sprites/lotto1_runestone.png',
- healingSurgicalTray:'./assets/sprites/lotto1_surgical_kit.png'
+ healingSurgicalTray:'./assets/sprites/lotto1_surgical_kit.png',
+ cryptGravestone:'./assets/sprites/lotto2_gravestone.png',
+ cryptAshUrn:'./assets/sprites/lotto2_ash_urn.png',
+ archiveMapChest:'./assets/sprites/lotto2_map_cabinet.png',
+ healingBandageBasket:'./assets/sprites/lotto2_bandage_basket.png',
+ goldBalance:'./assets/sprites/lotto2_gold_scales.png'
 };
 const V18_POLISHED_SPRITES={};
 for(const [type,path] of Object.entries(V18_POLISHED_SPRITE_FILES)){
