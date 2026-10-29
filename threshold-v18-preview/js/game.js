@@ -2836,6 +2836,21 @@ for(const [type,path] of Object.entries(V18_POLISHED_SPRITE_FILES)){
  img.src=path;
  V18_POLISHED_SPRITES[type]=img;
 }
+// v18.18 — Lotto 1 readability redesign. Single 4x2 atlas of true 32px
+// transparent pixel sprites; preserves existing 1x1 collision geometry.
+const V18_REDESIGNED_TILES={
+ healingSurgicalTray:0,
+ medicineCupboard:1,
+ healingBandageBasket:2,
+ goldBalance:3,
+ incenseBrazier:4,
+ treasuryGemChest:5,
+ treasuryCoinUrn:6,
+ sanctuaryOfferingBowl:7
+};
+const V18_REDESIGNED_ATLAS=new Image();
+V18_REDESIGNED_ATLAS.addEventListener('load',()=>{if(s)render()});
+V18_REDESIGNED_ATLAS.src='./assets/sprites/v18_18_lotto1_readability_atlas.png';
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2863,8 +2878,11 @@ function drawV18RoomDecor(c,relight=false){
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
   ctx.imageSmoothingEnabled=false;
+  const tile=V18_REDESIGNED_TILES[prop.type];
   const polished=V18_POLISHED_SPRITES[prop.type];
-  if(polished?.complete&&polished.naturalWidth)ctx.drawImage(polished,px,py,CELL*prop.w,CELL*prop.h);
+  if(tile!==undefined&&V18_REDESIGNED_ATLAS.complete&&V18_REDESIGNED_ATLAS.naturalWidth)
+   ctx.drawImage(V18_REDESIGNED_ATLAS,(tile%4)*32,Math.floor(tile/4)*32,32,32,px,py,CELL*prop.w,CELL*prop.h);
+  else if(polished?.complete&&polished.naturalWidth)ctx.drawImage(polished,px,py,CELL*prop.w,CELL*prop.h);
   else if(V18_FURNITURE_ART[prop.type])drawV18CatalogFurniture(prop.type,px,py);
   else if(prop.type==='weaponRack')drawV18WeaponRack(px,py);
   else if(prop.type==='armorStand')drawV18ArmorStand(px,py);
