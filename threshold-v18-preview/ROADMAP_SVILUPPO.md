@@ -63,7 +63,7 @@ _Prima di una release stabile_
 ## Stato del progetto al 28/10/2026
 
 - **Versione stabile:** v17, da non modificare in questa roadmap.
-- **Versione sperimentale:** Threshold v18.16 in threshold-v18-preview/.
+- **Versione sperimentale:** Threshold v18.17.1 in threshold-v18-preview/.
 - **Lavoro Layer 2 già avviato e implementato:** otto categorie di stanze (armerie, archivi, cripte, santuari, infermerie, sale delle guardie/caserme, tesorerie, magazzini) con **10 tipologie di arredi distinte ciascuna: 80 in totale**. La v18.16 ha introdotto 43 nuovi arredi con sagome specifiche e maggiore varietà di composizione.
 - **Punto da completare nel Layer 2:** passaggio a tileset distinti e coerenti per pavimenti e muri; valutazione dell'arredo delle caserme (bauli) e controlli visivi reali in browser.
 - **Layer 3:** oggetti attuali prevalentemente decorativi/solidi; introdurre esplicitamente le interazioni richieste dalla roadmap senza assumere che vecchi meccanismi soddisfino automaticamente ciascuna voce.
@@ -84,3 +84,11 @@ _Prima di una release stabile_
 - Composizione variabile tra stanze della stessa categoria; non sono collocati tutti e dieci contemporaneamente.
 - Verifiche simulate: 200 mappe, 2.400 stanze, nessun errore nei controlli di collisione e connettività; tutti i dieci tipi di ogni categoria sono comparsi almeno una volta.
 - Rimane necessario il collaudo visuale nel browser pubblicato e sui dispositivi mobile.
+
+## Checkpoint v18.17.1 — Lotto 2 e ambienti tematici (29/10/2026)
+
+- Rielaborati e integrati come PNG trasparenti 32×32 cinque sprite: lapide funeraria, urna cineraria, cassettiera delle mappe, cesta di bende e bilancia d'oro. Disegni vecchi mantenuti come fallback quando i PNG non sono disponibili.
+- Nuova resa ambientale per **otto categorie**: pavimentazioni, materiali, bordi, dettagli di muratura e motivi riconoscibili per armeria, archivio, sala delle guardie, infermeria, santuario, tesoreria, cripta e magazzino.
+- I layer ambientali non aggiungono ostacoli; scala, puzzle e personaggi rimangono sopra il pavimento, e l'illuminazione esistente continua a operare.
+- QA statico: sintassi JavaScript verificata; cinque asset PNG confermati su GitHub; renderer di ogni categoria verificato isolatamente; 150 mappe e 1.800 stanze simulate con 5.296 arredi senza fallimenti dei controlli di sovrapposizione e raggiungibilità.
+- **Da verificare**: collaudo visivo del sito GitHub Pages pubblicato e su smartphone prima di considerare finito il polish.
