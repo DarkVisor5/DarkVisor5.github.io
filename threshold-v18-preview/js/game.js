@@ -2851,6 +2851,22 @@ const V18_REDESIGNED_TILES={
 const V18_REDESIGNED_ATLAS=new Image();
 V18_REDESIGNED_ATLAS.addEventListener('load',()=>{if(s)render()});
 V18_REDESIGNED_ATLAS.src='./assets/sprites/v18_18_lotto1_readability_atlas.png';
+// v18.19 Lotto 2: legible sprites for eight previously ambiguous props.
+// Atlas: four 64x32 slots per row, 2 rows. One-cell sprites are centered
+// in each 64px slot; the two-cell supply shelf uses the full 64px.
+const V18_LOTTO2_TILES={
+ guardWarDrum:0,
+ archiveMapChest:1,
+ archiveScrollCabinet:2,
+ healingHerbDryer:3,
+ cryptAshUrn:4,
+ storeSupplyShelf:5,
+ sanctuaryCandelabrum:6,
+ archiveAstrolabe:7
+};
+const V18_LOTTO2_ATLAS=new Image();
+V18_LOTTO2_ATLAS.addEventListener('load',()=>{if(s)render()});
+V18_LOTTO2_ATLAS.src='./assets/sprites/v18_19_lotto2_readability_atlas.png';
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2878,9 +2894,13 @@ function drawV18RoomDecor(c,relight=false){
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
   ctx.imageSmoothingEnabled=false;
+  const lotto2=V18_LOTTO2_TILES[prop.type];
   const tile=V18_REDESIGNED_TILES[prop.type];
   const polished=V18_POLISHED_SPRITES[prop.type];
-  if(tile!==undefined&&V18_REDESIGNED_ATLAS.complete&&V18_REDESIGNED_ATLAS.naturalWidth)
+  if(lotto2!==undefined&&V18_LOTTO2_ATLAS.complete&&V18_LOTTO2_ATLAS.naturalWidth){
+   const w=prop.type==='storeSupplyShelf'?64:32;
+   ctx.drawImage(V18_LOTTO2_ATLAS,(lotto2%4)*64+(w===32?16:0),Math.floor(lotto2/4)*32,w,32,px,py,CELL*prop.w,CELL*prop.h);
+  }else if(tile!==undefined&&V18_REDESIGNED_ATLAS.complete&&V18_REDESIGNED_ATLAS.naturalWidth)
    ctx.drawImage(V18_REDESIGNED_ATLAS,(tile%4)*32,Math.floor(tile/4)*32,32,32,px,py,CELL*prop.w,CELL*prop.h);
   else if(polished?.complete&&polished.naturalWidth)ctx.drawImage(polished,px,py,CELL*prop.w,CELL*prop.h);
   else if(V18_FURNITURE_ART[prop.type])drawV18CatalogFurniture(prop.type,px,py);
