@@ -31,6 +31,7 @@ jobs:
           THRESHOLD_SCENARIOS: '8'
           THRESHOLD_SHARDS: '1'
           THRESHOLD_SHARD: '0'
+          THRESHOLD_NO_DODGE: '1'
           THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/boss-smoke
         run: node tools/qa_boss_feasibility_runner.cjs
       - name: Upload evidence
