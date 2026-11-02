@@ -201,3 +201,13 @@ La pipeline `qa-threshold-v18.yml` esegue un **smoke test reale su Chromium desk
 - [Rapporto Fase E dettagliato](docs/QA_FASE_E_200_PARTITE_2026-11-02.md) · [100 senza carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41465977653) · [100 con cinque carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41466011506).
 
 Il codice giocabile **v18.26** e la versione stabile **v17** sono rimasti invariati.
+
+## Build a cinque carte più performante (identificata 29 ottobre, applicata 2 novembre 2026)
+
+- **Build:** Maestro di spada + Erborista + Bastione + Quartiermastro + Ultima resistenza (`swordMaster`, `medic`, `bulwark`, `quartermaster`, `survivor`), **3280 oro**, negozio **rango IV**; sblocco raggiungendo almeno il piano 4.
+- La stima precedente del 29 ottobre (10.541 successi su 11.000 prove, **95,83%**) riguardava la vecchia simulazione ed è **non confermata dai test integrali del bot**.
+- Bot adattato a privilegiare la spada (Guardia + Bastione + Riposta) in `tools/qa_optimal_sword_build_bot.js`.
+- **100 partite reali Chromium**: 88 morti, 12 interruzioni, **0 vittorie**, massimo piano 4, piano massimo medio **2,64**, 65 run arrivate al piano 3 e 9 almeno al piano 4. Acquisto autentico nell'interfaccia verificato (3280 oro, 5 carte, conto residuo 0).
+- Rispetto alla Fase D con 5 carte esplorative: piano medio 2,60 → 2,64 e run arrivate al piano 4 8 → 9; però non ripetute le 2 run che raggiunsero il piano 5. I campioni e le strategie non sono appaiati.
+- [Report e metodologia](docs/QA_BUILD_SPADA_GUARDIA_100_PARTITE_2026-11-02.md) · [100 run e registri](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41468410060).
+- La build è applicata al **profilo QA**, non al salvataggio locale del browser personale dell'utente. Il gioco v18.26 e la v17 stabile sono immutati.
