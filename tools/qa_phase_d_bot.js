@@ -202,10 +202,10 @@
   const best=bestWeapon(v),closest=danger.sort((a,b)=>close(a,v.player)-close(b,v.player))[0];
   const oldScore=closest?enemyWeaponScore(active,closest,v):active?basicWeaponScore(active):-Infinity;
   const newScore=closest?enemyWeaponScore(best,closest,v):best?basicWeaponScore(best):-Infinity;
-  if(best&&best.uid!==v.equippedUid&&(!active||active.uses<=0||newScore>oldScore+1.25)){
+  if(best&&best.uid!==v.equippedUid&&(!active||active.uses<=0||((nav.turn||0)>=(nav.equipCooldown||0)&&newScore>oldScore+2.75))){
    const rows=[...root().querySelectorAll('#inventory .inv-row')],index=v.inventory.findIndex(i=>i.uid===best.uid);
    if(index>=0&&rows[index]&&rows[index].querySelector('button')){
-    rows[index].querySelector('button').click();return 'equip';
+    rows[index].querySelector('button').click();nav.equipCooldown=(nav.turn||0)+15;return 'equip';
    }
   }
   const weapon=active?.uses>0?active:best;
@@ -259,7 +259,7 @@
   let list=goals(v,history,graphState,nav);
   // A player chooses a destination and follows through rather than
   // changing direction toward a different frontier on every single step.
-  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();history.clear()}
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.equipCooldown=0;history.clear()}
   const urgent=list.find(o=>['stairs','boss','tablet','decoder','shrine','sigil','finalSeal'].includes(o.label));
   if(urgent&&nav.label!==urgent.label){nav.goal={...urgent.point};nav.label=urgent.label}
   if(nav.goal){
@@ -309,7 +309,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),retreatCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
