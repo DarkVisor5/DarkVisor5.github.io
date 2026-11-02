@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Threshold v18.23 — Fase A · verifica sprite</title>
+<style>
+:root{color-scheme:dark;--cell:34px;font-family:system-ui,Segoe UI,sans-serif;background:#0d1219;color:#e5e0d6}*{box-sizing:border-box}body{max-width:1260px;margin:auto;padding:22px 16px 55px}h1{font-size:clamp(24px,3vw,36px);margin:0 0 6px}p{color:#aebdcb;margin:5px 0 18px;line-height:1.5}a{color:#a7d5d4}.toolbar{display:flex;gap:18px;flex-wrap:wrap;background:#19232d;padding:15px;border:1px solid #354351;border-radius:12px;margin:14px 0}.group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.group label{margin-right:6px;color:#c0cbd5;font-size:13px}button{background:#253342;border:1px solid #4c5b65;color:#eef2f5;border-radius:8px;padding:9px 11px;cursor:pointer}button[aria-pressed=true]{background:#426b5b;border-color:#81c6a5}.stats{font-size:14px;color:#9bafb7;margin:0 0 14px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}.card{border:1px solid #334552;background:#17212b;border-radius:12px;padding:12px}.meta{min-height:49px;display:grid;align-content:start;gap:3px}.meta strong{font-size:14px}.meta span{font-size:12px;color:#96adbb}.tile{border:2px solid #35404b;border-radius:7px;height:125px;display:grid;place-items:center;background-color:#343a42;background-image:linear-gradient(135deg,transparent 45%,rgba(255,255,255,.035) 46%,rgba(255,255,255,.035) 54%,transparent 55%);position:relative}.tile.crypt{background-color:#353941}.tile.sanctuary{background-color:#463e37}.tile.treasury{background-color:#393943}.tile.infirmary{background-color:#354238}.tile.armory{background-color:#40413f}.tile.archive{background-color:#383a37}.tile.guardroom{background-color:#383b42}.tile-inner{display:grid;place-items:center;min-width:calc(var(--cell) * 2);min-height:calc(var(--cell) * 2);filter:brightness(var(--light)) contrast(1.06)}img{object-fit:contain;image-rendering:pixelated}.state{display:flex;align-items:center;gap:7px;margin-top:10px;color:#aab7c5;font-size:12px}.dot{height:7px;width:7px;border-radius:100%;background:#8a919d}.card.ok .dot{background:#68bd8b}.card.fail .dot{background:#d67272}.notes{margin-top:20px;border-top:1px solid #334552;padding-top:12px;font-size:13px;color:#aab7c5}@media(max-width:520px){body{padding:12px}.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:7px}.meta strong{font-size:12px}.meta span{font-size:11px}.tile{height:110px}}
+</style></head><body>
+<h1>Threshold · Fase A <small style="font-size:.45em;color:#9ab3a9">v18.23</small></h1>
+<p>Controllo dei 13 sprite effettivamente collegati alla preview: 8 PNG della v18.22 e 5 nuove sagome. Qui sono mostrati nella scala del gioco, senza ingrandimenti artificiali.</p>
+<p><a href="./">Apri il dungeon giocabile</a> · <a href="./lotto3-gallery.html">Confronto Lotto 3 originale</a></p>
+<div class="toolbar"><div class="group"><label>Dimensione casella</label><button data-size="34" aria-pressed="true">Desktop · 34 px</button><button data-size="46" aria-pressed="false">Mobile · 46 px</button></div>
+<div class="group"><label>Illuminazione indicativa</label><button data-light="1" aria-pressed="true">Alta</button><button data-light=".65" aria-pressed="false">Media</button><button data-light=".38" aria-pressed="false">Bassa</button></div></div>
+<div class="stats" id="stats" aria-live="polite">Verifica caricamento degli asset…</div>
+<main class="gallery"><article class="card" data-id="guardStandard" data-type="guardroom">
+ <div class="meta"><strong>Stendardo delle guardie</strong><span>Caserma · 32×32px</span></div>
+ <div class="tile guardroom"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/guardStandard.png" alt="Stendardo delle guardie"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="archiveLectern" data-type="archive">
+ <div class="meta"><strong>Leggio aperto</strong><span>Archivio · 32×32px</span></div>
+ <div class="tile archive"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/archiveLectern.png" alt="Leggio aperto"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="treasurePedestal" data-type="treasury">
+ <div class="meta"><strong>Piedistallo del tesoro</strong><span>Tesoreria · 64×32px</span></div>
+ <div class="tile treasury"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/treasurePedestal.png" alt="Piedistallo del tesoro"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="sanctuaryStoneIdol" data-type="sanctuary">
+ <div class="meta"><strong>Idolo di pietra</strong><span>Santuario · 32×32px</span></div>
+ <div class="tile sanctuary"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/sanctuaryStoneIdol.png" alt="Idolo di pietra"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="armoryTrainingDummy" data-type="armory">
+ <div class="meta"><strong>Manichino</strong><span>Armeria · 32×32px</span></div>
+ <div class="tile armory"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/armoryTrainingDummy.png" alt="Manichino"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="healingAnatomyChart" data-type="infirmary">
+ <div class="meta"><strong>Tavola anatomica</strong><span>Infermeria · 32×32px</span></div>
+ <div class="tile infirmary"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/healingAnatomyChart.png" alt="Tavola anatomica"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="treasuryJewelryStand" data-type="treasury">
+ <div class="meta"><strong>Espositore di gioielli</strong><span>Tesoreria · 32×32px</span></div>
+ <div class="tile treasury"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/treasuryJewelryStand.png" alt="Espositore di gioielli"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="cryptOfferingNiche" data-type="crypt">
+ <div class="meta"><strong>Nicchia funeraria</strong><span>Cripta · 32×32px</span></div>
+ <div class="tile crypt"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/cryptOfferingNiche.png" alt="Nicchia funeraria"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="cryptStele" data-type="crypt">
+ <div class="meta"><strong>Stele funeraria</strong><span>Cripta · 32×32px</span></div>
+ <div class="tile crypt"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/cryptStele.svg" alt="Stele funeraria"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="sanctuarySundial" data-type="sanctuary">
+ <div class="meta"><strong>Meridiana votiva</strong><span>Santuario · 32×32px</span></div>
+ <div class="tile sanctuary"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/sanctuarySundial.svg" alt="Meridiana votiva"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="sanctuaryPrayerKneeler" data-type="sanctuary">
+ <div class="meta"><strong>Inginocchiatoio</strong><span>Santuario · 64×32px</span></div>
+ <div class="tile sanctuary"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/sanctuaryPrayerKneeler.svg" alt="Inginocchiatoio"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="treasuryRubyDisplay" data-type="treasury">
+ <div class="meta"><strong>Vetrina dei rubini</strong><span>Tesoreria · 32×32px</span></div>
+ <div class="tile treasury"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/treasuryRubyDisplay.svg" alt="Vetrina dei rubini"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="healingHerbTable" data-type="infirmary">
+ <div class="meta"><strong>Tavolo delle erbe</strong><span>Infermeria · 64×32px</span></div>
+ <div class="tile infirmary"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/healingHerbTable.svg" alt="Tavolo delle erbe"></div></div>
+ <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article></main>
+<div class="notes"><strong>Nota QA:</strong> la variazione di luminosità di questa pagina è soltanto simulata; non sostituisce il rendering con torcia reale e la nebbia di guerra, né i test su smartphone. Gli asset che non caricano sono segnalati in rosso; nel gioco resta attivo il fallback al vecchio renderer.</div>
+<script>
+const stats=document.querySelector('#stats');const cards=[...document.querySelectorAll('.card')];
+function recount(){let ok=cards.filter(x=>x.classList.contains('ok')).length,fail=cards.filter(x=>x.classList.contains('fail')).length;stats.textContent='Asset caricati: '+ok+'/13'+(fail?' · Errori: '+fail:'');}
+for(const card of cards){const img=card.querySelector('img'),out=card.querySelector('.response');img.addEventListener('load',()=>{const good=img.naturalWidth===Number(img.getAttribute('width'))&&img.naturalHeight===Number(img.getAttribute('height'));card.classList.toggle('ok',good);card.classList.toggle('fail',!good);out.textContent=good?'PNG/SVG caricato · dimensioni corrette':'Dimensioni non previste: '+img.naturalWidth+'×'+img.naturalHeight;recount()});img.addEventListener('error',()=>{card.classList.add('fail');out.textContent='Errore: file non caricato';recount()});if(img.complete){if(img.naturalWidth)img.dispatchEvent(new Event('load'));else img.dispatchEvent(new Event('error'))}}
+document.querySelectorAll('[data-size]').forEach(button=>button.addEventListener('click',()=>{document.documentElement.style.setProperty('--cell',button.dataset.size+'px');document.querySelectorAll('[data-size]').forEach(x=>x.setAttribute('aria-pressed',String(x===button)))}));
+document.querySelectorAll('[data-light]').forEach(button=>button.addEventListener('click',()=>{document.documentElement.style.setProperty('--light',button.dataset.light);document.querySelectorAll('[data-light]').forEach(x=>x.setAttribute('aria-pressed',String(x===button)))}));
+</script></body></html>
