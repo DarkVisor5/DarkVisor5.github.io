@@ -1,0 +1,64 @@
+name: Threshold Phase D - 100 real runs
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_phase_d_bot.js'
+      - 'tools/qa_phase_d_aggregate.cjs'
+      - '.github/workflows/qa-phase-d-100.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  play:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play ten unmodified normal-dungeon games
+        env:
+          THRESHOLD_RUNS: '10'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/d-${{ matrix.shard }}
+        run: node tools/qa_phase_d_runner.cjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-d-evidence-${{ matrix.shard }}
+          path: results/d-${{ matrix.shard }}/
+          retention-days: 30
+  aggregate:
+    needs: play
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase-d-evidence-*
+          path: results/all
+      - name: Aggregate 100 games and death dossiers
+        run: node tools/qa_phase_d_aggregate.cjs results/all
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-d-100-report
+          path: |
+            results/threshold-phase-d-summary.json
+            results/threshold-phase-d-summary.md
+          retention-days: 30
