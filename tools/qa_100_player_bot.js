@@ -6,7 +6,8 @@
  const root=()=>document.querySelector('#dungeon-fixed');
  const key=(x,y)=>x+','+y;
  const close=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
- const send=k=>root().dispatchEvent(new KeyboardEvent('keydown',{key:k,bubbles:true,cancelable:true}));
+ let recentKey=null;
+ const send=k=>{recentKey=k;root().dispatchEvent(new KeyboardEvent('keydown',{key:k,bubbles:true,cancelable:true}))};
  const click=selector=>{let b=root().querySelector(selector);if(b&&!b.disabled){b.click();return true}return false};
  const tile=(v,x,y)=>v.world[y]?.[x]||'?';
  const passable=t=>t==='.'||t==='>';
@@ -149,7 +150,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0;
+   let history=new Map(),turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[];
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
@@ -157,8 +158,11 @@
     const pos=key(v.player.x,v.player.y),old=key(v.floor,pos);
     highest=Math.max(highest,v.floor);
     history.set(pos,(history.get(pos)||0)+1);
+    recentKey=null;
     const act=action(v,history,metrics);
     metrics.actions[act]=(metrics.actions[act]||0)+1;
+    trace.push({t:turns,action:act,key:recentKey,from:v.player,puzzle:v.puzzle,atStairs:v.atStairs,dialog:v.dialog,known:v.knownCount,enemies:v.enemies,props:v.props.filter(p=>close(p,v.player)<=3)});
+    if(trace.length>12)trace.shift();
     if(act==='heal')metrics.heals++;
     if(act==='stuck'){reason='stuck_no_known_path';break}
     const after=global.__humanBotView();
@@ -174,7 +178,7 @@
    if(!reason)reason=lastView.finished?lastView.summary?.title:'action_limit';
    results.push({run:game,result:reason,finished:!!lastView.finished,floor:highest,hp:lastView.hp,steps:lastView.steps||0,
     turns,known:lastView.knownCount||0,kills:lastView.kills||0,coins:lastView.coins||0,
-    finalPosition:lastView.player,finalPuzzle:{type:lastView.puzzle?.type,found:lastView.puzzle?.found,door:lastView.puzzle?.door,key:lastView.puzzle?.key},
+    finalPosition:lastView.player,finalPuzzle:{type:lastView.puzzle?.type,found:lastView.puzzle?.found,door:lastView.puzzle?.door,key:lastView.puzzle?.key},trace,
     fights:metrics.fights,heals:metrics.heals,actions:metrics.actions,durationMs:Math.round(performance.now()-started)});
    if(game%10===0)console.log('PLAY100_PROGRESS '+game+'/'+count+' completed='+results.filter(x=>x.finished).length+' reached5='+results.filter(x=>x.floor===5).length);
    if(game<count&&!(lastView.finished)){
