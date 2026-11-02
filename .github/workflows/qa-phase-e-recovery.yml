@@ -1,0 +1,34 @@
+name: Threshold Phase E - recover ten uncarded games
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/qa-phase-e-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Execute ten real no-card runs
+        env:
+          THRESHOLD_RUNS: '10'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/e-recovery
+        run: node tools/qa_phase_e_runner.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-e-no-cards-recovery-evidence
+          path: results/e-recovery/
+          retention-days: 30
