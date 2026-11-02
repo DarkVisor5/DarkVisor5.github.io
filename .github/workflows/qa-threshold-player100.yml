@@ -6,13 +6,18 @@ on:
     paths:
       - 'tools/qa_100_player_*.js'
       - 'tools/qa_100_player_runner.cjs'
+      - 'tools/qa_100_player_aggregate.cjs'
       - '.github/workflows/qa-threshold-player100.yml'
 permissions:
   contents: read
 jobs:
   real-playthroughs:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,16 +27,39 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
-      - name: Play actual browser games with genuine inputs
+      - name: Play 10 real browser games on this shard
         env:
-          THRESHOLD_RUNS: '100'
+          THRESHOLD_RUNS: '10'
           THRESHOLD_TURN_LIMIT: '1800'
-          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/real-player
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/shard-${{ matrix.shard }}
         run: node tools/qa_100_player_runner.cjs
       - name: Preserve all run-level evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: threshold-real-player-evidence
-          path: results/real-player/
+          name: threshold-real-player-evidence-${{ matrix.shard }}
+          path: results/shard-${{ matrix.shard }}/
+          retention-days: 30
+  aggregate:
+    needs: real-playthroughs
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: threshold-real-player-evidence-*
+          path: results/all
+      - name: Aggregate actual results for exactly 100 played games
+        run: node tools/qa_100_player_aggregate.cjs results/all
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: threshold-play100-consolidated-report
+          path: |
+            results/threshold-100-player-summary.json
+            results/threshold-100-player-summary.md
           retention-days: 30
