@@ -1,0 +1,19 @@
+/* v18.25 — optional themed interactable furniture */
+.phase-b-overlay[hidden]{display:none!important}
+.phase-b-overlay{position:fixed;inset:0;z-index:250;background:rgba(5,8,15,.83);display:grid;place-items:center;padding:20px;overflow:auto;overscroll-behavior:contain}
+.phase-b-card{width:min(100%,520px);max-height:min(90dvh,850px);overflow-y:auto;border:1px solid #65736b;border-radius:16px;background:linear-gradient(165deg,#263129,#131b22);box-shadow:0 18px 70px #000b;color:#e9e8dd;padding:20px}
+.phase-b-head{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.phase-b-head small{font-size:11px;letter-spacing:.15em;color:#b2cdb5;font-weight:700}
+.phase-b-head h2{font-size:22px;font-weight:750;line-height:1.25;margin:6px 0 0;color:#f2e5c9}
+.phase-b-close{cursor:pointer;border:1px solid #586b6f;border-radius:8px;color:#fff;background:#1e2932;min-width:38px;min-height:38px;font-size:18px}
+#phaseBText{color:#d3d8d6;font-size:15px;line-height:1.65;white-space:pre-wrap;margin:16px 0}
+.phase-b-note{background:#273730;color:#d0ead4;border-left:3px solid #8bd3b0;padding:11px 12px;border-radius:5px;font-size:14px;line-height:1.6}
+.phase-b-note[hidden]{display:none}
+.phase-b-actions{display:grid;gap:8px}
+.phase-b-actions button{border:1px solid #647b7c;background:#283b43;color:#f3f1e8;text-align:left;padding:12px 14px;border-radius:9px;font:600 14px/1.4 system-ui,sans-serif;cursor:pointer;min-height:46px}
+.phase-b-actions button:hover:not(:disabled),.phase-b-actions button:focus-visible{background:#365457;border-color:#a9d5bc;outline:2px solid transparent}
+.phase-b-actions button:disabled{opacity:.45;cursor:not-allowed}
+.phase-b-actions button:last-child{background:#1b242d;color:#cbd0cc}
+.phase-b-foot{display:block;margin-top:16px;color:#99a7ad;line-height:1.5}
+@media(max-width:700px){.phase-b-overlay{padding:8px}.phase-b-card{max-height:94dvh;padding:16px;border-radius:12px}.phase-b-head h2{font-size:20px}.phase-b-actions button{min-height:50px;font-size:15px}}
+@media(prefers-reduced-motion:reduce){.phase-b-overlay *{scroll-behavior:auto}}
