@@ -74,6 +74,7 @@
  function action(v,history,metrics){
   if(v.finished||!v.inGame)return 'done';
   const dlg=v.dialog;
+  if(dlg.guide){click('#guidePlayBtn');return 'close_tutorial'}
   if(dlg.puzzle){click('#puzzleCloseBtn');return 'close_puzzle'}
   if(dlg.phaseB){click('#phaseBClose');return 'close_furniture'}
   if(dlg.event){click('#eventChoices button:last-child');return 'event'}

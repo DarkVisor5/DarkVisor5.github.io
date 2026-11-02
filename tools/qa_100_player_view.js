@@ -35,6 +35,7 @@ window.__humanBotView=()=>{
   chests:s.chests.filter(isKnown).map(o=>({x:o.x,y:o.y,opened:o.opened})),
   rareEvent:location(s.rareEvent),dangerDoor:location(s.dangerDoor),
   dialog:{
+   guide:!root.querySelector('#guideOverlay').classList.contains('hidden'),
    puzzle:!root.querySelector('#puzzlePanel').classList.contains('hidden'),
    event:!root.querySelector('#eventPanel').classList.contains('hidden'),
    danger:!root.querySelector('#dangerPanel').classList.contains('hidden'),
