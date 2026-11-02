@@ -30,7 +30,7 @@ window.__humanBotView=()=>{
   world:s.map.map((row,y)=>Array.from({length:row.length},(_,x)=>seen.has(K(x,y))?row[x]:'?').join('')),
   knownCount:seen.size,visibleCount:visible.size,
   stairs:location(s.stairs),puzzle:q,
-  enemies:s.enemies.filter(o=>o.hp>0&&isNow(o)).map(o=>({x:o.x,y:o.y,hp:o.hp,family:o.family,boss:!!o.boss,bossKind:o.bossKind||null,state:o.state,tier:o.tier})),
+  enemies:s.enemies.filter(o=>o.hp>0&&isNow(o)).map(o=>({x:o.x,y:o.y,hp:o.hp,family:o.family,boss:!!o.boss,bossKind:o.bossKind||null,state:o.state,tier:o.tier,telegraph:!!o.telegraph,armored:!!o.armored})),
   // Furniture that was visible earlier stays in the player's explored-map memory.
   props:v18RoomDecor().filter(o=>{for(let y=o.y;y<o.y+o.h;y++)for(let x=o.x;x<o.x+o.w;x++)if(seen.has(K(x,y)))return true;return false}).map(o=>({x:o.x,y:o.y,w:o.w,h:o.h,type:o.type,solid:o.solid})),
   traps:s.traps.filter(o=>o.revealed&&isKnown(o)).map(o=>({x:o.x,y:o.y,triggered:o.triggered})),
