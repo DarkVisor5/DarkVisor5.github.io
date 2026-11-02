@@ -2915,6 +2915,40 @@ for(const [type,file] of Object.entries(V18_23_ART_FILES)){
  V18_23_SPRITES[type]=img;
 }
 
+// v18.24 — sprite fidelity pass: six complete silhouettes + 17 refined props.
+const V18_24_ART_FILES={
+ archiveBookCart:'archiveBookCart.svg',
+ healingMedicineCart:'healingMedicineCart.svg',
+ sanctuaryReliquary:'sanctuaryReliquary.svg',
+ treasurySilverCabinet:'treasurySilverCabinet.svg',
+ cryptSkullColumn:'cryptSkullColumn.svg',
+ storeChainHoist:'storeChainHoist.svg',
+ armoryChainRack:'armoryChainRack.svg',
+ armoryQuiver:'armoryQuiver.svg',
+ armoryHelmetShelf:'armoryHelmetShelf.svg',
+ armoryBellows:'armoryBellows.svg',
+ archiveScrollTable:'archiveScrollTable.svg',
+ archiveClock:'archiveClock.svg',
+ guardWeaponBench:'guardWeaponBench.svg',
+ guardMapBoard:'guardMapBoard.svg',
+ guardHelmStand:'guardHelmStand.svg',
+ guardSupplyLocker:'guardSupplyLocker.svg',
+ healingWashBasin:'healingWashBasin.svg',
+ cryptBonePile:'cryptBonePile.svg',
+ cryptCandleTomb:'cryptCandleTomb.svg',
+ storeCart:'storeCart.svg',
+ storePotteryRack:'storePotteryRack.svg',
+ storeWineCrates:'storeWineCrates.svg',
+ storeRopeCoils:'storeRopeCoils.svg'
+};
+const V18_24_SPRITES={};
+for(const [type,file] of Object.entries(V18_24_ART_FILES)){
+ const img=new Image();
+ img.addEventListener('load',()=>{if(s)render()});
+ img.src='./assets/sprites/v18_24/'+file;
+ V18_24_SPRITES[type]=img;
+}
+
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2942,12 +2976,15 @@ function drawV18RoomDecor(c,relight=false){
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
   ctx.imageSmoothingEnabled=false;
+  const phaseB=V18_24_SPRITES[prop.type];
   const phaseA=V18_23_SPRITES[prop.type];
   const lotto3=V18_LOTTO3_TILES[prop.type];
   const lotto2=V18_LOTTO2_TILES[prop.type];
   const tile=V18_REDESIGNED_TILES[prop.type];
   const polished=V18_POLISHED_SPRITES[prop.type];
-  if(phaseA?.complete&&phaseA.naturalWidth){
+  if(phaseB?.complete&&phaseB.naturalWidth){
+   ctx.drawImage(phaseB,px,py,CELL*prop.w,CELL*prop.h);
+  }else if(phaseA?.complete&&phaseA.naturalWidth){
    ctx.drawImage(phaseA,px,py,CELL*prop.w,CELL*prop.h);
   }else if(lotto3!==undefined&&V18_LOTTO3_ATLAS.complete&&V18_LOTTO3_ATLAS.naturalWidth){
    const w=prop.type==='treasurePedestal'?64:32;

@@ -124,3 +124,11 @@ _Prima di una release stabile_
 - Il renderer usa i 13 asset Fase A se caricati, con **fallback automatico** ai precedenti atlanti e disegni procedurali.
 - Nessun cambio a combattimento, collisioni, scala delle mappe, IA, loot e luce; v17 stabile invariata.
 - Da verificare in **browser reale** su desktop e mobile: comparsa effettiva, contrasto a tre livelli di luce, leggibilità 34/46 px, regression delle run. Non attribuire uno stato "OK definitivo" prima del playtest.
+
+## Checkpoint v18.24 — Fase A, completamento dei ritocchi (2 novembre 2026)
+
+- Creati e collegati nel renderer **23 nuovi sprite** di arredi ambientali: **6 rifatti da zero** e **17 rifiniti**. Ciascuno ha una sagoma specifica e un asset `SVG` indipendente nella cartella `assets/sprites/v18_24/`.
+- Priorità grafica: nuovi sprite v18.24 → v18.23 → atlanti Lotto 1/2/3 → disegni precedenti. Un caricamento fallito non impedisce di usare il fallback.
+- La galleria `fase-a-gallery.html` mostra i **36 asset migliorati** di Fase A, permette filtri per lotto e simula luce alta/media/bassa e dimensioni desktop/mobile.
+- Non sono stati modificati dati delle mappe, oggetti solidi, hitbox, torce, combattimento, bottino, progressione, probabilità delle trappole, IA o la v17 stabile.
+- **Stato di accettazione:** completata produzione+integrazione grafica dei 28 arredi segnalati nell'audit originale (5 in v18.23, altri 23 in v18.24). Rimangono da approvare con test visivi in-game, luce reale e dispositivi mobili; **non dichiarare chiusa la Fase A** finché non sono superati.

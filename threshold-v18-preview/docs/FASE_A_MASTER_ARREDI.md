@@ -4,6 +4,8 @@
 
 > **Valutazione preliminare, non certificazione visiva.** Ho verificato il catalogo, il renderer e gli asset dei Lotti 1–3; per i disegni già visti nelle anteprime ho considerato anche la leggibilità a 34 px. I giudizi sui procedurali sono ipotesi motivate dalla forma generata nel codice, da confermare in uno screenshot reale in dungeon a luminosità alta/bassa. “OK provvisorio” non significa che tutti gli 80 sprite abbiano superato un test visivo indipendente.
 
+> **Aggiornamento 2 novembre 2026 · v18.24:** le 11 voci "DA RIFARE" e le 17 "DA RIFINIRE" della valutazione qui sotto hanno ora asset nuovi nel codice giocabile (5 rifatti in v18.23, 6 rifatti e 17 rifiniti in v18.24). I conteggi e le etichette della tabella restano **fotografia storica dell'audit del 29 ottobre**, non sono lo stato di rilascio odierno. Gli asset sono **da validare visivamente in dungeon e su smartphone** prima di passare a "OK definitivo". Vedere `FASE_A_v18_24.md`.
+
 ## Risultati
 
 - **80 arredi distinti**, da **81 voci di collocazione**: `sarcophagus` è elencato due volte nella categoria `crypt` (in posizioni differenti). L'eventuale frequenza di apparizione va verificata prima di modificare il catalogo.

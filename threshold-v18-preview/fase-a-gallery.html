@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Threshold v18.23 — Fase A · verifica sprite</title>
+<title>Threshold v18.24 — Fase A · verifica sprite</title>
 <style>
-:root{color-scheme:dark;--cell:34px;font-family:system-ui,Segoe UI,sans-serif;background:#0d1219;color:#e5e0d6}*{box-sizing:border-box}body{max-width:1260px;margin:auto;padding:22px 16px 55px}h1{font-size:clamp(24px,3vw,36px);margin:0 0 6px}p{color:#aebdcb;margin:5px 0 18px;line-height:1.5}a{color:#a7d5d4}.toolbar{display:flex;gap:18px;flex-wrap:wrap;background:#19232d;padding:15px;border:1px solid #354351;border-radius:12px;margin:14px 0}.group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.group label{margin-right:6px;color:#c0cbd5;font-size:13px}button{background:#253342;border:1px solid #4c5b65;color:#eef2f5;border-radius:8px;padding:9px 11px;cursor:pointer}button[aria-pressed=true]{background:#426b5b;border-color:#81c6a5}.stats{font-size:14px;color:#9bafb7;margin:0 0 14px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}.card{border:1px solid #334552;background:#17212b;border-radius:12px;padding:12px}.meta{min-height:49px;display:grid;align-content:start;gap:3px}.meta strong{font-size:14px}.meta span{font-size:12px;color:#96adbb}.tile{border:2px solid #35404b;border-radius:7px;height:125px;display:grid;place-items:center;background-color:#343a42;background-image:linear-gradient(135deg,transparent 45%,rgba(255,255,255,.035) 46%,rgba(255,255,255,.035) 54%,transparent 55%);position:relative}.tile.crypt{background-color:#353941}.tile.sanctuary{background-color:#463e37}.tile.treasury{background-color:#393943}.tile.infirmary{background-color:#354238}.tile.armory{background-color:#40413f}.tile.archive{background-color:#383a37}.tile.guardroom{background-color:#383b42}.tile-inner{display:grid;place-items:center;min-width:calc(var(--cell) * 2);min-height:calc(var(--cell) * 2);filter:brightness(var(--light)) contrast(1.06)}img{object-fit:contain;image-rendering:pixelated}.state{display:flex;align-items:center;gap:7px;margin-top:10px;color:#aab7c5;font-size:12px}.dot{height:7px;width:7px;border-radius:100%;background:#8a919d}.card.ok .dot{background:#68bd8b}.card.fail .dot{background:#d67272}.notes{margin-top:20px;border-top:1px solid #334552;padding-top:12px;font-size:13px;color:#aab7c5}@media(max-width:520px){body{padding:12px}.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:7px}.meta strong{font-size:12px}.meta span{font-size:11px}.tile{height:110px}}
+:root{color-scheme:dark;--cell:34px;font-family:system-ui,Segoe UI,sans-serif;background:#0d1219;color:#e5e0d6}*{box-sizing:border-box}body{max-width:1260px;margin:auto;padding:22px 16px 55px}h1{font-size:clamp(24px,3vw,36px);margin:0 0 6px}p{color:#aebdcb;margin:5px 0 18px;line-height:1.5}a{color:#a7d5d4}.toolbar{display:flex;gap:18px;flex-wrap:wrap;background:#19232d;padding:15px;border:1px solid #354351;border-radius:12px;margin:14px 0}.group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.group label{margin-right:6px;color:#c0cbd5;font-size:13px}button{background:#253342;border:1px solid #4c5b65;color:#eef2f5;border-radius:8px;padding:9px 11px;cursor:pointer}button[aria-pressed=true]{background:#426b5b;border-color:#81c6a5}.stats{font-size:14px;color:#9bafb7;margin:0 0 14px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}.card{border:1px solid #334552;background:#17212b;border-radius:12px;padding:12px}.meta{min-height:49px;display:grid;align-content:start;gap:3px}.meta strong{font-size:14px}.meta span{font-size:12px;color:#96adbb}.tile{border:2px solid #35404b;border-radius:7px;height:125px;display:grid;place-items:center;background-color:#343a42;background-image:linear-gradient(135deg,transparent 45%,rgba(255,255,255,.035) 46%,rgba(255,255,255,.035) 54%,transparent 55%);position:relative}.tile.crypt{background-color:#353941}.tile.sanctuary{background-color:#463e37}.tile.treasury{background-color:#393943}.tile.infirmary{background-color:#354238}.tile.armory{background-color:#40413f}.tile.archive{background-color:#383a37}.tile.guardroom{background-color:#383b42}.tile-inner{display:grid;place-items:center;min-width:calc(var(--cell) * 2);min-height:calc(var(--cell) * 2);filter:brightness(var(--light)) contrast(1.06)}img{object-fit:contain;image-rendering:pixelated}.card[hidden]{display:none!important}.state{display:flex;align-items:center;gap:7px;margin-top:10px;color:#aab7c5;font-size:12px}.dot{height:7px;width:7px;border-radius:100%;background:#8a919d}.card.ok .dot{background:#68bd8b}.card.fail .dot{background:#d67272}.notes{margin-top:20px;border-top:1px solid #334552;padding-top:12px;font-size:13px;color:#aab7c5}@media(max-width:520px){body{padding:12px}.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:7px}.meta strong{font-size:12px}.meta span{font-size:11px}.tile{height:110px}}
 </style></head><body>
-<h1>Threshold · Fase A <small style="font-size:.45em;color:#9ab3a9">v18.23</small></h1>
-<p>Controllo dei 13 sprite effettivamente collegati alla preview: 8 PNG della v18.22 e 5 nuove sagome. Qui sono mostrati nella scala del gioco, senza ingrandimenti artificiali.</p>
+<h1>Threshold · Fase A <small style="font-size:.45em;color:#9ab3a9">v18.24</small></h1>
+<p>Verifica di 36 arredi collegati al motore: 13 introdotti nella v18.23 e altri 23 della v18.24 (6 rifatti e 17 rifiniti). Il confronto è alla scala reale del gioco.</p>
 <p><a href="./">Apri il dungeon giocabile</a> · <a href="./lotto3-gallery.html">Confronto Lotto 3 originale</a></p>
-<div class="toolbar"><div class="group"><label>Dimensione casella</label><button data-size="34" aria-pressed="true">Desktop · 34 px</button><button data-size="46" aria-pressed="false">Mobile · 46 px</button></div>
+<div class="toolbar"><div class="group"><label>Visualizza</label><button data-filter="all" aria-pressed="true">Tutti (36)</button><button data-filter="redo" aria-pressed="false">6 rifatti</button><button data-filter="polish" aria-pressed="false">17 rifiniti</button><button data-filter="previous" aria-pressed="false">Precedenti (13)</button></div><div class="group"><label>Dimensione casella</label><button data-size="34" aria-pressed="true">Desktop · 34 px</button><button data-size="46" aria-pressed="false">Mobile · 46 px</button></div>
 <div class="group"><label>Illuminazione indicativa</label><button data-light="1" aria-pressed="true">Alta</button><button data-light=".65" aria-pressed="false">Media</button><button data-light=".38" aria-pressed="false">Bassa</button></div></div>
 <div class="stats" id="stats" aria-live="polite">Verifica caricamento degli asset…</div>
 <main class="gallery"><article class="card" data-id="guardStandard" data-type="guardroom">
@@ -74,12 +74,128 @@
  <div class="meta"><strong>Tavolo delle erbe</strong><span>Infermeria · 64×32px</span></div>
  <div class="tile infirmary"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:calc(var(--cell) * 1);" loading="eager" src="./assets/sprites/v18_23/healingHerbTable.svg" alt="Tavolo delle erbe"></div></div>
  <div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
-</article></main>
+</article><article class="card" data-id="archiveBookCart" data-phase="redo">
+<div class="meta"><strong>Carrello dei volumi</strong><span>Archivio · 64×32px · Ridisegnato</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/archiveBookCart.svg" alt="Carrello dei volumi"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="healingMedicineCart" data-phase="redo">
+<div class="meta"><strong>Carrello dei rimedi</strong><span>Infermeria · 64×32px · Ridisegnato</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/healingMedicineCart.svg" alt="Carrello dei rimedi"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="sanctuaryReliquary" data-phase="redo">
+<div class="meta"><strong>Reliquiario</strong><span>Santuario · 32×32px · Ridisegnato</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/sanctuaryReliquary.svg" alt="Reliquiario"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="treasurySilverCabinet" data-phase="redo">
+<div class="meta"><strong>Vetrina d'argento</strong><span>Tesoreria · 64×32px · Ridisegnato</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/treasurySilverCabinet.svg" alt="Vetrina d'argento"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="cryptSkullColumn" data-phase="redo">
+<div class="meta"><strong>Colonna di teschi</strong><span>Cripta · 32×32px · Ridisegnato</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/cryptSkullColumn.svg" alt="Colonna di teschi"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="storeChainHoist" data-phase="redo">
+<div class="meta"><strong>Argano di carico</strong><span>Magazzino · 64×32px · Ridisegnato</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/storeChainHoist.svg" alt="Argano di carico"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="armoryChainRack" data-phase="polish">
+<div class="meta"><strong>Cotte di maglia</strong><span>Armeria · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/armoryChainRack.svg" alt="Cotte di maglia"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="armoryQuiver" data-phase="polish">
+<div class="meta"><strong>Faretra</strong><span>Armeria · 32×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/armoryQuiver.svg" alt="Faretra"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="armoryHelmetShelf" data-phase="polish">
+<div class="meta"><strong>Ripiano degli elmi</strong><span>Armeria · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/armoryHelmetShelf.svg" alt="Ripiano degli elmi"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="armoryBellows" data-phase="polish">
+<div class="meta"><strong>Mantice</strong><span>Armeria · 32×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/armoryBellows.svg" alt="Mantice"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="archiveScrollTable" data-phase="polish">
+<div class="meta"><strong>Tavolo delle mappe</strong><span>Archivio · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/archiveScrollTable.svg" alt="Tavolo delle mappe"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="archiveClock" data-phase="polish">
+<div class="meta"><strong>Orologio astronomico</strong><span>Archivio · 32×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/archiveClock.svg" alt="Orologio astronomico"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="guardWeaponBench" data-phase="polish">
+<div class="meta"><strong>Panca delle armi</strong><span>Caserma · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/guardWeaponBench.svg" alt="Panca delle armi"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="guardMapBoard" data-phase="polish">
+<div class="meta"><strong>Mappa delle pattuglie</strong><span>Caserma · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/guardMapBoard.svg" alt="Mappa delle pattuglie"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="guardHelmStand" data-phase="polish">
+<div class="meta"><strong>Supporto per elmo</strong><span>Caserma · 32×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/guardHelmStand.svg" alt="Supporto per elmo"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="guardSupplyLocker" data-phase="polish">
+<div class="meta"><strong>Armadietto delle guardie</strong><span>Caserma · 32×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/guardSupplyLocker.svg" alt="Armadietto delle guardie"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="healingWashBasin" data-phase="polish">
+<div class="meta"><strong>Bacinella d'acqua</strong><span>Infermeria · 32×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/healingWashBasin.svg" alt="Bacinella d'acqua"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="cryptBonePile" data-phase="polish">
+<div class="meta"><strong>Ossa accatastate</strong><span>Cripta · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/cryptBonePile.svg" alt="Ossa accatastate"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="cryptCandleTomb" data-phase="polish">
+<div class="meta"><strong>Sepolcro a candele</strong><span>Cripta · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/cryptCandleTomb.svg" alt="Sepolcro a candele"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="storeCart" data-phase="polish">
+<div class="meta"><strong>Carretto delle merci</strong><span>Magazzino · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/storeCart.svg" alt="Carretto delle merci"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="storePotteryRack" data-phase="polish">
+<div class="meta"><strong>Scaffale di giare</strong><span>Magazzino · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/storePotteryRack.svg" alt="Scaffale di giare"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="storeWineCrates" data-phase="polish">
+<div class="meta"><strong>Casse di vino</strong><span>Magazzino · 64×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="64" height="32" style="width:calc(var(--cell) * 2);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/storeWineCrates.svg" alt="Casse di vino"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+<article class="card" data-id="storeRopeCoils" data-phase="polish">
+<div class="meta"><strong>Matasse di corda</strong><span>Magazzino · 32×32px · Rifinito</span></div>
+<div class="tile"><div class="tile-inner"><img width="32" height="32" style="width:calc(var(--cell) * 1);height:var(--cell)" loading="eager" src="./assets/sprites/v18_24/storeRopeCoils.svg" alt="Matasse di corda"></div></div>
+<div class="state" aria-live="polite"><span class="dot"></span><span class="response">Verifica caricamento…</span></div>
+</article>
+</main>
 <div class="notes"><strong>Nota QA:</strong> la variazione di luminosità di questa pagina è soltanto simulata; non sostituisce il rendering con torcia reale e la nebbia di guerra, né i test su smartphone. Gli asset che non caricano sono segnalati in rosso; nel gioco resta attivo il fallback al vecchio renderer.</div>
 <script>
 const stats=document.querySelector('#stats');const cards=[...document.querySelectorAll('.card')];
-function recount(){let ok=cards.filter(x=>x.classList.contains('ok')).length,fail=cards.filter(x=>x.classList.contains('fail')).length;stats.textContent='Asset caricati: '+ok+'/13'+(fail?' · Errori: '+fail:'');}
+function recount(){let ok=cards.filter(x=>x.classList.contains('ok')).length,fail=cards.filter(x=>x.classList.contains('fail')).length;stats.textContent='Asset caricati: '+ok+'/36'+(fail?' · Errori: '+fail:'');}
 for(const card of cards){const img=card.querySelector('img'),out=card.querySelector('.response');img.addEventListener('load',()=>{const good=img.naturalWidth===Number(img.getAttribute('width'))&&img.naturalHeight===Number(img.getAttribute('height'));card.classList.toggle('ok',good);card.classList.toggle('fail',!good);out.textContent=good?'PNG/SVG caricato · dimensioni corrette':'Dimensioni non previste: '+img.naturalWidth+'×'+img.naturalHeight;recount()});img.addEventListener('error',()=>{card.classList.add('fail');out.textContent='Errore: file non caricato';recount()});if(img.complete){if(img.naturalWidth)img.dispatchEvent(new Event('load'));else img.dispatchEvent(new Event('error'))}}
+document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{const mode=b.dataset.filter;for(const card of cards)card.hidden=mode!=='all'&&((card.dataset.phase||'previous')!==mode);document.querySelectorAll('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))}));
 document.querySelectorAll('[data-size]').forEach(button=>button.addEventListener('click',()=>{document.documentElement.style.setProperty('--cell',button.dataset.size+'px');document.querySelectorAll('[data-size]').forEach(x=>x.setAttribute('aria-pressed',String(x===button)))}));
 document.querySelectorAll('[data-light]').forEach(button=>button.addEventListener('click',()=>{document.documentElement.style.setProperty('--light',button.dataset.light);document.querySelectorAll('[data-light]').forEach(x=>x.setAttribute('aria-pressed',String(x===button)))}));
 </script></body></html>
