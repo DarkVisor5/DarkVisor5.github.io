@@ -1,0 +1,65 @@
+name: Threshold optimal sword survival build - 100 authentic games
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_optimal_sword_build_runner.cjs'
+      - 'tools/qa_optimal_sword_build_aggregate.cjs'
+      - '.github/workflows/qa-optimal-sword-build-100.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  play:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install real Chromium browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Purchase exact 5 cards and play 10 unmodified floor-1-start games
+        env:
+          THRESHOLD_RUNS: '10'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/sword-${{ matrix.shard }}
+        run: node tools/qa_optimal_sword_build_runner.cjs
+      - name: Preserve game actions and 30-turn death dossiers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: optimal-sword-build-evidence-${{ matrix.shard }}
+          path: results/sword-${{ matrix.shard }}/
+          retention-days: 30
+  aggregate:
+    needs: play
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: optimal-sword-build-evidence-*
+          path: results/all
+      - name: Aggregate 100 valid sword-Guard survival deck runs
+        run: node tools/qa_optimal_sword_build_aggregate.cjs results/all
+      - name: Preserve consolidated report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: optimal-sword-build-100-consolidated-report
+          path: |
+            results/threshold-optimal-sword-build-summary.json
+            results/threshold-optimal-sword-build-summary.md
+          retention-days: 30
