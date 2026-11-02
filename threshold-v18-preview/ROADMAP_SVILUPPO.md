@@ -176,3 +176,15 @@ La pipeline `qa-threshold-v18.yml` esegue un **smoke test reale su Chromium desk
 - Report dettagliato: [Fase C / 200 partite browser](docs/QA_FASE_C_200_PARTITE_REALI_2026-11-02.md). Esecuzioni CI: [senza carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41459386193) e [con carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41459986257).
 
 **Prossimo intervento:** strategia di ritirata e combattimento contro i boss, utilizzo più razionale delle pozioni, campioni comparabili con seed appaiati; poi test umano e revisione della difficoltà se necessaria.
+
+## Fase D — Bot tattico e test completo (2 novembre 2026)
+
+- **Attuato solo nel collaudo**: nuovo `tools/qa_phase_d_bot.js`, con armi scelte secondo matchup, utilizzo delle lance a distanza 2 e delle asce ad area, ritirate brevi, pozioni gestite meglio, apprendimento da movimenti bloccati e pause per evitare cambi continui di arma.
+- **200 partite reali in Chromium dal primo piano**, 100 senza carte e 100 con il mazzo permanente da 5 carte acquistabili con 1.930 oro e rango II; nessuna modifica diretta ai nemici, alle mappe o agli HP.
+- **Senza carte:** 95 morti, 5 interruzioni, massimo piano 4, profondità media 2,38.
+- **Con carte:** 92 morti, 8 interruzioni, massimo **piano 5 in due partite**, profondità media 2,60.
+- **Zero vittorie**, nessuna interruzione causata dal test browser; 30 turni prima della morte registrati per ogni sconfitta.
+- **Fase E ancora aperta:** imparare a gestire nemici élite e ferite al quinto piano, poi misurare i combattimenti contro il boss finale.
+- [Rapporto QA Fase D](docs/QA_FASE_D_BOT_TATTICO_200_PARTITE_2026-11-02.md) · [Workflow senza carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41463454428) · [Workflow con carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41463484094).
+
+**Il gioco v18.26 e la v17 stabile sono rimasti invariati.**
