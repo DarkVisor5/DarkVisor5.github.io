@@ -1,6 +1,6 @@
 
 window.__humanBotView=()=>{
- if(!s){const summary=root.querySelector('#runSummary'),finished=!!summary&&!summary.classList.contains('hidden');return {inGame:false,finished,summary:finished?{title:root.querySelector('#summaryTitle')?.textContent||'Fine partita'}:null}}
+ if(!s){const summary=root.querySelector('#runSummary'),finished=!!summary&&!summary.classList.contains('hidden');return {inGame:false,finished,summary:finished?{title:root.querySelector('#summaryTitle')?.textContent||'Fine partita'}:null,log:[...root.querySelectorAll('#log .log-entry')].slice(0,8).map(e=>e.textContent)}}
  const visible=s.visible,seen=s.seen,key=o=>K(o.x,o.y),isKnown=o=>!!o&&seen.has(key(o)),isNow=o=>!!o&&visible.has(key(o));
  const puzzle=s.keyPuzzle||{},location=o=>isKnown(o)?{x:o.x,y:o.y,...(o.name?{name:o.name}:{})}:null;
  const q={

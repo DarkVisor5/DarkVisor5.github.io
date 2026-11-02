@@ -135,6 +135,7 @@
   if(v.floor===5&&!p.found&&p.sigilProgress===3&&p.finalSeal&&close(p.finalSeal,v.player)===0){send(' ');return 'wait_seal'}
   // Collect loot by walking onto the visible tile. If a boss is nearby,
   // approach it for a real melee confrontation.
+  if(nav.stairsBlocked&&nav.turn-(nav.stairsBlockedAt||0)>110){nav.stairsBlocked=false;nav.goal=null;nav.label=null}
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
   // A player chooses a destination and follows through rather than
@@ -189,7 +190,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,banned:new Map(),recent:[],turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
@@ -220,7 +221,7 @@
     const after=global.__humanBotView();
     const postLog=after.log||[];
     if(postLog.some(msg=>/scale sono sigillate|SCONFIGGI IL BOSS|Scale sigillate/i.test(msg))&&
-       v.floor===3&&kindHintStairs(act,nav,v)){nav.stairsBlocked=true;nav.goal=null;nav.label=null}
+       v.floor===3&&kindHintStairs(act,nav,v)){nav.stairsBlocked=true;nav.stairsBlockedAt=turns;nav.goal=null;nav.label=null}
     const transition={
       turn:turns,floor:v.floor,command:recentKey,action:act,
       hpBefore:v.hp,hpAfter:Number.isFinite(after.hp)?after.hp:null,
