@@ -106,6 +106,7 @@ function makeController(args){
    addChoice('↩ Torna alle scelte',()=>menu(prop));
  }
  function showResult(text,success){
+   const run=state();if(run){ensureRun(run);run._phaseBUsed.add(activeKey)}
    setup(success?'Risposta corretta':'Risposta errata',text,success?'PROVA SUPERATA':'PROVA FALLITA');
    addChoice('Continua',()=>finalize(success?'✦ Enigma risolto.':'✕ Enigma non risolto.'));
  }

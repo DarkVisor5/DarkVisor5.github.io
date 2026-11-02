@@ -132,3 +132,13 @@ _Prima di una release stabile_
 - La galleria `fase-a-gallery.html` mostra i **36 asset migliorati** di Fase A, permette filtri per lotto e simula luce alta/media/bassa e dimensioni desktop/mobile.
 - Non sono stati modificati dati delle mappe, oggetti solidi, hitbox, torce, combattimento, bottino, progressione, probabilità delle trappole, IA o la v17 stabile.
 - **Stato di accettazione:** completata produzione+integrazione grafica dei 28 arredi segnalati nell'audit originale (5 in v18.23, altri 23 in v18.24). Rimangono da approvare con test visivi in-game, luce reale e dispositivi mobili; **non dichiarare chiusa la Fase A** finché non sono superati.
+
+## Checkpoint v18.25 — Fase B: oggetti interattivi e biblioteca degli enigmi (2 novembre 2026)
+
+- Nuova libreria **riutilizzabile di 32 indovinelli** (8 archivi, 8 cripte, 8 santuari, 8 generici), esportata tramite `js/riddles.js` con API `pick({category,floor,used,random})` e `get(id)`. Il sistema evita ripetizioni nella stessa run quando sono disponibili enigmi non usati.
+- `js/phase-b.js`: interazioni facoltative attivate muovendosi verso **11 tipi di arredi solidi**: sarcofago, lastra tombale, libreria, leggio, schedario, altare, pietra runica, reliquiario, casse, barili, scrigno delle gemme.
+- Gli archivi offrono un indizio coerente con il **puzzle già presente del piano**; i nuovi enigmi non cambiano sequenze, sigilli, stele, porte o condizioni di uscita.
+- Risposte corrette: premi controllati (oro, luce, cura o lieve riduzione dell'instabilità); risposta errata: +6 instabilità. Gli arredi si possono risolvere una sola volta per run e non permettono ricompense duplicate.
+- I sarcofagi possono essere forzati con rischio di trappola; le casse danno oro ma generano rumore; gli altari accettano un'offerta da 18 oro. Un indicatore ✦ compare solo sugli oggetti **visibili** e ancora utilizzabili.
+- Modifica limitata alla preview v18; la v17 stabile resta intatta. Nessuna nuova barriera obbligatoria o modifica delle mappe.
+- **QA da completare:** test end-to-end in browser su desktop/mobile e regressione di 5 piani, IA, enigmi P2–P5, oltre a validazione delle ricompense.

@@ -15,12 +15,14 @@
 <link rel="stylesheet" href="./css/ux.css">
 
 <link rel="stylesheet" href="./css/torches.css">
+<link rel="stylesheet" href="./css/phase-b.css?v=18.25">
 </head><body><button id="mobileInstallBtn" class="mobile-install-btn" type="button">Installa Threshold</button><button id="btnDiscreet" type="button" onclick="setDiscreetMode(true)" title="Modalità discreta (F9)" style="position:fixed;right:8px;top:8px;z-index:70;width:30px;height:30px;border-radius:8px;border:1px solid #3a4652;background:#1c232b;color:#cfd6dd;opacity:.7">◐</button>
 <div id="dungeon-fixed" tabindex="0">
 <div id="guideOverlay" class="guide-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
   <div class="guide-card">
     <div class="guide-head"><div><div id="guideTitle" class="guide-title">Come sopravvivere a Threshold</div><div class="guide-sub">Non serve imparare tutto subito. Segui la mappa, scegli bene gli scontri e ricordati che l'obiettivo non è ripulire ogni stanza: è uscire vivo.</div></div><button id="guideCloseBtn" type="button" aria-label="Chiudi guida">✕</button></div>
     <div class="guide-grid">
+      <div class="guide-item"><div class="gi">📚</div><div><strong>Fase B · oggetti interattivi</strong><span>Nelle cripte, negli archivi, nei santuari e nei magazzini avvicinati a un oggetto con il simbolo ✦ e premi la freccia verso di lui. Potrai risolvere indovinelli facoltativi, leggere indizi sulle Soglie o scegliere ricompense e rischi. Le prove del Varco Centrale restano separate.</span></div></div>
       <div class="guide-item"><div class="gi">↕</div><div><strong>Stanze e corridoi</strong><span>Le <b>stanze</b> hanno pavimenti più pieni e decorati; i <b>corridoi</b> sono più scuri e stretti. Passare da una stanza a un corridoio — o viceversa — significa attraversare una <b>Soglia</b>.</span></div></div>
       <div class="guide-item"><div class="gi">⚔</div><div><strong>Matchup delle armi</strong><span>Guarda l'arma del nemico: <b>verde</b> = favorevole, <b>rosso</b> = sfavorevole. Cambiare arma è gratuito: usa la barra rapida invece di forzare uno scontro sfavorevole.</span></div></div>
       <div class="guide-item"><div class="gi">🔱</div><div><strong>Lancia</strong><span>Colpisce in linea fino a <b>2 caselle</b> se il percorso è libero. È forte contro <b>Spada e Pugnale</b>.</span></div></div>
@@ -111,7 +113,9 @@
 </section>
 
 <div id="thresholdDialogue" class="threshold-omen" role="dialog" aria-live="assertive" aria-label="Soglia"><div class="threshold-omen-core"><div class="threshold-omen-ring ring-a"></div><div class="threshold-omen-ring ring-b"></div><div id="thresholdDialogueGlyph" class="threshold-omen-glyph">◈</div></div><div class="threshold-omen-copy"><span id="thresholdDialogueTitle" class="threshold-omen-title">SOGLIA</span><span id="thresholdDialogueText" class="threshold-omen-text">I</span></div></div>
-<script src="./js/game.js?v=18.24.0-furniture" defer></script>
+<script src="./js/riddles.js?v=18.25.0" defer></script>
+<script src="./js/phase-b.js?v=18.25.0" defer></script>
+<script src="./js/game.js?v=18.25.0-phase-b" defer></script>
 </div>
 <div id="discreetOverlay" class="discreet-overlay" aria-hidden="true">
   <div class="discreet-shell">
