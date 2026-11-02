@@ -236,7 +236,7 @@
   "category": "crypt",
   "theme": "time",
   "tier": 3,
-  "prompt": "Non posso essere uccisa da un'arma, ma spengo tutte le torce.",
+  "prompt": "Non posso essere uccisa da un'arma e nascondo le forme lontane quando la luce manca.",
   "choices": [
    "La profondità",
    "La pioggia",
@@ -244,7 +244,7 @@
    "La notte"
   ],
   "answer": 3,
-  "explanation": "La notte spegne la luce del giorno, non le torce fisiche: è la metafora dell'assenza di luce."
+  "explanation": "La notte limita la visibilità, ma una torcia accesa può vincerne una parte."
  },
  {
   "id": "s01",

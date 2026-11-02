@@ -1,0 +1,41 @@
+<!doctype html><html lang="it"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Threshold — Archivio degli enigmi</title>
+<style>
+:root{font-family:system-ui,Segoe UI,sans-serif;color-scheme:dark;background:#10171f;color:#eee9db}
+*{box-sizing:border-box}body{max-width:850px;margin:0 auto;padding:24px 16px 60px}h1{font-size:clamp(25px,5vw,38px);margin:0 0 6px}p{line-height:1.6;color:#b3c5ca}.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#1b2a30;padding:18px;border:1px solid #415657;border-radius:12px}label{display:flex;flex-direction:column;gap:8px;color:#bcd2c5;font-size:13px}select,button{font:inherit;background:#24363e;border:1px solid #627e76;border-radius:8px;color:#f4f1e6;padding:12px}button{cursor:pointer}button:hover{background:#34515b}button:focus-visible,select:focus-visible{outline:2px solid #83d3b7}.card{background:linear-gradient(140deg,#25332e,#18212d);border-radius:14px;border:1px solid #607a70;margin-top:16px;padding:24px}.eyebrow{font-size:12px;letter-spacing:.17em;color:#a8cfaa;font-weight:700}.prompt{font-size:20px;line-height:1.6;font-weight:650;white-space:pre-wrap}.answers{display:grid;gap:9px}.answer{display:block;width:100%;text-align:left}.answer.correct{background:#305d43;border-color:#98d6a4}.answer.wrong{background:#5b3b3b;border-color:#d49b90}.explanation{color:#d6d3bc;background:#2d3736;border-radius:8px;padding:12px;line-height:1.6}.explanation[hidden]{display:none}.footer{margin:14px 0;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.stats{font-size:13px;color:#adbdc3}.footnote{margin-top:18px;font-size:13px;color:#a6b7bc}.toolbar .wide{grid-column:1/-1}@media(max-width:520px){body{padding:14px 10px 45px}.toolbar{grid-template-columns:1fr}.card{padding:17px}}
+</style></head><body>
+<h1>Threshold · Archivio degli enigmi</h1>
+<p>Catalogo riutilizzabile della Fase B. Le prove opzionali vengono estratte con difficoltà crescente e senza ripetizioni finché sono disponibili domande nuove. I puzzle principali di chiavi, sigilli e rune rimangono separati.</p>
+<p><a href="./" style="color:#a5dccc">Apri il dungeon giocabile</a></p>
+<div class="toolbar"><label>Ambientazione<select id="category"><option value="archive">📚 Archivio</option><option value="crypt">⚰️ Cripta</option><option value="sanctuary">🕯️ Santuario</option><option value="generic">◇ Generico</option></select></label>
+<label>Profondità<select id="floor"><option value="1">Piano 1</option><option value="2">Piano 2</option><option value="3">Piano 3</option><option value="4">Piano 4</option><option value="5">Piano 5</option></select></label>
+<button class="wide" type="button" id="next">Genera un nuovo indovinello</button></div>
+<main class="card" aria-live="polite"><div class="eyebrow" id="label">ATTESA</div><div id="prompt" class="prompt">Caricamento...</div>
+<div id="answers" class="answers"></div><div class="explanation" id="explanation" hidden></div></main>
+<div class="footer"><button id="reset" type="button">Azzera la sessione di prova</button><span id="stats" class="stats">0 utilizzati</span></div>
+<p class="footnote">Il selettore usa la stessa libreria JavaScript del gioco. Ogni prova ha un ID stabile, una categoria, un tema, una difficoltà e quattro risposte. Questo archivio serve a progettare altri dungeon senza duplicare gli enigmi.</p>
+<script src="./js/riddles.js?v=18.25.1"></script>
+<script>
+(function(){'use strict';
+const bank=window.ThresholdRiddles,used=new Set();
+const id=x=>document.getElementById(x);
+function next(){
+ const options={category:id('category').value,floor:Number(id('floor').value),used};
+ const q=bank?.pick(options);
+ if(!q){id('prompt').textContent='Libreria non disponibile';return}
+ used.add(q.id);
+ id('label').textContent=q.id.toUpperCase()+' · '+q.category.toUpperCase()+' · '+q.theme+' · livello '+q.tier;
+ id('prompt').textContent=q.prompt;
+ const area=id('answers');area.replaceChildren();
+ const expl=id('explanation');expl.hidden=true;expl.textContent='';
+ q.choices.forEach((choice,i)=>{
+  const button=document.createElement('button');button.className='answer';button.type='button';button.textContent=(i+1)+'. '+choice;
+  button.onclick=()=>{for(const b of area.children)b.disabled=true;button.classList.add(i===q.answer?'correct':'wrong');if(i!==q.answer)area.children[q.answer].classList.add('correct');expl.textContent=q.explanation;expl.hidden=false};
+  area.appendChild(button)
+ });
+ id('stats').textContent=used.size+' ID diversi incontrati in questa sessione';
+}
+id('next').onclick=next;id('reset').onclick=()=>{used.clear();next()};id('category').onchange=next;id('floor').onchange=next;next();
+})();
+</script></body></html>
