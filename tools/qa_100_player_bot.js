@@ -54,8 +54,9 @@
    if(v.floor===5){if(!q.tabletRead)push(q.tablet,-280,'tablet');else if(!q.decoderRead)push(q.decoder,-250,'decoder');else if(q.sigilProgress<3)push(q.sigils[q.sigilProgress],-230,'sigil');else push(q.finalSeal,-250,'finalSeal')}
   }else push(v.stairs,-220,'stairs');
   // Loot only when it is on the way or urgently required; avoid side trips.
-  for(const l of v.loot)if(l.kind==='heal'||l.kind==='weapon'||l.kind==='torch')push(l,1.5,'loot');
-  for(const chest of v.chests)if(!chest.opened)push(chest,4,'chest');
+  for(const l of v.loot)if((l.kind==='torch'||v.inventory.length<(v.capacity||10))&&
+     (history.get(key(l.x,l.y))||0)<3)push(l,1.5,'loot');
+  for(const chest of v.chests)if(!chest.opened&&(history.get(key(chest.x,chest.y))||0)<3)push(chest,4,'chest');
   // Explored-but-not-visited frontiers: a frontier is a visible passable
   // tile next to unexplored map cells. No hidden tiles inspected.
   const explored=v.world;
