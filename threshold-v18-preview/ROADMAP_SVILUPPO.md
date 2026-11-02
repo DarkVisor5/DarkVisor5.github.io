@@ -163,3 +163,16 @@ La pipeline `qa-threshold-v18.yml` esegue un **smoke test reale su Chromium desk
 - Progressione guidata di cinque piani completa, con **attacchi veri** ai boss dei piani 3 e 5 in fixture con 10.000 HP; non è una run autonoma né un test di bilanciamento.
 - Chromium desktop e mobile hanno passato i controlli d'avvio. Ultima pipeline QA: https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41448582232
 - Rapporto completo: `docs/QA_v18_26_APPROFONDITO.md`. La v17 rimane stabile e invariata.
+
+## Fase C — Diagnosi e giocatore automatico (2 novembre 2026)
+
+**Implementato per il collaudo, senza modifiche a game.js o alla v17 stabile:**
+- Bot player-like che usa i tasti/pulsanti reali e soltanto le informazioni già viste nella nebbia di guerra, con obiettivi più coerenti, gestione del boss-gate al piano 3 e anti-oscillazione dei percorsi.
+- Registro degli **ultimi 30 turni di ogni morte**, comprendente HP, inventario, nemici visibili, minacce, posizione e messaggi a schermo.
+- **100 partite complete senza carte:** 90 morti, 10 interruzioni del bot, 30 arrivate al terzo piano, piano medio 2,05.
+- **100 partite complete con 5 carte acquistate al negozio** (Maestro di spada, Erborista, Passo cauto, Occhio lungo, Bussola spezzata): 84 morti, 16 interruzioni, 42 arrivate al terzo piano, **2 al quarto piano**, piano medio 2,19.
+- Possibili cause dei colpi finali senza carte: 63 nemici ordinari, 22 trappole, 5 boss. Con carte: 66 nemici ordinari, 7 trappole, 11 boss. **Etichette indicative**, non telemetria del motore.
+- **Obiettivo aperto:** arrivare alla prima vittoria autentica al piano 5. Non è stata ancora osservata, pertanto non modificare il bilanciamento in base ai soli esiti di questo bot.
+- Report dettagliato: [Fase C / 200 partite browser](docs/QA_FASE_C_200_PARTITE_REALI_2026-11-02.md). Esecuzioni CI: [senza carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41459386193) e [con carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41459986257).
+
+**Prossimo intervento:** strategia di ritirata e combattimento contro i boss, utilizzo più razionale delle pozioni, campioni comparabili con seed appaiati; poi test umano e revisione della difficoltà se necessaria.
