@@ -24,8 +24,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Play actual browser games with genuine inputs
         env:
-          THRESHOLD_RUNS: '3'
-          THRESHOLD_TURN_LIMIT: '1600'
+          THRESHOLD_RUNS: '100'
+          THRESHOLD_TURN_LIMIT: '1800'
           THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/real-player
         run: node tools/qa_100_player_runner.cjs
       - name: Preserve all run-level evidence
