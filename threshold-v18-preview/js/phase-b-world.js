@@ -36,7 +36,7 @@
       const x=side==='west'?room.x-1:side==='east'?room.x+room.w:first?room.x+i:room.x;
       const y=side==='north'?room.y-1:side==='south'?room.y+room.h:first?room.y:room.y+i;
       if(x<=1||y<=1||x>=run.map[0].length-2||y>=run.map.length-2||run.map[y]?.[x]!=='#')continue;
-      if(run.keyPuzzle?.door?.x===x||run.keyPuzzle?.door?.y===y&&run.keyPuzzle.door.x===x)continue;
+      if(run.keyPuzzle?.door?.x===x&&run.keyPuzzle?.door?.y===y)continue;
       if((run.floor>=4)&&x===Math.floor(run.map[0].length/2))continue;
       if((run.secrets||[]).some(q=>q.x===x&&q.y===y||q.insideX===x&&q.insideY===y))continue;
       if((run.torches||[]).some(q=>q.x===x&&q.y===y))continue;
@@ -154,7 +154,7 @@
     const seen=run.seen?.has(k),visible=run.visible?.has(k);
     if(!seen||!visibility&& !visible)continue;
     const vx=d.x-c.sx,vy=d.y-c.sy;
-    if(vx<0||vy<0||vx>=c.view&&c.view||vy>=c.view&&c.view)continue;
+    if(vx<0||vy<0||(c.view&&vx>=c.view)||(c.view&&vy>=c.view))continue;
     const x=vx*cell,y=vy*cell;
     const progress=!d.open?0:Math.max(0,Math.min(1,(stamp-(d.openingAt||0))/640));
     ctx.save();ctx.globalAlpha=visible?0.94:0.35;

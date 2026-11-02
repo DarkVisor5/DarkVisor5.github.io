@@ -7,7 +7,7 @@ const root={};
 const bank=new Function('globalThis','module',bankSource+'\nreturn module.exports;')(root,{exports:{}});
 const phase=new Function('globalThis',phaseSource+'\nreturn globalThis.ThresholdPhaseB;')(root);
 new Function(game);
-assert.equal(bank.questions.length,32);assert.equal(phase.types.length,11);
+assert.equal(bank.questions.length,32);assert.equal(phase.types.length,16);
 assert.equal(new Set(bank.questions.map(q=>q.id)).size,32);
 for(const cat of bank.categories)assert.equal(bank.questions.filter(q=>q.category===cat).length,8);
 for(const q of bank.questions){assert.equal(q.choices.length,4);assert.ok(q.answer>=0&&q.answer<4);assert.ok(q.prompt&&q.explanation&&q.id)}

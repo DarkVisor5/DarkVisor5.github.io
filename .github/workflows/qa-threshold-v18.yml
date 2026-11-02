@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'threshold-v18-preview/js/**'
+      - 'tools/qa_v18_26_world.cjs'
       - 'threshold-v18-preview/index.html'
       - 'tools/qa_v18_25_phaseb.cjs'
       - 'tools/qa_v18_24_furniture.cjs'
@@ -23,5 +24,7 @@ jobs:
           node --check threshold-v18-preview/js/game.js
           node --check threshold-v18-preview/js/riddles.js
           node --check threshold-v18-preview/js/phase-b.js
+          node --check threshold-v18-preview/js/phase-b-world.js
           node tools/qa_v18_24_furniture.cjs
           node tools/qa_v18_25_phaseb.cjs
+          node tools/qa_v18_26_world.cjs
