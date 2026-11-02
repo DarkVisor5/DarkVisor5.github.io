@@ -1,0 +1,41 @@
+name: Threshold Phase D tactical bot smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_phase_d_bot.js'
+      - 'tools/qa_phase_d_runner.cjs'
+      - '.github/workflows/qa-threshold-phase-d-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate tactical bot syntax
+        run: |
+          node --check tools/qa_phase_d_bot.js
+          node --check tools/qa_phase_d_runner.cjs
+      - name: Install real Chromium browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Execute six real full-length game attempts
+        env:
+          THRESHOLD_RUNS: '6'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/phase-d-smoke
+        run: node tools/qa_phase_d_runner.cjs
+      - name: Upload 30-turn diagnostics and run records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-d-smoke-real-game-evidence
+          path: results/phase-d-smoke/
+          retention-days: 30
