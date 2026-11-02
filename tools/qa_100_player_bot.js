@@ -148,7 +148,7 @@
    const prior=results.length;
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
-   else click('#enterBtn');
+   else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
    let history=new Map(),turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0;
    const started=performance.now();
    for(;turns<limit;turns++){
