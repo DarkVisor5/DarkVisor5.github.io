@@ -1,0 +1,66 @@
+name: Threshold — 200 boss feasibility encounters (normal HP)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_boss_feasibility_aggregate.cjs'
+      - '.github/workflows/qa-boss-feasibility-200.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  battle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install real browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play 20 boss encounters with realistic fixed resource profiles
+        env:
+          THRESHOLD_SCENARIOS: '100'
+          THRESHOLD_SHARDS: '10'
+          THRESHOLD_SHARD: ${{ matrix.shard }}
+          THRESHOLD_NO_DODGE: '1'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/boss-${{ matrix.shard }}
+        run: node tools/qa_boss_feasibility_runner.cjs
+      - name: Save individual battle data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boss-feasibility-evidence-${{ matrix.shard }}
+          path: results/boss-${{ matrix.shard }}/
+          retention-days: 30
+  aggregate:
+    needs: battle
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: boss-feasibility-evidence-*
+          path: results/all
+      - name: Check all 200 combats and summarize four resource profiles
+        run: node tools/qa_boss_feasibility_aggregate.cjs results/all
+      - name: Preserve aggregated 200-battle report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threshold-200-boss-feasibility-report
+          path: |
+            results/threshold-boss-feasibility-200.json
+            results/threshold-boss-feasibility-200.md
+          retention-days: 30
