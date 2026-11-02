@@ -174,6 +174,7 @@
    if(!reason)reason=lastView.finished?lastView.summary?.title:'action_limit';
    results.push({run:game,result:reason,finished:!!lastView.finished,floor:highest,hp:lastView.hp,steps:lastView.steps||0,
     turns,known:lastView.knownCount||0,kills:lastView.kills||0,coins:lastView.coins||0,
+    finalPosition:lastView.player,finalPuzzle:{type:lastView.puzzle?.type,found:lastView.puzzle?.found,door:lastView.puzzle?.door,key:lastView.puzzle?.key},
     fights:metrics.fights,heals:metrics.heals,actions:metrics.actions,durationMs:Math.round(performance.now()-started)});
    if(game%10===0)console.log('PLAY100_PROGRESS '+game+'/'+count+' completed='+results.filter(x=>x.finished).length+' reached5='+results.filter(x=>x.floor===5).length);
    if(game<count&&!(lastView.finished)){
