@@ -188,3 +188,16 @@ La pipeline `qa-threshold-v18.yml` esegue un **smoke test reale su Chromium desk
 - [Rapporto QA Fase D](docs/QA_FASE_D_BOT_TATTICO_200_PARTITE_2026-11-02.md) · [Workflow senza carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41463454428) · [Workflow con carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41463484094).
 
 **Il gioco v18.26 e la v17 stabile sono rimasti invariati.**
+
+## Fase E — Bot difensivo e artefatti (2 novembre 2026)
+
+**Implementata e testata soltanto come variante sperimentale di QA**: `tools/qa_phase_e_bot.js` con prevenzione di scontri con élite quando gli HP sono bassi, uso tattico di artefatti già posseduti (Pelle di Pietra, Campana del Silenzio, Cuore della Soglia, ecc.), cure più prudenti, controllo dell'Allarme e tentativo di schivata della carica del boss finale.
+
+- **200 partite autentiche Chromium dal piano 1, 100 senza carte e 100 con cinque carte**; nessuna manipolazione di HP, armi, nemici o coordinate.
+- **Senza carte:** 95 morti, 5 interruzioni, massimo piano 4, piano medio 2,34 (Fase D: 2,38).
+- **Con cinque carte:** 91 morti, 9 interruzioni, massimo piano 4, piano medio 2,72 (Fase D: 2,60 e due partite al piano 5).
+- **Zero completamenti**. Tattiche e uso degli artefatti validati nel browser, ma **miglioramento delle vittorie non dimostrato**.
+- La Fase D rimane il riferimento consigliato, la Fase E è un confronto sperimentale; effettuare test con seed appaiati e scontri contro boss/élite prima di modificare la difficoltà.
+- [Rapporto Fase E dettagliato](docs/QA_FASE_E_200_PARTITE_2026-11-02.md) · [100 senza carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41465977653) · [100 con cinque carte](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41466011506).
+
+Il codice giocabile **v18.26** e la versione stabile **v17** sono rimasti invariati.
