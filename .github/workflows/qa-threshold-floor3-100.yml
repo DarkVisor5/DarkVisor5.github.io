@@ -1,0 +1,65 @@
+name: Threshold — 100 partite dal piano 3
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_100_floor3_runner.cjs'
+      - 'tools/qa_100_floor3_aggregate.cjs'
+      - '.github/workflows/qa-threshold-floor3-100.yml'
+permissions:
+  contents: read
+jobs:
+  play:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play ten games starting directly on floor 3
+        env:
+          THRESHOLD_RUNS: '10'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/floor3-${{ matrix.shard }}
+        run: node tools/qa_100_floor3_runner.cjs
+      - name: Preserve all game attempts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: floor3-evidence-${{ matrix.shard }}
+          path: results/floor3-${{ matrix.shard }}/
+          retention-days: 30
+  aggregate:
+    needs: play
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: floor3-evidence-*
+          path: results/all
+      - name: Aggregate and verify all 100 floor-3 runs
+        run: node tools/qa_100_floor3_aggregate.cjs results/all
+      - name: Preserve consolidated report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: floor3-100-consolidated-report
+          path: |
+            results/threshold-floor3-100-summary.json
+            results/threshold-floor3-100-summary.md
+          retention-days: 30
