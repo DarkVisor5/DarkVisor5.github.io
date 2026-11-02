@@ -1,0 +1,37 @@
+name: Threshold 100 real browser playthroughs
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_100_player_*.js'
+      - 'tools/qa_100_player_runner.cjs'
+      - '.github/workflows/qa-threshold-player100.yml'
+permissions:
+  contents: read
+jobs:
+  real-playthroughs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play actual browser games with genuine inputs
+        env:
+          THRESHOLD_RUNS: '3'
+          THRESHOLD_TURN_LIMIT: '1600'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/real-player
+        run: node tools/qa_100_player_runner.cjs
+      - name: Preserve all run-level evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threshold-real-player-evidence
+          path: results/real-player/
+          retention-days: 30
