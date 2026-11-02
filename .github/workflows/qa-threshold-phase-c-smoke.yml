@@ -1,0 +1,37 @@
+name: Threshold Phase C player diagnosis smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_phase_c_*.js'
+      - 'tools/qa_phase_c_runner.cjs'
+      - '.github/workflows/qa-threshold-phase-c-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play 6 real unmodified games and capture death diagnostics
+        env:
+          THRESHOLD_RUNS: '6'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/phase-c-smoke
+        run: node tools/qa_phase_c_runner.cjs
+      - name: Save diagnostic artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-c-smoke-diagnostics
+          path: results/phase-c-smoke/
+          retention-days: 30
