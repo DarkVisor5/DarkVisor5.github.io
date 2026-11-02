@@ -1,0 +1,66 @@
+name: Threshold Phase E - 100 real defensive runs with cards
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_phase_e_bot.js'
+      - 'tools/qa_phase_e_cards_runner.cjs'
+      - 'tools/qa_phase_e_cards_aggregate.cjs'
+      - '.github/workflows/qa-phase-e-cards-100.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  play:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play 10 real full-dungeon games using five purchased cards
+        env:
+          THRESHOLD_RUNS: '10'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/ec-${{ matrix.shard }}
+        run: node tools/qa_phase_e_cards_runner.cjs
+      - name: Save per-game death dossiers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-e-cards-evidence-${{ matrix.shard }}
+          path: results/ec-${{ matrix.shard }}/
+          retention-days: 30
+  aggregate:
+    needs: play
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase-e-cards-evidence-*
+          path: results/all
+      - name: Aggregate 100 real plays
+        run: node tools/qa_phase_e_cards_aggregate.cjs results/all
+      - name: Upload aggregated report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-e-cards-100-report
+          path: |
+            results/threshold-phase-e-cards-summary.json
+            results/threshold-phase-e-cards-summary.md
+          retention-days: 30
