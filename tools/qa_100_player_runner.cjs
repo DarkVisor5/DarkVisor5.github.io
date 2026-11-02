@@ -45,7 +45,7 @@ const server=http.createServer((req,res)=>{
     const batch=await page.evaluate(lim=>window.ThresholdFairBot.play100({count:1,limit:lim}),limit);
     const row={...batch.results[0],run:i};
     results.push(row);
-    process.stdout.write('GAME '+i+'/'+runCount+' '+JSON.stringify({result:row.result,finished:row.finished,floor:row.floor,steps:row.steps,turns:row.turns,kills:row.kills,heals:row.heals,actions:row.actions,finalPosition:row.finalPosition,finalPuzzle:row.finalPuzzle})+'\n');
+    process.stdout.write('GAME '+i+'/'+runCount+' '+JSON.stringify({result:row.result,finished:row.finished,floor:row.floor,steps:row.steps,turns:row.turns,kills:row.kills,heals:row.heals,actions:row.actions,finalPosition:row.finalPosition,finalPuzzle:row.finalPuzzle,trace:row.trace})+'\n');
     if(i===1)await page.screenshot({path:path.join(dir,'screenshot-first-run.png')});
     if(!row.finished){
       // Closing a browser tab is a real abandonment; do NOT fake death or mutate run state.
