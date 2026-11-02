@@ -1,0 +1,42 @@
+name: Threshold Boss Feasibility Smoke (normal HP)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_boss_arena_fixture.js'
+      - 'tools/qa_boss_feasibility_runner.cjs'
+      - '.github/workflows/qa-boss-feasibility-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check QA instrument syntax
+        run: |
+          node --check tools/qa_boss_arena_fixture.js
+          node --check tools/qa_boss_feasibility_runner.cjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Sixteen real boss-only combat attempts
+        env:
+          THRESHOLD_SCENARIOS: '8'
+          THRESHOLD_SHARDS: '1'
+          THRESHOLD_SHARD: '0'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/boss-smoke
+        run: node tools/qa_boss_feasibility_runner.cjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boss-feasibility-smoke-results
+          path: results/boss-smoke/
+          retention-days: 30
