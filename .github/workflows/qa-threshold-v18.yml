@@ -5,6 +5,7 @@ on:
     paths:
       - 'threshold-v18-preview/js/**'
       - 'tools/qa_v18_26_world.cjs'
+      - 'tools/qa_v18_26_browser.cjs'
       - 'threshold-v18-preview/index.html'
       - 'tools/qa_v18_25_phaseb.cjs'
       - 'tools/qa_v18_24_furniture.cjs'
@@ -28,3 +29,9 @@ jobs:
           node tools/qa_v18_24_furniture.cjs
           node tools/qa_v18_25_phaseb.cjs
           node tools/qa_v18_26_world.cjs
+      - name: Install Playwright and Chromium for real browser smoke tests
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Exercise dungeon in Chromium desktop and mobile
+        run: node tools/qa_v18_26_browser.cjs

@@ -151,3 +151,7 @@ _Prima di una release stabile_
 - Nessun blocco aggiuntivo sulla rete percorribile né modifica agli enigmi obbligatori dei cinque piani.
 - Controller riutilizzabile `js/phase-b-world.js` e test di regressione in `tools/qa_v18_26_world.cjs`.
 - Da convalidare ancora in browser reale: animazione durante il gioco, luce/visibilità, mobile e run complete.
+
+## Test browser automatico (v18.26)
+
+La pipeline `qa-threshold-v18.yml` esegue un **smoke test reale su Chromium desktop 1280×800 e mobile 390×844** con `tools/qa_v18_26_browser.cjs`. Verifica: caricamento delle tre API Phase B, avvio della run, movimento, canvas inizializzato, assenza di eccezioni JavaScript e risorse HTTP mancanti. Salva schermate temporanee nel runner. Non sostituisce un test manuale di tutti i dungeon e di tutte le combinazioni di enigmi.
