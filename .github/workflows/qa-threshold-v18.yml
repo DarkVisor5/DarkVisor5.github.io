@@ -1,0 +1,27 @@
+name: Threshold v18 - Phase B regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'threshold-v18-preview/js/**'
+      - 'threshold-v18-preview/index.html'
+      - 'tools/qa_v18_25_phaseb.cjs'
+      - 'tools/qa_v18_24_furniture.cjs'
+      - '.github/workflows/qa-threshold-v18.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check threshold-v18-preview/js/game.js
+          node --check threshold-v18-preview/js/riddles.js
+          node --check threshold-v18-preview/js/phase-b.js
+          node tools/qa_v18_24_furniture.cjs
+          node tools/qa_v18_25_phaseb.cjs
