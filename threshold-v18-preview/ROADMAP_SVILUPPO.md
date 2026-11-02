@@ -211,3 +211,15 @@ Il codice giocabile **v18.26** e la versione stabile **v17** sono rimasti invari
 - Rispetto alla Fase D con 5 carte esplorative: piano medio 2,60 → 2,64 e run arrivate al piano 4 8 → 9; però non ripetute le 2 run che raggiunsero il piano 5. I campioni e le strategie non sono appaiati.
 - [Report e metodologia](docs/QA_BUILD_SPADA_GUARDIA_100_PARTITE_2026-11-02.md) · [100 run e registri](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41468410060).
 - La build è applicata al **profilo QA**, non al salvataggio locale del browser personale dell'utente. Il gioco v18.26 e la v17 stabile sono immutati.
+
+## Test di fattibilità reale dei boss — 2 novembre 2026
+
+- **200 combattimenti in Chromium:** 100 Custode P3 e 100 Signore del Profondo P5, tutti con HP reali e armi/pozioni di durabilità e qualità ottenibili. Test isolati con collocazione nell'arena, non vittorie del dungeon intero.
+- **Quattro profili**, 25 ripetizioni per profilo e boss: scarso (25 HP, 1 pozione) **0/25 vittorie su entrambi**; intermedio (40 HP, 3 pozioni) **25/25 su entrambi**; preparato (45 HP, 3 grandi) **25/25 su entrambi**; veterano (55 HP, 4 grandi) **25/25 su entrambi**.
+- **150/200 scontri vinti**, 50 morti, zero limiti d'azione e zero errori tecnici. Il 75% è dovuto al disegno dei profili, **non è una percentuale di completamento del gioco**.
+- La strategia spada + Guardia + Bastione ha reso superabile anche il boss finale; le precedenti fughe del bot si incastravano nella navigazione, non dimostravano impossibilità del combattimento.
+- Il nodo ancora irrisolto è **conservare risorse sufficienti attraverso cinque piani**: gli HP e le pozioni della prova erano scenari assegnati, non conquistati in una run completa.
+- [Rapporto dettagliato, profili e limiti](docs/QA_FATTIBILITA_BOSS_200_INCONTRI_2026-11-02.md) · [CI 200 combattimenti](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41472380046).
+- **Nessuna modifica alla v18 giocabile o v17 stabile**.
+
+**Prossimo checkpoint:** analizzare le risorse realmente possedute all'arrivo ai piani 3 e 5 in una serie di partite integrali; ottenere una vittoria autentica dall'inizio senza teletrasporto né inventario predisposto.
