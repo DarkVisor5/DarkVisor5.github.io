@@ -81,6 +81,7 @@ fs.mkdirSync(dir,{recursive:true});
         }
         continue;
       }
+      if(v.pathStep){send(v.pathStep);steps++;continue}
       const towards=good.sort((a,c)=>a.d-c.d)[0];
       if(towards&&towards.d<d){send(towards.key);steps++;continue}
       send(' ');waits++;
