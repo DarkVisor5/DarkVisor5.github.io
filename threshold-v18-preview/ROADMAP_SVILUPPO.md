@@ -223,3 +223,17 @@ Il codice giocabile **v18.26** e la versione stabile **v17** sono rimasti invari
 - **Nessuna modifica alla v18 giocabile o v17 stabile**.
 
 **Prossimo checkpoint:** analizzare le risorse realmente possedute all'arrivo ai piani 3 e 5 in una serie di partite integrali; ottenere una vittoria autentica dall'inizio senza teletrasporto né inventario predisposto.
+
+## Fattibilità end-to-end: checkpoint risorse su 200 run reali (2 novembre 2026)
+
+**Diagnosi eseguita.** Nessuna modifica al gioco; nuovo monitor passivo `tools/qa_resource_checkpoints.js` e 200 run Chromium, partendo tutte dal primo piano.
+
+- **100 senza carte:** 55 entrate al P3, 22 primi avvistamenti del Custode, 1 entrata al P4 e 0 al P5; 91 morti, 9 interrotte, nessuna vittoria.
+- **100 con Spada/Guardia:** 70 entrate al P3, 31 primi avvistamenti del Custode, 13 entrate al P4 e 0 al P5; 85 morti, 15 interrotte, nessuna vittoria.
+- Al primo avvistamento Custode: **30,6 HP / 0,5 pozioni / Allarme 69,4** senza carte; **35,1 HP / 1,5 pozioni / Allarme 80** con build completa. Nessuna delle 200 run è arrivata al boss con tutte le risorse dello scenario intermedio *rigoroso* già validato in arena.
+- Con build completa, chi riesce ad arrivare al P4 ha in media **27,3 HP, 0,3 pozioni e Allarme 71,3**.
+- **Conclusione:** i boss sono battibili in arena, ma non è stata ancora dimostrata una vittoria dopo una run completa. Per il bot, il problema osservato è il consumo di HP/pozioni durante l'attraversamento dei livelli e l'Allarme elevato, non una dimostrazione di boss invincibili.
+- Prossimo lavoro prioritario: minimizzare movimenti inutili, Allarme e rischi facoltativi del bot; poi test umani. Se la carenza di risorse viene confermata da giocatori, valutare ricompense di recupero mirate dopo il Custode invece di nerfare indiscriminatamente i boss.
+- [Report verificabile](docs/QA_FATTIBILITA_RISORSE_200_RUN_2026-11-02.md) · [Workflow completo](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41476967971).
+
+**Stabili e codice di gioco intatti:** nessuna modifica alla v18.26 giocabile o alla v17.
