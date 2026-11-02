@@ -1,0 +1,43 @@
+name: Threshold Phase E - survival tactics smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_phase_e_bot.js'
+      - 'tools/qa_phase_e_view.js'
+      - 'tools/qa_phase_e_runner.cjs'
+      - '.github/workflows/qa-phase-e-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript
+        run: |
+          node --check tools/qa_phase_e_bot.js
+          node --check tools/qa_phase_e_view.js
+          node --check tools/qa_phase_e_runner.cjs
+      - name: Install Chromium browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play six actual unmodified full-dungeon games
+        env:
+          THRESHOLD_RUNS: '6'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/phase-e-smoke
+        run: node tools/qa_phase_e_runner.cjs
+      - name: Preserve gameplay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-e-smoke-evidence
+          path: results/phase-e-smoke/
+          retention-days: 30
