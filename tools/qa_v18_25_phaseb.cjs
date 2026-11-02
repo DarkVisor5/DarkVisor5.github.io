@@ -44,4 +44,4 @@ const once=gold;assert.ok(once>0);close();assert.equal(ctrl.open(shelf),false);a
 const altar={type:'votiveAltar',x:9,y:9};assert.ok(ctrl.open(altar));options()[1].click();assert.equal(spent,18);options()[0].click();assert.equal(ctrl.canInteract(altar),false);
 const crate={type:'storeCratePile',x:10,y:10};assert.ok(ctrl.open(crate));options()[1].click();assert.equal(run.alarm,5);options()[0].click();
 const wrong={type:'archiveLectern',x:11,y:11};assert.ok(ctrl.open(wrong));options()[0].click();const r=bank.get(run._phaseBQuestions.get('2:archiveLectern:11:11'));options()[(r.answer+1)%4].click();assert.equal(run.instability,6);close();assert.equal(ctrl.canInteract(wrong),false);
-console.log('PASS: 32 riddles, 11 objects, optional decisions, mandatory puzzle hooks, one-time rewards, clues and penalties.');
+console.log('PASS: 32 riddles, 16 objects, optional decisions, mandatory puzzle hooks, one-time rewards, clues and penalties.');
