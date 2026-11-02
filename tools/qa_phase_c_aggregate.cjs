@@ -15,7 +15,7 @@ const sum=k=>runs.reduce((n,r)=>n+(Number(r[k])||0),0);
 const group=(get)=>runs.reduce((a,r)=>{const key=get(r);a[key]=(a[key]||0)+1;return a},{});
 function inferCause(r){
  if(!r.finished||!/terminata/i.test(r.result))return null;
- const sc=r.deathScene||{},lines=sc.log||[],last=lines.slice(0,5).join(' | ');
+ const sc=r.deathScene||{},lines=sc.log||[],last=lines[0]||'';
  if(/trappola|trap/i.test(last))return 'probable_trap';
  if(sc.visibleEnemies?.some(e=>e.boss&&Math.abs(e.x-sc.position.x)+Math.abs(e.y-sc.position.y)<=2))return 'probable_boss';
  if(sc.visibleEnemies?.some(e=>Math.abs(e.x-sc.position.x)+Math.abs(e.y-sc.position.y)<=2))return 'probable_enemy';
