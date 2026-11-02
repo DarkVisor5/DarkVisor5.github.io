@@ -112,7 +112,7 @@ const server=http.createServer((req,res)=>{
    elapsedMs:Date.now()-started,errors:errors.slice(0,15)};
   const complete={summary,results};
   fs.writeFileSync(path.join(dir,'results.json'),JSON.stringify(complete,null,2));
-  console.log('OPTIMAL_SWORD_BUILD_FINAL '+JSON.stringify({startFloor:1,startingKit:'default-first-floor-kit',deck:['swordMaster','medic','bulwark','quartermaster','survivor'],cardBudget:1930,rank:2,...summary}));
+  console.log('OPTIMAL_SWORD_BUILD_FINAL '+JSON.stringify({startFloor:1,startingKit:'default-first-floor-kit',deck:['swordMaster','medic','bulwark','quartermaster','survivor'],cardBudget:3280,rank:4,...summary}));
   if(results.length!==runCount)throw Error('Did not start '+runCount+' intended browser games');
  }finally{
   await browser?.close();await new Promise(resolve=>server.close(resolve));
