@@ -14,7 +14,7 @@ for(const q of bank.questions){assert.equal(q.choices.length,4);assert.ok(q.answ
 const used=new Set();for(let n=0;n<32;n++){const q=bank.pick({category:'archive',floor:5,used,random:()=>.4});assert.ok(q&&!used.has(q.id));used.add(q.id)}
 for(let floor=1;floor<=5;floor++)assert.ok(bank.pick({category:'sanctuary',floor}).tier<=1+Math.floor((floor-1)/2));
 for(const name of phase.types)assert.ok(game.includes(name),'missing '+name);
-assert.ok(game.includes('if(phaseB?.open(solidProp))return'));
+assert.ok(game.includes('if(phaseBController?.open(solidProp))return'));
 assert.ok(game.includes('function onPuzzleStep(dx,dy)')&&game.includes('function onPuzzleWait()'));
 assert.ok(game.includes("keyPuzzle.type='runes'")&&game.includes("keyPuzzle.type='sequence'")&&game.includes("keyPuzzle.type='route'"));
 assert.ok(index.indexOf('js/riddles.js')<index.indexOf('js/phase-b.js')&&index.indexOf('js/phase-b.js')<index.indexOf('js/game.js'));

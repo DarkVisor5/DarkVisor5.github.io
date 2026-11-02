@@ -22,6 +22,6 @@ for(const id of ids){
 assert.match(game,/const V18_24_SPRITES=/);
 assert.match(game,/if\(phaseB\?\.complete&&phaseB\.naturalWidth\)/);
 assert.match(game,/else if\(phaseA\?\.complete&&phaseA\.naturalWidth\)/);
-assert.match(index,/game\.js\?v=18\.24\.0-furniture/);
+assert.match(index,/game\.js\?v=18\.(?:24\.0-furniture|25\.0-phase-b)/);
 assert.equal((gallery.match(/<article class="card"/g)||[]).length,36,'Gallery must include all 36');
 console.log('Threshold v18.24: 23/23 new asset references and 36/36 gallery cards passed.');
