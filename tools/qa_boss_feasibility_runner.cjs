@@ -19,6 +19,7 @@ const profiles=[
 ];
 const runCount=Number(process.env.THRESHOLD_SCENARIOS||100);
 const shard=Number(process.env.THRESHOLD_SHARD||0),numShards=Number(process.env.THRESHOLD_SHARDS||10);
+const noDodge=process.env.THRESHOLD_NO_DODGE==='1';
 const dir=process.env.THRESHOLD_RESULTS_DIR||'/tmp/boss-feasibility';
 fs.mkdirSync(dir,{recursive:true});
 (async()=>{
@@ -40,7 +41,7 @@ fs.mkdirSync(dir,{recursive:true});
   if(i%numShards!==shard)continue;
   const p=profiles[i%4];
   try{
-   const result=await page.evaluate(({floor,profile})=>{
+   const result=await page.evaluate(({floor,profile,noDodge})=>{
     const app=document.querySelector('#dungeon-fixed'),qa=window.__feasibilityQA;
     const initial=qa.setup(floor,profile);let actions=0,attacks=0,heals=0,steps=0,waits=0,equips=0,bossHpBefore=initial.boss.hp;
     let reason='action_limit',survivorTriggered=false,reinforcements=0,lastHp=initial.hp;
@@ -67,7 +68,7 @@ fs.mkdirSync(dir,{recursive:true});
       }
       const dist=(x,y)=>Math.abs(x-b.x)+Math.abs(y-b.y),d=dist(v.player.x,v.player.y);
       const good=v.moves.map(m=>({...m,d:dist(m.x,m.y)}));
-      if(b.telegraph){
+      if(b.telegraph&&!noDodge){
         if(d>1){send(' ');waits++;continue}
         const away=good.filter(x=>x.d>1).sort((a,c)=>c.d-a.d)[0];
         if(away){send(away.key);steps++;continue}
@@ -94,8 +95,8 @@ fs.mkdirSync(dir,{recursive:true});
       bossHpEnd:final.boss?.hp??null,reason,title,
       hpEnd:final.hp??0,remainingWeapons:final.weapons||[],
       remainingPotions:final.potions||[],alarm:final.alarm,
-      actions,attacks,heals,steps,waits,equips,survivorTriggered};
-   },{floor,profile:p});
+      actions,attacks,heals,steps,waits,equips,survivorTriggered,noDodge};
+   },{floor,profile:p,noDodge});
    testResult.push(result);
    console.log('BOSS_SCENARIO '+JSON.stringify(result));
   }catch(e){const obj={floor,profile:p.id,error:String(e)};testResult.push(obj);console.error('BOSS_ERROR '+JSON.stringify(obj))}
