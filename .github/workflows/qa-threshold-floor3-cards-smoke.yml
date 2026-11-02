@@ -1,0 +1,35 @@
+name: Threshold floor 3 five-card deck smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_100_floor3_cards_runner.cjs'
+      - '.github/workflows/qa-threshold-floor3-cards-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play three real browser games after purchasing five cards
+        env:
+          THRESHOLD_RUNS: '3'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/cards-smoke
+        run: node tools/qa_100_floor3_cards_runner.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threshold-floor3-cards-smoke
+          path: results/cards-smoke/
+          retention-days: 30
