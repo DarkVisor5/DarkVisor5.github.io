@@ -71,7 +71,7 @@
   actions.sort((a,b)=>a.score-b.score);
   return actions;
  }
- function action(v,history,metrics){
+ function action(v,history,metrics,nav){
   if(v.finished||!v.inGame)return 'done';
   const dlg=v.dialog;
   if(dlg.guide){click('#guidePlayBtn');return 'close_tutorial'}
@@ -119,6 +119,18 @@
   // approach it for a real melee confrontation.
   const graphState=graph(v);
   let list=goals(v,history,graphState);
+  // A player chooses a destination and follows through rather than
+  // changing direction toward a different frontier on every single step.
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;history.clear()}
+  const urgent=list.find(o=>o.label==='key'||o.label==='stairs'||o.label==='tablet'||o.label==='decoder'||o.label==='shrine'||o.label==='sigil'||o.label==='finalSeal'||o.label==='anchor');
+  if(urgent&&nav.label!==urgent.label){nav.goal={...urgent.point};nav.label=urgent.label}
+  if(nav.goal){
+    const stillListed=list.some(o=>o.point.x===nav.goal.x&&o.point.y===nav.goal.y);
+    if(close(nav.goal,v.player)===0||!stillListed||!graphState.dist.has(key(nav.goal.x,nav.goal.y))){
+      nav.goal=null;nav.label=null;
+    }
+  }
+
   // Step away from a visible boss, if its proximity is fatal and a heal is available.
   const chosen=list[0];
   if(chosen&&close(chosen.point,v.player)===0){
@@ -127,9 +139,17 @@
    list=list.filter(x=>close(x.point,v.player)>0);
   }
   let next=null,kind=null;
-  for(const candidate of list){
+  if(nav.goal){
+    const dir=nextStep(graphState,nav.goal,v.player);
+    if(dir){next=dir;kind=nav.label}
+  }
+  if(!next)for(const candidate of list){
    const dir=nextStep(graphState,candidate.point,v.player);
-   if(dir){next=dir;kind=candidate.label;break}
+   if(dir){
+    next=dir;kind=candidate.label;
+    nav.goal={...candidate.point};nav.label=candidate.label;
+    break;
+   }
   }
   // If an enemy is not adjacent but blocks the player's only known route,
   // move toward it and engage via actual player movement.
@@ -151,7 +171,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[];
+   let history=new Map(),nav={floor:1,goal:null,label:null},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[];
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
@@ -160,9 +180,9 @@
     highest=Math.max(highest,v.floor);
     history.set(pos,(history.get(pos)||0)+1);
     recentKey=null;
-    const act=action(v,history,metrics);
+    const act=action(v,history,metrics,nav);
     metrics.actions[act]=(metrics.actions[act]||0)+1;
-    trace.push({t:turns,action:act,key:recentKey,from:v.player,puzzle:v.puzzle,atStairs:v.atStairs,dialog:v.dialog,known:v.knownCount,enemies:v.enemies,props:v.props.filter(p=>close(p,v.player)<=3)});
+    trace.push({t:turns,action:act,key:recentKey,from:v.player,goal:nav.goal,puzzle:v.puzzle,atStairs:v.atStairs,dialog:v.dialog,known:v.knownCount,enemies:v.enemies,props:v.props.filter(p=>close(p,v.player)<=3)});
     if(trace.length>12)trace.shift();
     if(act==='heal')metrics.heals++;
     if(act==='stuck'){reason='stuck_no_known_path';break}
