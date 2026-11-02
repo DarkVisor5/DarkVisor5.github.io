@@ -142,3 +142,12 @@ _Prima di una release stabile_
 - I sarcofagi possono essere forzati con rischio di trappola; le casse danno oro ma generano rumore; gli altari accettano un'offerta da 18 oro. Un indicatore ✦ compare solo sugli oggetti **visibili** e ancora utilizzabili.
 - Modifica limitata alla preview v18; la v17 stabile resta intatta. Nessuna nuova barriera obbligatoria o modifica delle mappe.
 - **QA da completare:** test end-to-end in browser su desktop/mobile e regressione di 5 piani, IA, enigmi P2–P5, oltre a validazione delle ricompense.
+
+## Checkpoint v18.26 — Fase B, meccanismi e stanze dinamiche (2 novembre 2026)
+
+- Fino a 2 **porte animate opzionali** per piano in nicchie laterali derivate da pareti cieche; apertura dopo indovinelli o attivazione di un meccanismo, con bottino nel nuovo vano.
+- 5 **meccanismi ambientali**, attivabili tramite lo stesso pannello degli enigmi: banco, orologio, campana, argano, cassaforte.
+- Risposte sbagliate possono generare trappole **segnalate e aggirabili** in una stanza; leve disarmano gli eventuali pericoli Phase B presenti nella propria stanza.
+- Nessun blocco aggiuntivo sulla rete percorribile né modifica agli enigmi obbligatori dei cinque piani.
+- Controller riutilizzabile `js/phase-b-world.js` e test di regressione in `tools/qa_v18_26_world.cjs`.
+- Da convalidare ancora in browser reale: animazione durante il gioco, luce/visibilità, mobile e run complete.

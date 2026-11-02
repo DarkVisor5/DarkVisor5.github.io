@@ -15,11 +15,16 @@ const OBJECTS=Object.freeze({
  sanctuaryReliquary:{kind:'sanctuary',icon:'✧',title:'Reliquiario',text:'Una piccola luce pulsa dietro il vetro del reliquiario.'},
  storeCratePile:{kind:'cache',icon:'📦',title:'Casse del magazzino',text:'Puoi forzare le casse oppure leggere i simboli sull’imballaggio.'},
  storeBarrelStack:{kind:'cache',icon:'🛢️',title:'Barili sigillati',text:'I barili nascondono qualcosa: una scritta avverte dei rischi.'},
+ workbench:{kind:'mechanism',icon:'⚙️',title:'Banco degli ingranaggi',text:'Un braccio metallico comanda i dispositivi della stanza.'},
+ archiveClock:{kind:'mechanism',icon:'⚙️',title:'Orologio astronomico',text:'La ruota centrale può attivare un antico congegno.'},
+ sanctuaryBell:{kind:'mechanism',icon:'🔔',title:'Campana del santuario',text:'La campana è collegata a un contrappeso sigillato.'},
+ storeChainHoist:{kind:'mechanism',icon:'⚙️',title:'Argano del magazzino',text:'Una leva arrugginita aziona la catena del deposito.'},
+ treasuryGoldSafe:{kind:'mechanism',icon:'⚙️',title:'Cassaforte a manovella',text:'Un meccanismo può scoprire uno scomparto segreto.'},
  treasuryGemChest:{kind:'cache',icon:'💎',title:'Scrigno delle gemme',text:'Il piccolo scrigno è protetto da una breve iscrizione.'}
 });
 function makeController(args){
  const mount=args.root,getRun=args.getRun,effects=args.effects||{},bank=args.bank,random=args.random||Math.random;
- let panel=null,activeKey=null,activeProp=null;
+ let panel=null,activeKey=null,activeProp=null,pendingOutcome=null;
  const keyFor=(run,prop)=>[run.floor,prop.type,prop.x,prop.y].join(':');
  const state=()=>getRun();
  const ensureRun=run=>{
@@ -46,8 +51,10 @@ function makeController(args){
  }
  function close(){
    if(!panel||panel.hidden)return;
-   panel.hidden=true;activeKey=null;activeProp=null;
+   const prop=activeProp,outcome=pendingOutcome;
+   panel.hidden=true;activeKey=null;activeProp=null;pendingOutcome=null;
    const run=state();if(run)run.eventOpen=false;
+   if(prop&&outcome)emit('world',prop,outcome);
    emit('render');mount.focus?.();
  }
  function setup(title,text,label){
@@ -96,17 +103,18 @@ function makeController(args){
      const live=state();if(!live)return close();
      const correct=i===q.answer,origin=OBJECTS[prop.type].kind;
      if(correct){
-       if(origin==='sanctuary'){const light=emit('light',14)||0,heal=emit('heal',5)||0;showResult('✓ La prova è superata. Luce +'+light+', vita +'+heal+'. '+q.explanation,true)}
-       else{const payout=emit('gold',12+live.floor*7+(origin==='crypt'?8:0))||0;if(origin==='crypt')emit('stability',-5);showResult('✓ La prova è superata. Ricevi '+payout+' oro. '+q.explanation,true)}
+       if(origin==='sanctuary'){const light=emit('light',14)||0,heal=emit('heal',5)||0;showResult('✓ La prova è superata. Luce +'+light+', vita +'+heal+'. '+q.explanation,true,'solved')}
+       else{const payout=emit('gold',12+live.floor*7+(origin==='crypt'?8:0))||0;if(origin==='crypt')emit('stability',-5);showResult('✓ La prova è superata. Ricevi '+payout+' oro. '+q.explanation,true,'solved')}
      }else{
        emit('stability',6);
-       showResult('✕ Il sigillo si spegne. Instabilità +6. '+q.explanation,false);
+       showResult('✕ Il sigillo si spegne. Instabilità +6. Attenzione: potrebbe apparire una trappola visibile nella stanza. '+q.explanation,false,'failed');
      }
    }));
    addChoice('↩ Torna alle scelte',()=>menu(prop));
  }
- function showResult(text,success){
+ function showResult(text,success,outcome=null){
    const run=state();if(run){ensureRun(run);run._phaseBUsed.add(activeKey)}
+   pendingOutcome=outcome;
    setup(success?'Risposta corretta':'Risposta errata',text,success?'PROVA SUPERATA':'PROVA FALLITA');
    addChoice('Continua',()=>finalize(success?'✦ Enigma risolto.':'✕ Enigma non risolto.'));
  }
@@ -130,6 +138,11 @@ function makeController(args){
    emit('alarm',5);emit('noise',4);
    showResult('Il contenitore cede. Trovi '+payout+' oro, ma aumenti l’allarme di 5.',true);
  }
+ function mechanism(prop){
+   const run=state();if(!run)return close();
+   const payout=emit('gold',5+run.floor*4)||0;
+   showResult('Il meccanismo si muove. Ottieni '+payout+' oro e attivi gli ingranaggi della stanza: una nicchia potrebbe aprirsi e le trappole vicine si disattivano.',true,'lever');
+ }
  function offering(){
    const run=state();if(!run)return close();
    const cost=18;
@@ -150,12 +163,13 @@ function makeController(args){
    if(def.kind==='crypt')addChoice('⚒️ Forza il sepolcro (rischio)',()=>risk(prop));
    if(def.kind==='sanctuary')addChoice('🕯️ Offri 18 oro per luce e cura',()=>offering(),run.runCoins<18,'Serve oro raccolto in questa run');
    if(def.kind==='cache')addChoice('⚒️ Apri con forza (+allarme)',()=>smash());
+   if(def.kind==='mechanism')addChoice('⚙️ Aziona il meccanismo',()=>mechanism(prop));
    addChoice('Lascia stare',close);
    panel.querySelector('#phaseBChoices button')?.focus();
  }
  function open(prop){
    const run=state();if(!run||run.eventOpen||!canInteract(prop))return false;
-   ensureRun(run);activeKey=keyFor(run,prop);activeProp=prop;run.eventOpen=true;
+   ensureRun(run);activeKey=keyFor(run,prop);activeProp=prop;pendingOutcome=null;run.eventOpen=true;
    emit('play','event');menu(prop);emit('render');return true;
  }
  return Object.freeze({open,close,canInteract,types:Object.keys(OBJECTS)});
