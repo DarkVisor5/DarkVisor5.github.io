@@ -1,0 +1,52 @@
+name: Threshold Resource Feasibility Smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_resources_nocards_runner.cjs'
+      - 'tools/qa_resources_sword_runner.cjs'
+      - 'tools/qa_resource_checkpoints.js'
+      - '.github/workflows/qa-resource-feasibility-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [nocards, sword]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax verification
+        run: |
+          node --check tools/qa_resource_checkpoints.js
+          node --check tools/qa_resources_nocards_runner.cjs
+          node --check tools/qa_resources_sword_runner.cjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play 3 unmodified dungeon runs and capture inventories
+        env:
+          THRESHOLD_RUNS: '3'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/smoke-${{ matrix.profile }}
+        run: |
+          if [ '${{ matrix.profile }}' = 'sword' ]; then
+            node tools/qa_resources_sword_runner.cjs
+          else
+            node tools/qa_resources_nocards_runner.cjs
+          fi
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resource-smoke-${{ matrix.profile }}
+          path: results/smoke-${{ matrix.profile }}/
+          retention-days: 30
