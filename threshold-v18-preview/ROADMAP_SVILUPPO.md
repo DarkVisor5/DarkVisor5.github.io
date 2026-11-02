@@ -155,3 +155,11 @@ _Prima di una release stabile_
 ## Test browser automatico (v18.26)
 
 La pipeline `qa-threshold-v18.yml` esegue un **smoke test reale su Chromium desktop 1280×800 e mobile 390×844** con `tools/qa_v18_26_browser.cjs`. Verifica: caricamento delle tre API Phase B, avvio della run, movimento, canvas inizializzato, assenza di eccezioni JavaScript e risorse HTTP mancanti. Salva schermate temporanee nel runner. Non sostituisce un test manuale di tutti i dungeon e di tutte le combinazioni di enigmi.
+
+## Checkpoint QA profondo v18.26 — 2 novembre 2026
+
+- `tools/qa_v18_27_deep.cjs` prova **100 seed effettivi × 5 piani = 500 generazioni reali** nel browser strumentato e verifica raggiungibilità con BFS degli obiettivi, dei Varchi Centrali e delle scale.
+- **500/500 enigmi principali risolti**, 993 nicchie opzionali e 15.547 arredi analizzati nei seed campionati.
+- Progressione guidata di cinque piani completa, con **attacchi veri** ai boss dei piani 3 e 5 in fixture con 10.000 HP; non è una run autonoma né un test di bilanciamento.
+- Chromium desktop e mobile hanno passato i controlli d'avvio. Ultima pipeline QA: https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41448582232
+- Rapporto completo: `docs/QA_v18_26_APPROFONDITO.md`. La v17 rimane stabile e invariata.
