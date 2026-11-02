@@ -57,7 +57,7 @@ function validate(d,seed){
  }
  for(const door of d.doors){
   if(d.map[door.y][door.x]!=='#')issue('niche already passable before unlock');
-  if(!closed.has(door.entryX+','+door.entryY))issue('niche entry unreachable');
+  if(!opened.has(door.entryX+','+door.entryY))issue('niche entry unreachable even after central gate opens');
   if(door.x===p.door.x&&door.y===p.door.y)issue('niche overlaps mandatory gate');
  }
  if((d.floor===3||d.floor===5)&&d.bosses.length===0)issue('missing boss');
