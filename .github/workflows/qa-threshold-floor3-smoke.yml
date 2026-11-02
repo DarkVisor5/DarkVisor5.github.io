@@ -1,0 +1,35 @@
+name: Threshold floor 3 player smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_100_floor3_runner.cjs'
+      - '.github/workflows/qa-threshold-floor3-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Play 3 normal-input runs starting from level 3
+        env:
+          THRESHOLD_RUNS: '3'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: ${{ github.workspace }}/results/floor3-smoke
+        run: node tools/qa_100_floor3_runner.cjs
+      - name: Preserve player evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: floor3-smoke-evidence
+          path: results/floor3-smoke/
