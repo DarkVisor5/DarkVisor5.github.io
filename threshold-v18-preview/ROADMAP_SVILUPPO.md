@@ -116,3 +116,11 @@ _Prima di una release stabile_
 - Nessun intervento su HP, IA nemica, trappole, ricompense, collisioni, generazione della mappa e controllo di visibilità.
 - QA eseguito sul motore v18.21 con canvas simulato: sintassi valida, avvio a 85 luce, attraversamento della soglia -8, nuovo overlay testato anche a luce zero, generazione e rendering **5/5 piani** senza eccezioni.
 - **Ancora da verificare in browser e su smartphone:** leggibilità reale con torce, frame rate e feedback dei tester. La v17 stabile è separata e invariata.
+
+## Checkpoint v18.23 — Fase A (2 novembre 2026)
+
+- Integrati gli 8 PNG RGBA recuperati dalla galleria v18.22 del Lotto 3: stendardo, leggio, piedistallo, idolo, manichino, tavola anatomica, espositore di gioielli e nicchia funeraria. Le dimensioni native sono 32×32, tranne piedistallo 64×32.
+- Aggiunti 5 nuovi disegni pixel-style con sagome distinte per `cryptStele`, `sanctuarySundial`, `sanctuaryPrayerKneeler`, `treasuryRubyDisplay`, `healingHerbTable` (file SVG a coordinate intere, da validare a dimensione nativa).
+- Il renderer usa i 13 asset Fase A se caricati, con **fallback automatico** ai precedenti atlanti e disegni procedurali.
+- Nessun cambio a combattimento, collisioni, scala delle mappe, IA, loot e luce; v17 stabile invariata.
+- Da verificare in **browser reale** su desktop e mobile: comparsa effettiva, contrasto a tre livelli di luce, leggibilità 34/46 px, regression delle run. Non attribuire uno stato "OK definitivo" prima del playtest.

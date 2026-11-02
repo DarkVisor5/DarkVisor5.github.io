@@ -2889,6 +2889,32 @@ const V18_LOTTO3_TILES={
 const V18_LOTTO3_ATLAS=new Image();
 V18_LOTTO3_ATLAS.addEventListener('load',()=>{if(s)render()});
 V18_LOTTO3_ATLAS.src='./assets/sprites/v18_20_lotto3_readability_atlas.png';
+
+// v18.23 Fase A: standalone sprites have priority; atlases remain the safe fallback.
+// The stable version is separate and unaffected.
+const V18_23_ART_FILES={
+ guardStandard:'guardStandard.png',
+ archiveLectern:'archiveLectern.png',
+ treasurePedestal:'treasurePedestal.png',
+ sanctuaryStoneIdol:'sanctuaryStoneIdol.png',
+ armoryTrainingDummy:'armoryTrainingDummy.png',
+ healingAnatomyChart:'healingAnatomyChart.png',
+ treasuryJewelryStand:'treasuryJewelryStand.png',
+ cryptOfferingNiche:'cryptOfferingNiche.png',
+ cryptStele:'cryptStele.svg',
+ sanctuarySundial:'sanctuarySundial.svg',
+ sanctuaryPrayerKneeler:'sanctuaryPrayerKneeler.svg',
+ treasuryRubyDisplay:'treasuryRubyDisplay.svg',
+ healingHerbTable:'healingHerbTable.svg'
+};
+const V18_23_SPRITES={};
+for(const [type,file] of Object.entries(V18_23_ART_FILES)){
+ const img=new Image();
+ img.addEventListener('load',()=>{if(s)render()});
+ img.src='./assets/sprites/v18_23/'+file;
+ V18_23_SPRITES[type]=img;
+}
+
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -2916,11 +2942,14 @@ function drawV18RoomDecor(c,relight=false){
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
   ctx.imageSmoothingEnabled=false;
+  const phaseA=V18_23_SPRITES[prop.type];
   const lotto3=V18_LOTTO3_TILES[prop.type];
   const lotto2=V18_LOTTO2_TILES[prop.type];
   const tile=V18_REDESIGNED_TILES[prop.type];
   const polished=V18_POLISHED_SPRITES[prop.type];
-  if(lotto3!==undefined&&V18_LOTTO3_ATLAS.complete&&V18_LOTTO3_ATLAS.naturalWidth){
+  if(phaseA?.complete&&phaseA.naturalWidth){
+   ctx.drawImage(phaseA,px,py,CELL*prop.w,CELL*prop.h);
+  }else if(lotto3!==undefined&&V18_LOTTO3_ATLAS.complete&&V18_LOTTO3_ATLAS.naturalWidth){
    const w=prop.type==='treasurePedestal'?64:32;
    ctx.drawImage(V18_LOTTO3_ATLAS,(lotto3%4)*64+(w===32?16:0),Math.floor(lotto3/4)*32,w,32,px,py,CELL*prop.w,CELL*prop.h);
   }else if(lotto2!==undefined&&V18_LOTTO2_ATLAS.complete&&V18_LOTTO2_ATLAS.naturalWidth){
