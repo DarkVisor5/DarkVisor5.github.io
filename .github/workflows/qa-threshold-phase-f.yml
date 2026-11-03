@@ -32,7 +32,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Test actual full runs on paired initial seeds (smoke sample)
         env:
-          THRESHOLD_PAIR_COUNT: '2'
+          THRESHOLD_PAIR_COUNT: '10'
           THRESHOLD_FIRST_SEED: '20261103'
           THRESHOLD_TURN_LIMIT: '1800'
           THRESHOLD_RESULTS_DIR: /tmp/threshold-phase-f-paired
