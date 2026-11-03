@@ -7,11 +7,13 @@
     "repository": "DarkVisor5/DarkVisor5.github.io",
     "branch": "main",
     "base_commit": "a50a27d48d32aff6e6f1fc03fe984ffaa94ca9e2",
-    "last_qa_code_commit": "948352835190bdfd10fc3a0836e5ffbe68ede955",
+    "last_qa_code_commit": "54877d37970e8cc164915dd95a6a39da7b08c9cf",
     "stable_path": "threshold/index.html",
     "preview_path": "threshold-v18-preview/",
     "stable_url": "https://darkvisor5.github.io/threshold/",
-    "preview_url": "https://darkvisor5.github.io/threshold-v18-preview/"
+    "preview_url": "https://darkvisor5.github.io/threshold-v18-preview/",
+    "last_observed_head": "343e1b0737035033ffc199f5e5d80d72c003c4d3",
+    "last_verified_report_commit": "f0d86930d8508d783db89391fad3dd5672446ce7"
   },
   "game": {
     "stable_version": "v17.17.0",
@@ -24,40 +26,70 @@
     "area": "bot/QA",
     "game_version_changed": false,
     "repository_committed": true,
-    "description": "Phase F resource-aware navigation: known potions, weapons, torches, bounded chest detours, reduced visible elite/alert exposure, collect supplies behind P3 locked boss gate.",
+    "description": "Conservative Phase F bot only; short observed-potion detours, P3 gate loot, quieter chest choices and observed strong-enemy penalties. No v18.26 or v17.17.0 gameplay changes.",
     "files": [
       "tools/qa_phase_f_bot.js",
       "tools/qa_phase_f_worker.cjs",
       "tools/qa_phase_f_paired_runner.cjs",
       "tools/qa_phase_f_unit.cjs",
       ".github/workflows/qa-threshold-phase-f.yml",
+      "threshold-v18-preview/docs/QA_FASE_F_2026-11-03.md",
       "threshold-project-state.json",
       "THRESHOLD_CHANGELOG.md"
     ],
     "tests_run": [
-      "Node/V8 syntax parse of new bot and worker/runner/unit code",
-      "3 synthetic player-view checks: potion prioritized, P3 boss-gate loot, healthy go-to-stairs — passed"
+      "7/7 Node VM policy checks passed",
+      "20 actual Chromium attempts: 10 baseline + 10 Fase F, ten verified matching initial observed maps",
+      "0 wins; 20 actual deaths; zero harness errors, zero action-limit interruptions"
     ],
     "ci": {
-      "run_id": 41629150837,
-      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41629150837",
-      "status": "in_progress_as_last_checked",
-      "not_a_completed_test": true
+      "run_id": 41630726729,
+      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41630726729",
+      "status": "completed",
+      "conclusion": "success",
+      "evidence_path": "threshold-v18-preview/docs/QA_FASE_F_2026-11-03.md"
     },
     "limitations": [
-      "Synthetic checks are not actual played games",
-      "First paired-browser comparison not yet confirmed",
-      "The same initial seed does not force identical later random draws after actions diverge"
-    ]
+      "No authentic P1-P5 victory; baseline and Fase F each 0/10 wins",
+      "Sample too small to establish efficacy",
+      "Seeded initial state validated; later random streams may diverge",
+      "steps on death can be zero due final-view reset and need telemetry fix"
+    ],
+    "comparison": {
+      "n_seed_pairs": 10,
+      "start_seed": 20261103,
+      "turn_limit": 1800,
+      "matched_initial_visible_state": 10,
+      "baseline": {
+        "wins": 0,
+        "deaths": 10,
+        "interruptions": 0,
+        "max_floor": 4,
+        "mean_max_floor": 2.6,
+        "mean_turns": 852
+      },
+      "phase_f": {
+        "wins": 0,
+        "deaths": 10,
+        "interruptions": 0,
+        "max_floor": 4,
+        "mean_max_floor": 2.7,
+        "mean_turns": 756
+      },
+      "paired_better_for_phase_f": 1,
+      "paired_equal": 9,
+      "paired_better_for_baseline": 0,
+      "interpretation": "Small smoke test only: no demonstrated win-rate improvement"
+    }
   },
   "previous_qa": {
     "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
     "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
   },
   "next_actions": [
-    "Review Phase F GitHub Actions outcome and artifact; fix any CI issues",
-    "Compare baseline and Phase F on at least 100 paired initial seeds, report real deaths vs interruptions and floor-entry resources",
-    "Human playtest across P1-P5, validate lighting and interactivity before balancing changes"
+    "Fix end-of-run steps/HP/Alarme telemetry for real deaths and abandonments",
+    "Extend the conservative comparison to 100 validated paired starts and preserve resource checkpoints",
+    "Human P1-P5 playtest, mobile graphics/lighting and puzzle review before gameplay balance changes"
   ],
   "constraints": [
     "Keep v17 stable unchanged",
