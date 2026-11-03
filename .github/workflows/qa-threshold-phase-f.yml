@@ -1,3 +1,4 @@
+# THRESHOLD_CHANGE_ID: THR-20261103-005 — 20 fresh seed A/B vs v004, 5000 actions per run.
 # THRESHOLD_CHANGE_ID: THR-20261103-004 — test v003 vs optimized v004 with novel seeds, no game engine changes.
 # THRESHOLD_CHANGE_ID: THR-20261103-003 — QA 5000 action cap, new holdout seeds, no game changes
 # THRESHOLD_CHANGE_ID: THR-20261103-001 — QA-only, v18.26 playable unaffected
@@ -36,8 +37,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Test actual full runs on paired initial seeds (smoke sample)
         env:
-          THRESHOLD_PAIR_COUNT: '10'
-          THRESHOLD_FIRST_SEED: '20261123'
+          THRESHOLD_PAIR_COUNT: '20'
+          THRESHOLD_FIRST_SEED: '20261153'
           THRESHOLD_TURN_LIMIT: '5000'
           THRESHOLD_CONTROL_PROFILE: 'prior'
           THRESHOLD_RESULTS_DIR: /tmp/threshold-phase-f-paired

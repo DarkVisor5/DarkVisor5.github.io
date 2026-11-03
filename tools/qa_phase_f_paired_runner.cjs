@@ -1,4 +1,5 @@
 'use strict';
+// THRESHOLD_CHANGE_ID: THR-20261103-005 — 20 new seed comparisons, verified torch/artefact metrics.
 // THRESHOLD_CHANGE_ID: THR-20261103-004 — head-to-head v003 vs v004 QA controller on 5000 actions.
 // THRESHOLD_CHANGE_ID: THR-20261103-002 — paired resource/movement terminal metrics, QA-only.
 // THRESHOLD_CHANGE_ID: THR-20261103-001 — honest paired-seed QA, no gameplay edits.
@@ -41,12 +42,16 @@ for(let i=0;i<count;i++){
    observedMoves:row.steps??null,stepsSource:row.stepsSource||null,
    lastAlive:row.lastAlive||null,terminalSnapshot:row.terminalSnapshot||null,
    result:row.result,finished:!!row.finished,loopBreaks:row.loopBreaks??null,weaponDrops:row.weaponDrops??null,
+   wallTorchHarvests:row.wallTorchHarvests??null,weaponRepickups:row.weaponRepickups??null,
+   quakeDodges:row.quakeDodges??null,artifactUses:row.artifactUses??null,
    wins:/Dungeon completato/i.test(row.result||'')&&!!row.finished,
    deaths:/Run terminata/i.test(row.result||'')&&!!row.finished,
    abandoned:!row.finished,heals:row.heals||0,alarmAtBoss3:r.firstVisibleBossByFloor?.['3']?.alarm??null,
    potionsAtBoss3:r.firstVisibleBossByFloor?.['3']?.healsTotal??null,
    hpAtBoss3:r.firstVisibleBossByFloor?.['3']?.hp??null,
-   entryFloor4:r.entryByFloor?.['4']||null,actions:row.actions||{}};
+   entryFloor3:r.entryByFloor?.['3']||null,entryFloor4:r.entryByFloor?.['4']||null,
+   entryFloor5:r.entryByFloor?.['5']||null,stairsFloor3:r.stairsByFloor?.['3']||null,
+   actions:row.actions||{}};
   console.log('PAIR_GAME '+JSON.stringify({seed,profile,...pair[profile]}));
  }
  if(pair[control]&&!pair[control].error&&pair.phase_f&&!pair.phase_f.error){
@@ -65,6 +70,8 @@ for(let i=0;i<count;i++){
 const good=trials.filter(x=>Number.isFinite(x.floorDelta)&&!x.pairMismatch);
 const mean=(profile,get)=>{const values=good.map(x=>get(x[profile])).filter(Number.isFinite);
  return values.length?Number((values.reduce((s,x)=>s+x,0)/values.length).toFixed(2)):null;};
+const sumObserved=(profile,get)=>{const values=good.map(x=>get(x[profile])).filter(Number.isFinite);
+ return values.length?values.reduce((s,x)=>s+x,0):null;};
 const summarize=profile=>({wins:good.filter(x=>x[profile].wins).length,
  deaths:good.filter(x=>x[profile].deaths).length,
  abandoned:good.filter(x=>x[profile].abandoned).length,
@@ -75,8 +82,16 @@ const summarize=profile=>({wins:good.filter(x=>x[profile].wins).length,
  averageLastAliveHp:mean(profile,x=>x.lastAlive?.hp),
  averageLastAliveAlarm:mean(profile,x=>x.lastAlive?.alarm),
  averageLastAlivePotions:mean(profile,x=>x.lastAlive?.potions),
- averageWeaponDrops:mean(profile,x=>x.weaponDrops)});
-const summary={change_id:'THR-20261103-004',playable_version:'v18.26',seedStart:startSeed,controlPolicy:control,
+ averageWeaponDrops:mean(profile,x=>x.weaponDrops),
+ confirmedWallTorchHarvests:sumObserved(profile,x=>x.wallTorchHarvests),
+ observedWeaponRepickups:sumObserved(profile,x=>x.weaponRepickups),
+ quakeDodges:sumObserved(profile,x=>x.quakeDodges),
+ artifactUses:sumObserved(profile,x=>x.artifactUses),
+ reachedFloor4:good.filter(x=>x[profile].floor>=4).length,
+ reachedFloor5:good.filter(x=>x[profile].floor>=5).length,
+ meanHpEntryFloor4:mean(profile,x=>x.entryFloor4?.hp),
+ meanPotionsEntryFloor4:mean(profile,x=>x.entryFloor4?.healsTotal)});
+const summary={change_id:'THR-20261103-005',playable_version:'v18.26',seedStart:startSeed,controlPolicy:control,
  requestedPairs:count,completedPairs:good.length,failedPairs:count-good.length,
  turnLimit:limit,control:summarize(control),phase_f:summarize('phase_f'),
  phaseFBetterFloor:good.filter(x=>x.floorDelta>0).length,
