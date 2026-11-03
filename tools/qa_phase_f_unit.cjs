@@ -1,12 +1,15 @@
 'use strict';
+// THRESHOLD_CHANGE_ID: THR-20261103-005 — event, artefact and P5 quake tests.
 // THRESHOLD_CHANGE_ID: THR-20261103-004 — inventory/lighting resource policy regression.
 // THRESHOLD_CHANGE_ID: THR-20261103-002 — expanded navigation/resources regression, QA only.
 // THRESHOLD_CHANGE_ID: THR-20261103-001 — Fase F QA-only policy regression.
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const src=fs.readFileSync(path.join(__dirname,'qa_phase_f_bot.js'),'utf8');
-const keys=[],inventoryRows=[];
-const ui={dispatchEvent:event=>keys.push(event.key),querySelector:()=>null,querySelectorAll:selector=>selector==='#inventory .inv-row'?inventoryRows:[]};
+const keys=[],inventoryRows=[],artifactRows=[],eventOptions=[];
+const ui={dispatchEvent:event=>keys.push(event.key),querySelector:()=>null,querySelectorAll:selector=>selector==='#inventory .inv-row'?inventoryRows:
+ selector==='#artifactBelt .artifact-row'?artifactRows:
+ selector==='#eventChoices button'?eventOptions:[]};
 const sandbox={window:{},document:{querySelector:()=>ui},
  KeyboardEvent:class KeyboardEvent{constructor(type,opts){this.key=opts.key}}};
 vm.runInNewContext(src,sandbox,{filename:'qa_phase_f_bot.js'});
@@ -16,6 +19,7 @@ assert.equal(typeof agent?.graph,'function');
 function view(rest={}){
  return {inGame:true,finished:false,dialog:{guide:false,puzzle:false,phaseB:false,event:false,danger:false},
  rewardOpen:false,atStairs:false,targetMode:false,wallTorches:[],
+ artifacts:[],artifactUsedThisTurn:false,artifactBuffs:{stone:false,power:0},steps:0,knownCount:95,
  player:{x:1,y:1},hp:24,maxHp:45,torch:70,alarm:15,instability:0,
  inventory:[{kind:'weapon',id:'longSword',family:'sword',uses:4,power:7,uid:1}],
  equippedUid:1,capacity:10,enemies:[],traps:[],props:[],
@@ -102,4 +106,40 @@ const ignoredView=view({hp:45,loot:[{x:2,y:1,kind:'weapon',id:'shortSword'}],sta
 const ignoredNav=nav({ignoredLoot:new Set(['2,1:shortSword'])});
 assert.ok(!agent.goals(ignoredView,new Map(),agent.graph(ignoredView,ignoredNav),ignoredNav).some(o=>o.label==='loot'),'Do not chase discarded weapon');
 console.log('PHASE_F_UNIT_OK discarded loot is not pursued');
-console.log('PHASE_F_UNIT_DONE 21 checks');
+
+const option=text=>({textContent:text,disabled:false,clicked:false,click(){this.clicked=true}});
+function eventCase(override,labels,expected){
+ eventOptions.splice(0,eventOptions.length,...labels.map(option));
+ const v=view({...override,dialog:{guide:false,puzzle:false,event:true,danger:false,phaseB:false}});
+ assert.equal(agent.action(v,new Map(),{},nav()),'event');
+ assert.equal(eventOptions.find(b=>b.clicked)?.textContent,expected);
+ eventOptions.length=0;
+}
+eventCase({hp:44,maxHp:45,alarm:77},['❤️ Recupera 18 HP','🔕 -18 Allarme'],'🔕 -18 Allarme');
+eventCase({hp:9,maxHp:45,alarm:27},['❤️ Recupera 18 HP','🔕 -18 Allarme'],'❤️ Recupera 18 HP');
+eventCase({hp:45,maxHp:45,alarm:0},['⚔️ Recupera un’arma','🧰 Recupera scorte · pozione + 20 oro'],'🧰 Recupera scorte · pozione + 20 oro');
+eventCase({hp:51,maxHp:51,alarm:95},['🤫 -25 Allarme · +10 Instabilità','❤️ Riposa · +10 HP'],'🤫 -25 Allarme · +10 Instabilità');
+eventCase({hp:51,maxHp:51,instability:0},['❤️ Cura completa · +15 Instabilità','🧪 Cura 12 HP'],'🧪 Cura 12 HP');
+eventCase({hp:10,maxHp:45,instability:0},['❤️ Cura completa · +15 Instabilità','🧪 Cura 12 HP'],'❤️ Cura completa · +15 Instabilità');
+eventCase({hp:44,maxHp:45,alarm:10},['❤️ +5 HP massimi e cura 5','🔕 -10 Allarme e -6 Instabilità'],'❤️ +5 HP massimi e cura 5');
+eventCase({hp:45,maxHp:45,alarm:10},['🔓 Liberalo','🪙 Prendi le sue scorte · +40 oro'],'🔓 Liberalo');
+console.log('PHASE_F_UNIT_OK eight event choices');
+const artifactCase=(state,id,expected)=>assert.equal(agent.chooseArtifact(view({...state,artifacts:[id]})),expected);
+artifactCase({alarm:70},'silence','silence');
+artifactCase({alarm:70,artifactUsedThisTurn:true},'silence',null);
+artifactCase({enemies:[{x:2,y:1,boss:false,state:'alerted',hp:13,family:'axe'}]},'stone','stone');
+artifactCase({floor:5,enemies:[{x:2,y:1,boss:true,bossKind:'final',state:'alerted',hp:90,family:'hammer'}]},'heart','heart');
+artifactCase({floor:4,knownCount:300,stairs:null},'eye','eye');
+console.log('PHASE_F_UNIT_OK five artefact decisions');
+let artifactClicks=0;
+artifactRows.push({querySelector:()=>({disabled:false,click(){artifactClicks++}})});
+check('activate silence from real artifact UI',view({hp:45,alarm:80,loot:[],artifacts:['silence']}),{},'artifact_silence');
+assert.equal(artifactClicks,1);
+artifactRows.length=0;
+check('dodge telegraphed final boss quake',view({
+ floor:5,hp:45,maxHp:51,loot:[],
+ enemies:[{x:2,y:1,boss:true,bossKind:'final',telegraph:true,hp:125,family:'hammer',state:'alerted',tier:'purple'}]
+}),{},'dodge_quake','ArrowDown');
+assert.equal(agent.dodgeVisibleQuake(view({enemies:[]}),nav()),null);
+console.log('PHASE_F_UNIT_DONE 36 checks');
+
