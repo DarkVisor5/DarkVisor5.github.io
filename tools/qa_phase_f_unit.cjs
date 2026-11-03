@@ -145,11 +145,16 @@ assert.equal(agent.dodgeVisibleQuake(view({enemies:[]}),nav()),null);
 
 // THR-20261103-005 — drops must not turn into a gear-repickup patrol.
 const droppedNav=nav({floor:4});
+inventoryRows.splice(0,inventoryRows.length,...inv.map((item,i)=>({querySelectorAll:()=>[
+ {textContent:'Equipaggia',disabled:false,click(){}},
+ {textContent:'Lascia',disabled:false,click(){discarded=i}}
+]})));
 const firstDrop=agent.action(discardView,new Map(),{},droppedNav);
 assert.equal(firstDrop,'drop_weapon');
 assert.ok(droppedNav.droppedTiles.has('1,1'),'Track the one drop tile');
 assert.notEqual(agent.action(discardView,new Map(),{},droppedNav),'drop_weapon',
  'Do not drop on the same tile twice without moving');
+inventoryRows.length=0;
 const ordinaryInv=view({floor:4,hp:45,maxHp:51,inventory:inv,
  capacity:10,loot:[],equippedUid:11,torch:70});
 const safeNav=nav({floor:4});
