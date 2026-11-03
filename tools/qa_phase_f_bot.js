@@ -529,6 +529,23 @@
     const after=global.__humanBotView();
     if(after.inGame&&!after.finished&&after.floor===v.floor&&after.player&&
        close(after.player,v.player)===1)observedMoves++;
+    // THR-20261103-005 — actual restored wall torches, not path steps.
+    if(v.wallTorches&&after.wallTorches&&after.floor===v.floor&&Number.isFinite(after.torch)){
+      const available=new Set(after.wallTorches.map(t=>key(t.x,t.y)));
+      const harvested=v.wallTorches.filter(t=>!available.has(key(t.x,t.y)));
+      if(harvested.length&&after.torch>v.torch)
+        metrics.wallTorchHarvests=(metrics.wallTorchHarvests||0)+harvested.length;
+    }
+    if(after.inGame&&after.floor===v.floor&&after.player){
+      const at=key(after.player.x,after.player.y);
+      const repicked=(v.loot||[]).filter(l=>l.kind==='weapon'&&key(l.x,l.y)===at&&
+        nav.ignoredLoot?.has(at+':'+l.id));
+      for(const item of repicked){
+        const prev=v.inventory.filter(i=>i.kind==='weapon'&&i.id===item.id).length;
+        const current=after.inventory.filter(i=>i.kind==='weapon'&&i.id===item.id).length;
+        if(current>prev)metrics.weaponRepickups=(metrics.weaponRepickups||0)+1;
+      }
+    }
     if(act==='wall_torch'&&nav.torchAttempt){
       if(!(after.torch>v.torch))nav.failedTorches.add(nav.torchAttempt);
       nav.torchAttempt=null;
@@ -576,7 +593,9 @@
     turns,known:lastView.knownCount||0,kills:bestKills,coins:lastView.coins||0,
     last30,deathScene,deathHp:deathScene?.hpBefore??null,
     finalPosition:lastView.player,finalPuzzle:{type:lastView.puzzle?.type,found:lastView.puzzle?.found,door:lastView.puzzle?.door,key:lastView.puzzle?.key},trace,
-    fights:metrics.fights,heals:metrics.heals,weaponDrops:metrics.weaponDrops||0,loopBreaks:metrics.loopBreaks||0,
+    fights:metrics.fights,heals:metrics.heals,weaponDrops:metrics.weaponDrops||0,weaponRepickups:metrics.weaponRepickups||0,
+    wallTorchHarvests:metrics.wallTorchHarvests||0,quakeDodges:metrics.quakeDodges||0,
+    artifactUses:metrics.artifactUses||0,loopBreaks:metrics.loopBreaks||0,
     actions:metrics.actions,durationMs:Math.round(performance.now()-started)});
    if(game%10===0)console.log('PLAY100_PROGRESS '+game+'/'+count+' completed='+results.filter(x=>x.finished).length+' reached5='+results.filter(x=>x.floor===5).length);
    if(game<count&&!(lastView.finished)){
