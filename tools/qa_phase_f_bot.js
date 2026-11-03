@@ -165,11 +165,11 @@
    const [x,y]=id.split(',').map(Number),neighborDirs=directions.filter(([_,dx,dy])=>tile(v,x+dx,y+dy)==='?');
    if(!neighborDirs.length)continue;
    const visits=history.get(id)||0;
-   // A completed frontier is not a new destination merely because its foggy
-   // neighbor stayed hidden behind a wall. It remains passable as a route.
-   if(visits>5||nav.frontierVisited?.has(id))continue;
+   // Prefer fresh observed frontiers while preserving backtracking routes.
+   // Permanently excluding a reached frontier caused stuck_no_known_path.
+   if(visits>5)continue;
    const novelty=neighborDirs.length;
-   actions.push({point:{x,y},score:dist+4+visits*8-novelty*1.4,label:'frontier'});
+   actions.push({point:{x,y},score:dist+4+visits*18-novelty*1.4,label:'frontier'});
   }
   actions.sort((a,b)=>a.score-b.score);
   return actions;
@@ -283,12 +283,7 @@
   if(nav.stairsBlocked&&nav.turn-(nav.stairsBlockedAt||0)>240){nav.stairsBlocked=false;nav.goal=null;nav.label=null}
   // Reset per-floor navigation BEFORE planning; never apply the last floor's
   // boss-gate/visited-tile state to this floor's graph and objectives.
-  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.frontierVisited=new Set();nav.equipCooldown=0;history.clear()}
-  // Mark a reached frontier as explored ONCE; returning to it later without
-  // additional visible information caused long, repeatable wander loops.
-  if(nav.label==='frontier'&&nav.goal&&close(nav.goal,v.player)===0){
-    (nav.frontierVisited??=new Set()).add(key(nav.goal.x,nav.goal.y));
-  }
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.equipCooldown=0;history.clear()}
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
   // Hold a selected destination unless it is gone or a higher-priority need appears.
@@ -346,7 +341,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),frontierVisited:new Set(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
@@ -354,7 +349,7 @@
     // Last genuine player-visible state is retained even when the game clears
     // the run before its summary screen (where s.steps may become zero).
     lastAlive={floor:v.floor,hp:v.hp,maxHp:v.maxHp,alarm:v.alarm,instability:v.instability,
-      torch:v.torch,stepsInFloor:v.steps,position:{...v.player},
+      torch:v.torch,gameReportedSteps:v.steps,position:{...v.player},
       potions:v.inventory.filter(i=>i.kind==='heal').length};
     const pos=key(v.player.x,v.player.y),old=key(v.floor,pos);
     highest=Math.max(highest,v.floor);
@@ -448,5 +443,5 @@
   }
   return {attempted:results.length,finished:results.filter(x=>x.finished).length,elapsedMs:Math.round(performance.now()-t0),results};
  }
- global.ThresholdPhaseFBot={play100,action,graph,attackable,enemyWeaponScore,retreat};
+ global.ThresholdPhaseFBot={play100,action,graph,goals,attackable,enemyWeaponScore,retreat};
 })(window);

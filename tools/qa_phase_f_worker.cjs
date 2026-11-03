@@ -107,7 +107,7 @@ const server=http.createServer((req,res)=>{
        if(prev&&v.floor>prev.floor)t.floorTransitions+=v.floor-prev.floor;
        t.lastAlive={floor:v.floor,position:{x:v.player.x,y:v.player.y},
          hp:v.hp,maxHp:v.maxHp,alarm:v.alarm,instability:v.instability,
-         torch:v.torch,stepsInFloor:v.steps,knownCount:v.knownCount,
+         torch:v.torch,gameReportedSteps:v.steps,knownCount:v.knownCount,
          potions:v.inventory.filter(i=>i.kind==='heal').length};
       }else if(v.finished&&!t.terminal){
        t.terminal={lastAlive:t.lastAlive,summaryTitle:v.summary?.title??null};
