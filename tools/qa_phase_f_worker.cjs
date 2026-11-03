@@ -88,9 +88,26 @@ const server=http.createServer((req,res)=>{
   for(let i=1;i<=runCount;i++){
    try{
     await page.evaluate(()=>window.__qaResourceTelemetry.reset());
+    // THR-20261103-001: seed immediately BEFORE starting a real run, not at page load.
+    await page.evaluate(startSeed=>{
+     let n=startSeed>>>0;
+     Math.random=()=>{n=(n+0x6d2b79f5)|0;let z=Math.imul(n^(n>>>15),1|n);z=(z+Math.imul(z^(z>>>7),61|z))^z;return ((z^(z>>>14))>>>0)/4294967296;};
+     window.__phaseFInitial=null;
+     const orig=window.__humanBotView;
+     window.__humanBotView=(...args)=>{
+      const v=orig(...args);
+      if(v.inGame&&!v.finished&&v.floor===1&&!window.__phaseFInitial){
+       const masked=v.world.join('|');let hash=2166136261;
+       for(let k=0;k<masked.length;k++)hash=Math.imul(hash^masked.charCodeAt(k),16777619)>>>0;
+       window.__phaseFInitial={player:v.player,hp:v.hp,known:v.knownCount,mapHash:hash};
+      }
+      return v;
+     };
+    },seed);
     const batch=await page.evaluate(({lim,name})=>window[name].play100({count:1,limit:lim}),{lim:limit,name:botKey});
     const resourceTelemetry=await page.evaluate(()=>window.__qaResourceTelemetry.report());
-    const row={...batch.results[0],run:i,seed,profile,startFloor:1,deck:['swordMaster','medic','bulwark','quartermaster','survivor'],resourceTelemetry};
+    const initial=await page.evaluate(()=>window.__phaseFInitial);
+    const row={...batch.results[0],run:i,seed,profile,initial,startFloor:1,deck:['swordMaster','medic','bulwark','quartermaster','survivor'],resourceTelemetry};
     if(row.floor<1)throw Error('Full-run scenario failed to enter floor 1: '+row.floor);
     results.push(row);
     process.stdout.write('GAME '+i+'/'+runCount+' '+JSON.stringify({result:row.result,finished:row.finished,floor:row.floor,steps:row.steps,turns:row.turns,kills:row.kills,heals:row.heals,deathHp:row.deathHp,deathScene:row.deathScene,actions:row.actions,finalPosition:row.finalPosition,finalPuzzle:row.finalPuzzle,resources:{entry:resourceTelemetry.entryByFloor,firstBoss:resourceTelemetry.firstVisibleBossByFloor}})+'\n');
