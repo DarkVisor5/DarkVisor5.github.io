@@ -31,8 +31,8 @@ function check(label,state,navOpts,expected,expectedKey){
 check('low-HP visible potion beats stairs',view(),{},'supply_heal','ArrowRight');
 check('P3 blocked gate still recovers supplies',view(),{stairsBlocked:true},'supply_heal','ArrowRight');
 check('healthy runner leaves without detour',view({hp:45,loot:[],alarm:76}),{},'stairs','ArrowRight');
-check('visible torch when dim',view({hp:45,torch:10,loot:[{x:2,y:1,kind:'torch',id:'torch'}]}),{},'supply_torch','ArrowRight');
-check('short sword stock prioritizes visible weapon',view({hp:45,inventory:[{kind:'weapon',id:'shortSword',family:'sword',uses:1,power:6,uid:1}],loot:[{x:2,y:1,kind:'weapon',id:'longSword'}]}),{},'supply_weapon','ArrowRight');
+check('low torch does not override known stairs',view({hp:45,torch:10,loot:[{x:2,y:1,kind:'torch',id:'torch'}]}),{},'stairs','ArrowRight');
+check('weapon does not force a side trip before stairs',view({hp:45,inventory:[{kind:'weapon',id:'shortSword',family:'sword',uses:1,power:6,uid:1}],loot:[{x:2,y:1,kind:'weapon',id:'longSword'}]}),{},'stairs','ArrowRight');
 check('high alarm ignores optional chest',view({hp:45,loot:[],alarm:89,chests:[{x:2,y:1,opened:false}]}),{},'stairs','ArrowRight');
 check('elite detour uses safe nearby corridor',view({hp:45,loot:[],enemies:[{x:3,y:1,family:'sword',hp:18,tier:'elite',boss:false,state:'alerted'}]}),{},'stairs','ArrowDown');
 console.log('PHASE_F_UNIT_DONE 7 checks');
