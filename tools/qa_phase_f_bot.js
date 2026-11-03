@@ -171,6 +171,7 @@
   if(supply&&(pots<2||swords<2))return supply;
   if(instant&&loss>=6)return instant;
   if(full&&loss>=13&&v.instability<65)return full;
+  if(full&&instant)return instant; // avoid needless instability.
   if(alarm&&v.alarm>=22)return alarm;
   const artifact=find(/Artefatto raro/i);
   if(artifact&&(v.artifacts||[]).length<3&&swords>=2)return artifact;
@@ -267,7 +268,9 @@
    else if(!nav.stairsBlocked)push(l,1.5,'loot');
   }
   // Known harvestable wall torches: only the adjacent standing tile is a goal.
-  if(v.torch<=25&&!seenThreat)for(const t of v.wallTorches||[]){
+  // THR-20261103-005 — light detours capped by progress, risk and alarm.
+  if(v.torch<=22&&!seenThreat&&v.hp>=v.maxHp*.50&&
+    (nav.torchTravelSteps||0)<16&&!(v.floor>=3&&v.alarm>=68))for(const t of v.wallTorches||[]){
    if(nav.failedTorches?.has(key(t.x,t.y)))continue;
    for(const [,dx,dy] of directions){
     const at={x:t.x+dx,y:t.y+dy},distance=graph.dist.get(key(at.x,at.y));
@@ -345,7 +348,7 @@
   // Free capacity BEFORE a potion pickup; do not discard in immediate contact.
   if(discardWeakWeapon(v,nav,metrics,danger))return 'drop_weapon';
   // Bumping a previously seen harvestable torch is a normal player movement.
-  if(v.torch<=25&&!danger.length){
+  if(v.torch<=22&&!danger.length){
    const t=(v.wallTorches||[]).find(o=>close(o,v.player)===1&&!nav.failedTorches?.has(key(o.x,o.y)));
    if(t){
     const dir=directions.find(([,dx,dy])=>v.player.x+dx===t.x&&v.player.y+dy===t.y);
@@ -413,7 +416,7 @@
   if(nav.stairsBlocked&&nav.turn-(nav.stairsBlockedAt||0)>240){nav.stairsBlocked=false;nav.goal=null;nav.label=null}
   // Reset per-floor navigation BEFORE planning; never apply the last floor's
   // boss-gate/visited-tile state to this floor's graph and objectives.
-  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.ignoredLoot=new Set();nav.failedTorches=new Set();nav.equipCooldown=0;history.clear()}
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.ignoredLoot=new Set();nav.failedTorches=new Set();nav.torchTravelSteps=0;nav.equipCooldown=0;history.clear()}
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
   // Hold a selected destination unless it is gone or a higher-priority need appears.
@@ -460,6 +463,7 @@
    if(around[0])next=around[0].dir,kind='pursuit';
   }
   if(!next)return 'stuck';
+  if(kind==='wall_torch')nav.torchTravelSteps=(nav.torchTravelSteps||0)+1;
   send(next);
   return kind||'move';
  }
@@ -488,7 +492,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),ignoredLoot:new Set(),failedTorches:new Set(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),ignoredLoot:new Set(),failedTorches:new Set(),torchTravelSteps:0,retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
