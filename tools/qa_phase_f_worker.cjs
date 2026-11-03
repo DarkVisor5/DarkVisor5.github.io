@@ -1,4 +1,5 @@
 'use strict';
+// THRESHOLD_CHANGE_ID: THR-20261103-004 — compare current policy to frozen THR-003 controller.
 // THRESHOLD_CHANGE_ID: THR-20261103-002 — passive terminal movement and resource telemetry for BOTH policies.
 // THRESHOLD_CHANGE_ID: THR-20261103-001 — paired-seed browser worker, QA only.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
@@ -6,9 +7,9 @@ const {chromium}=require('playwright');
 const base=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(base,p),'utf8');
 const gamePath=path.join(base,'threshold-v18-preview/js/game.js');
 const marker='loadMeta();syncSoundButtons();hydrateMatchupIcons();renderHub();\n})();';
-const profile=process.env.THRESHOLD_BOT_PROFILE==='baseline'?'baseline':'phase_f';
+const profile=['baseline','prior','phase_f'].includes(process.env.THRESHOLD_BOT_PROFILE)?process.env.THRESHOLD_BOT_PROFILE:'phase_f';
 const botKey=profile==='baseline'?'ThresholdOptimalDeckBot':'ThresholdPhaseFBot';
-const original=read('threshold-v18-preview/js/game.js'),view=read('tools/qa_phase_c_view.js'),agent=read(profile==='baseline'?'tools/qa_optimal_sword_build_bot.js':'tools/qa_phase_f_bot.js');
+const original=read('threshold-v18-preview/js/game.js'),view=read('tools/qa_phase_c_view.js'),agent=read(profile==='baseline'?'tools/qa_optimal_sword_build_bot.js':profile==='prior'?'tools/qa_phase_f_previous_bot.js':'tools/qa_phase_f_bot.js');
 const monitor=read('tools/qa_resource_checkpoints.js');
 assert.equal(original.split(marker).length,2,'Game code injection anchor changed');
 const instrumented=original.replace(marker,view+'\n'+marker);

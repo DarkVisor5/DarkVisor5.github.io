@@ -1,11 +1,12 @@
 'use strict';
+// THRESHOLD_CHANGE_ID: THR-20261103-004 — inventory/lighting resource policy regression.
 // THRESHOLD_CHANGE_ID: THR-20261103-002 — expanded navigation/resources regression, QA only.
 // THRESHOLD_CHANGE_ID: THR-20261103-001 — Fase F QA-only policy regression.
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const src=fs.readFileSync(path.join(__dirname,'qa_phase_f_bot.js'),'utf8');
-const keys=[];
-const ui={dispatchEvent:event=>keys.push(event.key),querySelector:()=>null,querySelectorAll:()=>[]};
+const keys=[],inventoryRows=[];
+const ui={dispatchEvent:event=>keys.push(event.key),querySelector:()=>null,querySelectorAll:selector=>selector==='#inventory .inv-row'?inventoryRows:[]};
 const sandbox={window:{},document:{querySelector:()=>ui},
  KeyboardEvent:class KeyboardEvent{constructor(type,opts){this.key=opts.key}}};
 vm.runInNewContext(src,sandbox,{filename:'qa_phase_f_bot.js'});
@@ -14,7 +15,7 @@ assert.equal(typeof agent?.action,'function');
 assert.equal(typeof agent?.graph,'function');
 function view(rest={}){
  return {inGame:true,finished:false,dialog:{guide:false,puzzle:false,phaseB:false,event:false,danger:false},
- rewardOpen:false,atStairs:false,targetMode:false,
+ rewardOpen:false,atStairs:false,targetMode:false,wallTorches:[],
  player:{x:1,y:1},hp:24,maxHp:45,torch:70,alarm:15,instability:0,
  inventory:[{kind:'weapon',id:'longSword',family:'sword',uses:4,power:7,uid:1}],
  equippedUid:1,capacity:10,enemies:[],traps:[],props:[],
@@ -73,4 +74,32 @@ assert.equal(cycleBans.get('1,2>1,1'),260);
 assert.equal(agent.breakShortCycle(cycleHistory.map((o,i)=>({...o,known:70+i})),new Map(),100),null,
  'Do not cut a loop if discovery is progressing');
 console.log('PHASE_F_UNIT_OK detected repeated four-cell loop');
-console.log('PHASE_F_UNIT_DONE 16 checks');
+check('harvest known wall torch by legal bump',view({hp:45,torch:0,loot:[],wallTorches:[{x:1,y:0}]}),{},'wall_torch','ArrowUp');
+check('do not detour for torch at healthy light',view({hp:45,torch:55,loot:[],wallTorches:[{x:1,y:0}]}),{},'stairs','ArrowRight');
+const healingView=view({floor:4,hp:32,maxHp:51,torch:55,stairs:{x:5,y:1},
+ loot:[{x:2,y:1,kind:'heal',id:'large'}],inventory:[{kind:'weapon',id:'longSword',family:'sword',uses:3,power:7,uid:1}]});
+const hGoals=agent.goals(healingView,new Map(),agent.graph(healingView,nav()),nav());
+assert.equal(hGoals[0].label,'supply_heal','Prioritize observed cure over exit with no potions on P4');
+console.log('PHASE_F_UNIT_OK visible scarce healing');
+const inv=Array.from({length:8},(_,i)=>({kind:'weapon',id:'weapon'+i,family:i<2?'sword':'axe',uid:10+i,uses:2+i,power:3+i*.2}));
+inv[0].id='shortSword';inv[1].id='longSword';
+const discardView=view({floor:4,hp:45,maxHp:51,torch:50,inventory:inv,capacity:10,loot:[],equippedUid:11});
+let discarded=-1;
+inventoryRows.splice(0,inventoryRows.length,...inv.map((o,i)=>({querySelectorAll:()=>[
+  {textContent:'Equipaggia',disabled:false,click(){}},
+  {textContent:'Lascia',disabled:false,click(){discarded=i}}
+]})));
+const dn=nav({floor:4});
+const beforeDiscard=JSON.stringify(discardView);
+const discardAct=agent.action(discardView,new Map(),{},dn);
+assert.equal(discardAct,'drop_weapon','Free backpack space using ordinary UI');
+assert.ok(discarded>=0&&discarded!==1,'Do not throw away equipped sword');
+assert.ok(dn.ignoredLoot.has('1,1:'+inv[discarded].id),'Dropped weapon marked as avoidable loot');
+assert.equal(JSON.stringify(discardView),beforeDiscard,'Bot must not mutate the observed view');
+inventoryRows.length=0;
+console.log('PHASE_F_UNIT_OK real inventory discard');
+const ignoredView=view({hp:45,loot:[{x:2,y:1,kind:'weapon',id:'shortSword'}],stairs:null});
+const ignoredNav=nav({ignoredLoot:new Set(['2,1:shortSword'])});
+assert.ok(!agent.goals(ignoredView,new Map(),agent.graph(ignoredView,ignoredNav),ignoredNav).some(o=>o.label==='loot'),'Do not chase discarded weapon');
+console.log('PHASE_F_UNIT_OK discarded loot is not pursued');
+console.log('PHASE_F_UNIT_DONE 21 checks');
