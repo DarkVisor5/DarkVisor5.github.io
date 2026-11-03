@@ -1,6 +1,6 @@
 'use strict';
-/* THRESHOLD_CHANGE_ID: THR-20261103-001 — Fase F QA bot, v18.26 gameplay unchanged.
-   Player-visible resource detours and elite/alarm risk. Input via normal UI only. */
+/* THRESHOLD_CHANGE_ID: THR-20261103-001 — conservative Phase F QA bot.
+   Narrow changes to observed supplies and noisy chests. Gameplay v18.26 unchanged. */
 (function(global){
  const directions=[['ArrowUp',0,-1],['ArrowRight',1,0],['ArrowDown',0,1],['ArrowLeft',-1,0]];
  const root=()=>document.querySelector('#dungeon-fixed');
@@ -94,15 +94,11 @@
     const x=here.x+dx,y=here.y+dy,next=key(x,y);
     if(!passable(tile(v,x,y))||block(next)||((nav.banned?.get(id+'>'+next)||0)>(nav.turn||0)))continue;
     let step=1;
-    // THR-20261103-001: avoid *observed* dangerous encounters, not hidden mobs.
-    for(const foe of v.enemies){
-     const delta=Math.abs(foe.x-x)+Math.abs(foe.y-y);
-     if(delta>2)continue;
-     const elite=/red|purple|elite|élite/i.test(String(foe.tier||''));
-     const exposure=foe.boss?95:elite?70:19;
-     step+=delta===1?exposure:Math.ceil(exposure*.4);
-     if(v.alarm>=65)step+=delta===1?14:5;
-    }
+    const nearEnemy=v.enemies.some(e=>Math.abs(e.x-x)+Math.abs(e.y-y)<=2);
+    if(nearEnemy)step+=18;
+    // Only a modest extra cost near visible higher-tier enemies.
+    if(v.enemies.some(e=>/red|purple/i.test(String(e.tier||''))&&
+      Math.abs(e.x-x)+Math.abs(e.y-y)<=2))step+=7;
     const candidate=dist.get(id)+step;
     if(candidate<(dist.get(next)??Infinity)){dist.set(next,candidate);prev.set(next,{from:id,dir:k});queue.push({x,y})}
    }
@@ -117,73 +113,54 @@
   while(g.prev.get(cur)&&g.prev.get(cur).from!==from&&iterations++<4000)cur=g.prev.get(cur).from;
   return g.prev.get(cur)?.dir||null;
  }
- // THR-20261103-001: never use unseen tiles; detours have explicit cost caps.
  function goals(v,history,graph,nav){
-  const q=v.puzzle,actions=[],meds=v.inventory.filter(i=>i.kind==='heal');
-  const swords=v.inventory.filter(i=>i.kind==='weapon'&&i.family==='sword'&&i.uses>0);
-  const swordUses=swords.reduce((n,i)=>n+i.uses,0);
-  const underSupplied=meds.length<2||v.hp<v.maxHp*.65||swordUses<2;
-  const threat=v.enemies.some(e=>close(e,v.player)<=4);
-  const push=(item,weight=0,label='goal')=>{
-   if(!item)return;
-   const d=graph.dist.get(key(item.x,item.y));
-   if(d!==undefined)actions.push({point:item,score:d+weight,label});
-  };
+  const q=v.puzzle,actions=[];
+  // THR-20261103-001: avoid the long supply tours that hurt paired-run results.
+  const medicines=v.inventory.filter(i=>i.kind==='heal');
+  const seenThreat=v.enemies.some(e=>close(e,v.player)<=3);
+  const push=(x,weight=0,label='goal')=>{if(x&&graph.dist.has(key(x.x,x.y)))actions.push({point:x,score:graph.dist.get(key(x.x,x.y))+weight,label})};
+  // Floors 1–3 contain an optional threshold chamber. The route to the
+  // staircase is NOT gated by the optional chamber; floor 3 IS boss-gated.
   if(v.floor<=3){
-   if(!nav.stairsBlocked)push(v.stairs,-440,'stairs');
+    if(!nav.stairsBlocked)push(v.stairs,-440,'stairs');
   }else if(!q.found){
-   if(v.floor===4){
-    if(!q.tabletRead)push(q.tablet,-520,'tablet');
-    else if(!q.decoderRead)push(q.decoder,-520,'decoder');
-    else push(q.shrine,-500,'shrine');
-   }
-   if(v.floor===5){
-    if(!q.tabletRead)push(q.tablet,-520,'tablet');
-    else if(!q.decoderRead)push(q.decoder,-520,'decoder');
-    else if(q.sigilProgress<3)push(q.sigils?.[q.sigilProgress],-510,'sigil');
-    else push(q.finalSeal,-520,'finalSeal');
-   }
+    if(v.floor===4){if(!q.tabletRead)push(q.tablet,-520,'tablet');else if(!q.decoderRead)push(q.decoder,-520,'decoder');else push(q.shrine,-500,'shrine')}
+    if(v.floor===5){if(!q.tabletRead)push(q.tablet,-520,'tablet');else if(!q.decoderRead)push(q.decoder,-520,'decoder');else if(q.sigilProgress<3)push(q.sigils[q.sigilProgress],-510,'sigil');else push(q.finalSeal,-520,'finalSeal')}
   }else push(v.stairs,-450,'stairs');
-  for(const boss of v.enemies.filter(e=>e.boss))
-   for(const [,dx,dy] of directions)push({x:boss.x+dx,y:boss.y+dy},-850,'boss');
-  // Previously, stairs always overrode visible potions; when the P3 boss
-  // gate closed, ALL loot was skipped. Both are QA-only policy mistakes.
-  for(const item of v.loot){
-   const id=key(item.x,item.y),distance=graph.dist.get(id);
+  // The boss is a known required obstacle once it is actually seen. Approach
+  // any reachable free orthogonal neighbor, no hidden coordinates.
+  for(const boss of v.enemies.filter(e=>e.boss)){
+    for(const [,dx,dy] of directions){
+      const spot={x:boss.x+dx,y:boss.y+dy};
+      push(spot,-850,'boss');
+    }
+  }
+  // Loot only when it is on the way or urgently required; avoid side trips.
+  for(const l of v.loot){
+   const id=key(l.x,l.y),distance=graph.dist.get(id);
    if(distance===undefined||(history.get(id)||0)>=3)continue;
-   if(item.kind==='heal'){
-    if(v.inventory.length>=(v.capacity||10))continue;
-    if(meds.length<2&&v.hp<v.maxHp*.9&&distance<=24&&!threat)
-     push(item,-640+distance*.8,'supply_heal');
-    else if(v.hp<v.maxHp*.4&&distance<=6)
-     push(item,-485+distance*.8,'supply_heal');
-    else if(distance<=5&&!threat)push(item,0,'loot');
-   }else if(item.kind==='weapon'){
-    if(v.inventory.length>=(v.capacity||10))continue;
-    if(swordUses<2&&distance<=15&&!threat)push(item,-550+distance*.9,'supply_weapon');
-    else if(distance<=5&&!threat)push(item,0,'loot');
-   }else if(item.kind==='torch'){
-    if(v.torch<35&&distance<=12&&!threat)push(item,-535+distance*.8,'supply_torch');
-    else if(distance<=4&&!threat)push(item,0,'loot');
-   }else if(distance<=3&&!threat)push(item,1,'loot');
+   if(!(l.kind==='torch'||v.inventory.length<(v.capacity||10)))continue;
+   // Prioritize only a very nearby known heal when genuinely critical.
+   if(l.kind==='heal'&&medicines.length===0&&v.hp<v.maxHp*.55&&
+      distance<=6&&!seenThreat)push(l,-490,'supply_heal');
+   else if(nav.stairsBlocked&&distance<=6&&!seenThreat)push(l,1.5,'loot');
+   else if(!nav.stairsBlocked)push(l,1.5,'loot');
   }
-  // Optional chests raise noise and invite unnecessary detours.
-  if(underSupplied&&meds.length===0&&!threat&&v.alarm<30){
-   for(const chest of v.chests){
-    const id=key(chest.x,chest.y),distance=graph.dist.get(id);
-    if(!chest.opened&&(history.get(id)||0)<2&&distance!==undefined&&distance<=8)
-     push(chest,-470+distance*.6,'chest');
-   }
-  }
-  // Frontiers use only explored walkable tiles near undiscovered cells.
-  for(const [id,distance] of graph.dist){
-   if(distance>240)continue;
-   const [x,y]=id.split(',').map(Number);
-   const unknown=directions.filter(([_,dx,dy])=>tile(v,x+dx,y+dy)==='?').length;
-   if(!unknown)continue;
+  // Skip optional noisy chests if alarm is high or visible foes are close.
+  if(v.alarm<55&&!seenThreat)
+   for(const chest of v.chests)if(!nav.stairsBlocked&&!chest.opened&&
+     (history.get(key(chest.x,chest.y))||0)<3)push(chest,4,'chest');
+  // Explored-but-not-visited frontiers: a frontier is a visible passable
+  // tile next to unexplored map cells. No hidden tiles inspected.
+  const explored=v.world;
+  for(const [id,dist] of graph.dist){
+   if(dist>2000)continue;
+   const [x,y]=id.split(',').map(Number),neighborDirs=directions.filter(([_,dx,dy])=>tile(v,x+dx,y+dy)==='?');
+   if(!neighborDirs.length)continue;
    const visits=history.get(id)||0;
-   if(visits>3)continue;
-   actions.push({point:{x,y},score:distance+7+visits*12-unknown*1.5,label:'frontier'});
+   if(visits>5)continue;
+   const novelty=neighborDirs.length;
+   actions.push({point:{x,y},score:dist+4+visits*8-novelty*1.4,label:'frontier'});
   }
   actions.sort((a,b)=>a.score-b.score);
   return actions;
@@ -300,7 +277,7 @@
   // A player chooses a destination and follows through rather than
   // changing direction toward a different frontier on every single step.
   if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.equipCooldown=0;history.clear()}
-  const urgent=list.find(o=>['stairs','boss','tablet','decoder','shrine','sigil','finalSeal','supply_heal','supply_weapon','supply_torch'].includes(o.label));
+  const urgent=list.find(o=>['stairs','boss','tablet','decoder','shrine','sigil','finalSeal','supply_heal'].includes(o.label));
   if(urgent&&nav.label!==urgent.label){nav.goal={...urgent.point};nav.label=urgent.label}
   if(nav.goal){
     const stillListed=list.some(o=>o.point.x===nav.goal.x&&o.point.y===nav.goal.y);
@@ -386,7 +363,7 @@
     // Learn public collision outcomes. A movement that does not change the
     // position and does not trigger combat/dialogue was blocked. Avoid this
     // edge for a while rather than issuing the same key for hundreds of turns.
-    if(after.inGame&&recentKey&&/^(frontier|loot|chest|stairs|boss|pursuit|move|supply_heal|supply_weapon|supply_torch)$/.test(act)&&
+    if(after.inGame&&recentKey&&/^(frontier|loot|chest|stairs|boss|pursuit|move|supply_heal)$/.test(act)&&
        after.floor===v.floor&&after.player?.x===v.player.x&&after.player?.y===v.player.y&&
        !after.dialog?.puzzle&&!after.dialog?.event&&!after.atStairs){
       const dir=directions.find(([code])=>code===recentKey);
