@@ -87,7 +87,8 @@ assert.equal(hGoals[0].label,'supply_heal','Prioritize observed cure over exit w
 console.log('PHASE_F_UNIT_OK visible scarce healing');
 const inv=Array.from({length:8},(_,i)=>({kind:'weapon',id:'weapon'+i,family:i<2?'sword':'axe',uid:10+i,uses:2+i,power:3+i*.2}));
 inv[0].id='shortSword';inv[1].id='longSword';
-const discardView=view({floor:4,hp:45,maxHp:51,torch:50,inventory:inv,capacity:10,loot:[],equippedUid:11});
+const discardView=view({floor:4,hp:45,maxHp:51,torch:50,inventory:inv,capacity:8,
+ loot:[{x:2,y:1,kind:'heal',id:'large'}],equippedUid:11});
 let discarded=-1;
 inventoryRows.splice(0,inventoryRows.length,...inv.map((o,i)=>({querySelectorAll:()=>[
   {textContent:'Equipaggia',disabled:false,click(){}},
@@ -141,5 +142,23 @@ check('dodge telegraphed final boss quake',view({
  enemies:[{x:2,y:1,boss:true,bossKind:'final',telegraph:true,hp:125,family:'hammer',state:'alerted',tier:'purple'}]
 }),{},'dodge_quake','ArrowDown');
 assert.equal(agent.dodgeVisibleQuake(view({enemies:[]}),nav()),null);
-console.log('PHASE_F_UNIT_DONE 36 checks');
+
+// THR-20261103-005 — drops must not turn into a gear-repickup patrol.
+const droppedNav=nav({floor:4});
+const firstDrop=agent.action(discardView,new Map(),{},droppedNav);
+assert.equal(firstDrop,'drop_weapon');
+assert.ok(droppedNav.droppedTiles.has('1,1'),'Track the one drop tile');
+assert.notEqual(agent.action(discardView,new Map(),{},droppedNav),'drop_weapon',
+ 'Do not drop on the same tile twice without moving');
+const ordinaryInv=view({floor:4,hp:45,maxHp:51,inventory:inv,
+ capacity:10,loot:[],equippedUid:11,torch:70});
+const safeNav=nav({floor:4});
+assert.notEqual(agent.action(ordinaryInv,new Map(),{},safeNav),'drop_weapon',
+ 'Do not discard gear in a normal corridor without full bag and visible heal');
+const tileView=view({floor:4,hp:45,loot:[{x:2,y:1,kind:'weapon',id:'shortSword'}]});
+const highCost=agent.graph(tileView,nav({ignoredLoot:new Set(['2,1:shortSword'])})).dist.get('2,1');
+const lowCost=agent.graph(tileView,nav()).dist.get('2,1');
+assert.ok(highCost>lowCost+100,'Avoid auto-collecting dropped weapon during route');
+console.log('PHASE_F_UNIT_OK dropped gear repickup avoidance and safe discard');
+console.log('PHASE_F_UNIT_DONE 39 checks');
 

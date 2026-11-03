@@ -38,7 +38,7 @@ jobs:
       - name: Test actual full runs on paired initial seeds (smoke sample)
         env:
           THRESHOLD_PAIR_COUNT: '20'
-          THRESHOLD_FIRST_SEED: '20261153'
+          THRESHOLD_FIRST_SEED: '20261173'
           THRESHOLD_TURN_LIMIT: '5000'
           THRESHOLD_CONTROL_PROFILE: 'prior'
           THRESHOLD_RESULTS_DIR: /tmp/threshold-phase-f-paired
