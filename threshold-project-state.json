@@ -1,28 +1,119 @@
 {
   "schema": "threshold-handoff/v1",
   "project": "THRESHOLD",
-  "snapshot_id": "THR-20261103-002",
+  "snapshot_id": "THR-20261103-003",
   "snapshot_date": "2026-11-03",
   "source_of_truth": {
     "repository": "DarkVisor5/DarkVisor5.github.io",
     "branch": "main",
-    "base_commit": "d02961c7c3a4a884f0b2cca7011006b498a2def9",
-    "last_qa_code_commit": "67aa331e8408130e4df8b7d8ec7076322920c343",
+    "base_commit": "04d60cd49b1deaef09421872d82140fbd2fc1fe8",
+    "last_qa_code_commit": "902ac2e4aeb58b21d5f2621d926127473f9b7897",
     "stable_path": "threshold/index.html",
     "preview_path": "threshold-v18-preview/",
     "stable_url": "https://darkvisor5.github.io/threshold/",
     "preview_url": "https://darkvisor5.github.io/threshold-v18-preview/",
-    "last_observed_head": "67aa331e8408130e4df8b7d8ec7076322920c343",
+    "last_observed_head": "902ac2e4aeb58b21d5f2621d926127473f9b7897",
     "last_verified_report_commit": "f0d86930d8508d783db89391fad3dd5672446ce7",
-    "head_note": "Code SHA before subsequent documentation commit; verify repository HEAD for current commit."
+    "head_note": "QA code SHA before subsequent documentation commit; verify current GitHub HEAD independently."
   },
   "game": {
     "stable_version": "v17.17.0",
     "playable_preview_version": "v18.26",
     "gameplay_modified": false
   },
-  "qa_revision": "THR-20261103-002",
+  "qa_revision": "THR-20261103-003",
   "last_change": {
+    "id": "THR-20261103-003",
+    "area": "bot/QA",
+    "game_version_changed": false,
+    "repository_committed": true,
+    "base_commit": "04d60cd49b1deaef09421872d82140fbd2fc1fe8",
+    "code_commit": "902ac2e4aeb58b21d5f2621d926127473f9b7897",
+    "description": "QA action cap 5000 per P1-P5 run, new initial seed pair test, observed blocker navigation and short-loop detector; no changes to game engine or published playable version.",
+    "files": [
+      "tools/qa_phase_f_bot.js",
+      "tools/qa_phase_f_worker.cjs",
+      "tools/qa_phase_f_paired_runner.cjs",
+      "tools/qa_phase_f_unit.cjs",
+      ".github/workflows/qa-threshold-phase-f.yml",
+      "threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md",
+      "THRESHOLD_CHANGELOG.md",
+      "threshold-project-state.json"
+    ],
+    "tests_run": [
+      "Syntax and 16/16 policy regression checks passed in final GitHub Actions run 41660443057",
+      "20 actual Chromium attempts (10 baseline + 10 Phase F), 10/10 matching initial visible states, no runner errors",
+      "Final baseline 8 deaths, 2 interruptions, 0 wins, max P3; Phase F 10 deaths, 0 interruptions, 0 wins, max P5",
+      "Full P1-P5 progression reached floor 5 but no win on seed 20261117; floor 5 entered 22HP and 0 potions",
+      "Repeat run initially exposed and later avoided 4-cell stair navigation loop on seed 20261118"
+    ],
+    "ci": {
+      "run_id": 41660443057,
+      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41660443057",
+      "status": "completed",
+      "conclusion": "success",
+      "evidence_path": "threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md"
+    },
+    "action_limit": 5000,
+    "seed_first": 20261113,
+    "comparison": {
+      "n_seed_pairs": 10,
+      "initial_matches": 10,
+      "baseline": {
+        "wins": 0,
+        "deaths": 8,
+        "interruptions": 2,
+        "maxFloor": 3,
+        "meanFloor": 2.2,
+        "meanTurns": 1238.9,
+        "meanObservedMoves": 1190.2
+      },
+      "phase_f": {
+        "wins": 0,
+        "deaths": 10,
+        "interruptions": 0,
+        "maxFloor": 5,
+        "meanFloor": 3.2,
+        "meanTurns": 926.1,
+        "meanObservedMoves": 854.1
+      },
+      "phaseFDeeper": 7,
+      "baselineDeeper": 1,
+      "tied": 2
+    },
+    "initial_test": {
+      "code_commit": "106921d15e3e63eb32fd5982afb1cfd01ea06dae",
+      "ci_run_id": 41658958316,
+      "passed": true,
+      "phaseFMaxFloor": 4,
+      "phaseFMeanFloor": 2.7,
+      "stairRoutingLoopSeed": 20261118
+    },
+    "limitations": [
+      "No genuine P1-P5 victory; reaching P5 is not clearing final boss",
+      "Seed match verifies initial player-visible world; later RNG paths may differ, so 10 pairs are not proof of causal win-rate benefit",
+      "P5 entered with 22/51 HP and 0 heal items on 20261117",
+      "No gameplay/HP/loot/boss or stable release changes; no human playtest"
+    ],
+    "report_path": "threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md"
+  },
+  "previous_qa": {
+    "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
+    "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
+  },
+  "next_actions": [
+    "Improve QA bot healing/resource slots using the real UI only, especially avoid arriving at P4/P5 with 0 potions and 9 weapons.",
+    "Repeat at least 100 holdout initial seed pairs with consistent 5000 action cap and richer per-floor alarms/potions/steps; record death vs action_limit separately.",
+    "Run human five-floor playtest and mobile visual QA before considering promotion of v18 preview."
+  ],
+  "constraints": [
+    "Keep v17 stable unchanged",
+    "Do not increment playable v18.26 for bot-only changes",
+    "Never treat isolated boss wins or bot timeouts as full-run victories",
+    "Never modify HP, boss AI, loot to improve bot numbers",
+    "Refresh ChatGPT Project's local manifest and changelog after repo changes"
+  ],
+  "previous_change": {
     "id": "THR-20261103-002",
     "area": "bot/QA",
     "game_version_changed": false,
@@ -107,82 +198,5 @@
       "Fase F did not show statistically reliable improvement; no human full-run success documented",
       "UI/engine/gameplay were not modified; website v18.26 remains unchanged"
     ]
-  },
-  "previous_qa": {
-    "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
-    "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
-  },
-  "next_actions": [
-    "Test 100 holdout paired initial states with per-floor telemetry and improve reproducibility of random combat paths; never confuse action_limit with death.",
-    "Audit exploration frontier loops, alarm, optional elite engagements and P3 HP/potions using individual logs; improve QA bot only before game balance changes.",
-    "Human five-floor playtest and actual mobile lighting/sprite/Fase B verification before any v18 promotion."
-  ],
-  "constraints": [
-    "Keep v17 stable unchanged",
-    "Do not increment playable v18.26 for bot-only changes",
-    "Never treat isolated boss wins or bot timeouts as full-run victories",
-    "Never modify HP, boss AI, loot to improve bot numbers",
-    "Refresh ChatGPT Project's local manifest and changelog after repo changes"
-  ],
-  "previous_change": {
-    "id": "THR-20261103-001",
-    "area": "bot/QA",
-    "game_version_changed": false,
-    "repository_committed": true,
-    "description": "Conservative Phase F bot only; short observed-potion detours, P3 gate loot, quieter chest choices and observed strong-enemy penalties. No v18.26 or v17.17.0 gameplay changes.",
-    "files": [
-      "tools/qa_phase_f_bot.js",
-      "tools/qa_phase_f_worker.cjs",
-      "tools/qa_phase_f_paired_runner.cjs",
-      "tools/qa_phase_f_unit.cjs",
-      ".github/workflows/qa-threshold-phase-f.yml",
-      "threshold-v18-preview/docs/QA_FASE_F_2026-11-03.md",
-      "threshold-project-state.json",
-      "THRESHOLD_CHANGELOG.md"
-    ],
-    "tests_run": [
-      "7/7 Node VM policy checks passed",
-      "20 actual Chromium attempts: 10 baseline + 10 Fase F, ten verified matching initial observed maps",
-      "0 wins; 20 actual deaths; zero harness errors, zero action-limit interruptions"
-    ],
-    "ci": {
-      "run_id": 41630726729,
-      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41630726729",
-      "status": "completed",
-      "conclusion": "success",
-      "evidence_path": "threshold-v18-preview/docs/QA_FASE_F_2026-11-03.md"
-    },
-    "limitations": [
-      "No authentic P1-P5 victory; baseline and Fase F each 0/10 wins",
-      "Sample too small to establish efficacy",
-      "Seeded initial state validated; later random streams may diverge",
-      "steps on death can be zero due final-view reset and need telemetry fix"
-    ],
-    "comparison": {
-      "n_seed_pairs": 10,
-      "start_seed": 20261103,
-      "turn_limit": 1800,
-      "matched_initial_visible_state": 10,
-      "baseline": {
-        "wins": 0,
-        "deaths": 10,
-        "interruptions": 0,
-        "max_floor": 4,
-        "mean_max_floor": 2.6,
-        "mean_turns": 852
-      },
-      "phase_f": {
-        "wins": 0,
-        "deaths": 10,
-        "interruptions": 0,
-        "max_floor": 4,
-        "mean_max_floor": 2.7,
-        "mean_turns": 756
-      },
-      "paired_better_for_phase_f": 1,
-      "paired_equal": 9,
-      "paired_better_for_baseline": 0,
-      "interpretation": "Small smoke test only: no demonstrated win-rate improvement"
-    }
   }
 }

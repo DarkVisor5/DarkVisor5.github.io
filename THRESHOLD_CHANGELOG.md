@@ -1,5 +1,15 @@
 # THRESHOLD — CHANGELOG DI CONTINUITÀ TRA CHAT
 
+## THR-20261103-003 — QA bot 5.000 azioni e sblocco loop visibile — 2026-11-03
+- **Area:** bot/QA soltanto. **v18.26 preview e v17.17.0 stabile invariate**. Base GitHub `04d60cd49b1deaef09421872d82140fbd2fc1fe8`, commit codice finale `902ac2e4aeb58b21d5f2621d926127473f9b7897`.
+- **Implementato:** massimo predefinito di **5.000 azioni per partita completa**, in bot/worker/runner/workflow; nuovi seed 20261113–20261122; rilevamento cicli 2–4 celle; ingaggio prudente di nemico ordinario visibile che blocca scale conosciute (solo HP >=65% e almeno una pozione), mai nemico occulto. Nessun bilanciamento modificato.
+- **File:** `tools/qa_phase_f_bot.js`, `tools/qa_phase_f_worker.cjs`, `tools/qa_phase_f_paired_runner.cjs`, `tools/qa_phase_f_unit.cjs`, `.github/workflows/qa-threshold-phase-f.yml`, `threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md`, `THRESHOLD_CHANGELOG.md`, `threshold-project-state.json`.
+- **Test reali:** [prima CI 41658958316](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41658958316) success, 13/13 unit, 20 Chromium; Fase F P4 max, 0/10 vittorie, riscontrato ciclo 4 celle sul P1. [CI finale 41660443057](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41660443057) success, 16/16 unit, 20 Chromium, 10/10 condizioni iniziali appaiate, 0 errori.
+- **Risultato finale:** baseline P3 max, 2,2 piani medi, 8 morti/2 interruzioni, 0 vittorie; Fase F **P5 max, 3,2 piani medi**, 10 morti/0 interruzioni, **0 vittorie**. Seed 20261117 raggiunge P5 con 22 HP e **0 pozioni**. Seed 20261118 supera precedente stallo P1, arriva a P4 ma muore.
+- **Limiti:** 10 coppie, sorteggi successivi non appaiati, nessuna vittoria P1→P5, HP/pozioni esauriti dopo P3, troppo inventario di armi; nessuna prova umana.
+- **Prossimo passo:** gestione slot e cure tramite UI normale, 100 seed holdout con telemetria di piani e RNG più replicabile, poi playtest umano.
+- **Evidenze:** `threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md` e artifact GitHub Actions (30 giorni).
+
 ## THR-20261103-002 — Sprint 1 bot Fase F: telemetria terminale e navigazione prudente — 2026-11-03
 - **Area:** solo bot e QA; **v18.26 preview e v17.17.0 stabile invariate**.
 - **Base:** `d02961c7c3a4a884f0b2cca7011006b498a2def9`; **ultimo commit codice QA:** `67aa331e8408130e4df8b7d8ec7076322920c343`.
