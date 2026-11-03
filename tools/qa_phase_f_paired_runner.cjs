@@ -33,7 +33,7 @@ for(let i=0;i<count;i++){
    errors.push(err);pair[profile]={error:err};continue;
   }
   const row=result.results[0],r=row.resourceTelemetry||{};
-  pair[profile]={floor:row.floor||0,turns:row.turns||0,steps:row.steps||0,
+  pair[profile]={initial:row.initial||null,floor:row.floor||0,turns:row.turns||0,steps:row.steps||0,
    result:row.result,finished:!!row.finished,
    wins:/Dungeon completato/i.test(row.result||'')&&!!row.finished,
    deaths:/Run terminata/i.test(row.result||'')&&!!row.finished,
@@ -44,13 +44,19 @@ for(let i=0;i<count;i++){
   console.log('PAIR_GAME '+JSON.stringify({seed,profile,...pair[profile]}));
  }
  if(pair.baseline&&!pair.baseline.error&&pair.phase_f&&!pair.phase_f.error){
+  if(!pair.baseline.initial||!pair.phase_f.initial||
+     JSON.stringify(pair.baseline.initial)!==JSON.stringify(pair.phase_f.initial)){
+    errors.push({seed,error:'Mismatch of player-visible initial states; this seed pair is NOT comparable',
+      baseline:pair.baseline.initial,phase_f:pair.phase_f.initial});
+    pair.pairMismatch=true;
+  }
   pair.floorDelta=pair.phase_f.floor-pair.baseline.floor;
   pair.turnDelta=pair.phase_f.turns-pair.baseline.turns;
  }
  trials.push(pair);
  fs.writeFileSync(path.join(out,'results-partial.json'),JSON.stringify({trials,errors},null,2));
 }
-const good=trials.filter(x=>Number.isFinite(x.floorDelta));
+const good=trials.filter(x=>Number.isFinite(x.floorDelta)&&!x.pairMismatch);
 const summarize=profile=>({wins:good.filter(x=>x[profile].wins).length,
  deaths:good.filter(x=>x[profile].deaths).length,
  abandoned:good.filter(x=>x[profile].abandoned).length,
@@ -60,7 +66,7 @@ const summarize=profile=>({wins:good.filter(x=>x[profile].wins).length,
 const summary={change_id:'THR-20261103-001',playable_version:'v18.26',seedStart:startSeed,
  requestedPairs:count,completedPairs:good.length,failedPairs:count-good.length,
  turnLimit:limit,baseline:summarize('baseline'),phase_f:summarize('phase_f'),
- phaseFBeterFloor:good.filter(x=>x.floorDelta>0).length,
+ phaseFBetterFloor:good.filter(x=>x.floorDelta>0).length,
  baselineBetterFloor:good.filter(x=>x.floorDelta<0).length,
  tiedFloor:good.filter(x=>x.floorDelta===0).length,
  elapsedMs:Date.now()-started,method:'Same seeded PRNG and identical initial QA shop profile; later RNG draws may diverge with decisions. Actual browser input, not human play.'};
