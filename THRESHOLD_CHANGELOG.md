@@ -1,5 +1,15 @@
 # THRESHOLD — CHANGELOG DI CONTINUITÀ TRA CHAT
 
+## THR-20261103-004 — Bot Fase F: efficienza risorse e torce tramite UI reale — 2026-11-03
+- **Ambito:** esclusivamente codice QA/bot, **v18.26 preview e v17.17.0 stabile NON modificate**. Base `7d69206ddc1d82f557d7baaf3efa0f542d57430f`, HEAD codice testato `04d899a6fb4af05c531895d1e3947a6107f9da10`.
+- **Implementato:** `Lascia` per armi deboli con priorità agli slot cura, memoria loot scartato, raccolta più prioritaria di pozioni note, piccole/grandi selezionate via UI, recupero torce a muro solo se già scoperte; controller v003 congelato per A/B.
+- **File:** `tools/qa_phase_f_bot.js`, `tools/qa_phase_f_previous_bot.js`, `tools/qa_phase_c_view.js`, `tools/qa_phase_f_worker.cjs`, `tools/qa_phase_f_paired_runner.cjs`, `tools/qa_phase_f_unit.cjs`, `.github/workflows/qa-threshold-phase-f.yml`, `threshold-v18-preview/docs/QA_EFFICIENZA_RISORSE_2026-11-03.md`, `THRESHOLD_CHANGELOG.md`, `threshold-project-state.json`.
+- **Test reale:** [GitHub Actions 41669384219](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41669384219) **success**, 21/21 test policy, 20 browser reali, 10/10 seed iniziali appaiati (20261123–20261132), limite 5000 azioni, 0 errori harness.
+- **Risultati:** controllo F v003 0 vittorie/8 morti/2 interruzioni, piano max P4, profondità media 2,7, turni medi 1798,2; nuova F v004 0 vittorie/10 morti/0 interruzioni, piano max P4, profondità media 3,0, turni medi 806,4; 3 seed meglio, 2 peggio, 5 pari. **Nessuna vittoria P1→P5**, turni ridotti in parte per 2 timeout del controllo; non dimostra win-rate superiore.
+- **Problemi aperti:** P4 ancora spesso senza pozioni, Allarme finale alto; lo scarto può essere raccolto nuovamente attraversando la stessa casella; azioni verso torce non misurano ricariche effettive. Nuovo campione necessario, il gioco non è stato ribilanciato.
+- **Prossimi passi:** misurare detour/torce effettive, limitare consumo cure P3→P4, almeno 100 seed nuovi, poi umano.
+- **Report:** `threshold-v18-preview/docs/QA_EFFICIENZA_RISORSE_2026-11-03.md`.
+
 ## THR-20261103-003 — QA bot 5.000 azioni e sblocco loop visibile — 2026-11-03
 - **Area:** bot/QA soltanto. **v18.26 preview e v17.17.0 stabile invariate**. Base GitHub `04d60cd49b1deaef09421872d82140fbd2fc1fe8`, commit codice finale `902ac2e4aeb58b21d5f2621d926127473f9b7897`.
 - **Implementato:** massimo predefinito di **5.000 azioni per partita completa**, in bot/worker/runner/workflow; nuovi seed 20261113–20261122; rilevamento cicli 2–4 celle; ingaggio prudente di nemico ordinario visibile che blocca scale conosciute (solo HP >=65% e almeno una pozione), mai nemico occulto. Nessun bilanciamento modificato.
