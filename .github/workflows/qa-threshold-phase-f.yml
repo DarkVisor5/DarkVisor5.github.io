@@ -1,0 +1,46 @@
+# THRESHOLD_CHANGE_ID: THR-20261103-001 — QA-only, v18.26 playable unaffected
+name: Threshold v18.26 - Phase F bot and paired seed QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/qa_phase_f_*.js'
+      - 'tools/qa_phase_f_*.cjs'
+      - '.github/workflows/qa-threshold-phase-f.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  policy-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax and policy decisions
+        run: |
+          node --check tools/qa_phase_f_bot.js
+          node --check tools/qa_phase_f_worker.cjs
+          node --check tools/qa_phase_f_paired_runner.cjs
+          node --check tools/qa_phase_f_unit.cjs
+          node tools/qa_phase_f_unit.cjs
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Test actual full runs on paired initial seeds (smoke sample)
+        env:
+          THRESHOLD_PAIR_COUNT: '2'
+          THRESHOLD_FIRST_SEED: '20261103'
+          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_RESULTS_DIR: /tmp/threshold-phase-f-paired
+        run: node tools/qa_phase_f_paired_runner.cjs
+      - name: Upload raw game evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threshold-phase-f-paired-evidence
+          path: /tmp/threshold-phase-f-paired
+          retention-days: 30
