@@ -98,7 +98,7 @@
     for(const foe of v.enemies){
      const delta=Math.abs(foe.x-x)+Math.abs(foe.y-y);
      if(delta>2)continue;
-     const elite=/elite|élite/i.test(String(foe.tier||''));
+     const elite=/red|purple|elite|élite/i.test(String(foe.tier||''));
      const exposure=foe.boss?95:elite?70:19;
      step+=delta===1?exposure:Math.ceil(exposure*.4);
      if(v.alarm>=65)step+=delta===1?14:5;
@@ -153,25 +153,25 @@
    if(distance===undefined||(history.get(id)||0)>=3)continue;
    if(item.kind==='heal'){
     if(v.inventory.length>=(v.capacity||10))continue;
-    if(meds.length<2&&v.hp<v.maxHp*.9&&distance<=75)
+    if(meds.length<2&&v.hp<v.maxHp*.9&&distance<=24&&!threat)
      push(item,-640+distance*.8,'supply_heal');
-    else if(v.hp<v.maxHp*.65&&distance<=25)
+    else if(v.hp<v.maxHp*.4&&distance<=6)
      push(item,-485+distance*.8,'supply_heal');
     else if(distance<=5&&!threat)push(item,0,'loot');
    }else if(item.kind==='weapon'){
     if(v.inventory.length>=(v.capacity||10))continue;
-    if(swordUses<2&&distance<=38)push(item,-550+distance*.9,'supply_weapon');
+    if(swordUses<2&&distance<=15&&!threat)push(item,-550+distance*.9,'supply_weapon');
     else if(distance<=5&&!threat)push(item,0,'loot');
    }else if(item.kind==='torch'){
-    if(v.torch<35&&distance<=25)push(item,-535+distance*.8,'supply_torch');
+    if(v.torch<35&&distance<=12&&!threat)push(item,-535+distance*.8,'supply_torch');
     else if(distance<=4&&!threat)push(item,0,'loot');
    }else if(distance<=3&&!threat)push(item,1,'loot');
   }
   // Optional chests raise noise and invite unnecessary detours.
-  if(underSupplied&&!threat&&v.alarm<42){
+  if(underSupplied&&meds.length===0&&!threat&&v.alarm<30){
    for(const chest of v.chests){
     const id=key(chest.x,chest.y),distance=graph.dist.get(id);
-    if(!chest.opened&&(history.get(id)||0)<2&&distance!==undefined&&distance<=12)
+    if(!chest.opened&&(history.get(id)||0)<2&&distance!==undefined&&distance<=8)
      push(chest,-470+distance*.6,'chest');
    }
   }
