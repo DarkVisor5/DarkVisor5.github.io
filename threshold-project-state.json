@@ -1,0 +1,69 @@
+{
+  "schema": "threshold-handoff/v1",
+  "project": "THRESHOLD",
+  "snapshot_id": "THR-20261103-001",
+  "snapshot_date": "2026-11-03",
+  "source_of_truth": {
+    "repository": "DarkVisor5/DarkVisor5.github.io",
+    "branch": "main",
+    "base_commit": "a50a27d48d32aff6e6f1fc03fe984ffaa94ca9e2",
+    "last_qa_code_commit": "948352835190bdfd10fc3a0836e5ffbe68ede955",
+    "stable_path": "threshold/index.html",
+    "preview_path": "threshold-v18-preview/",
+    "stable_url": "https://darkvisor5.github.io/threshold/",
+    "preview_url": "https://darkvisor5.github.io/threshold-v18-preview/"
+  },
+  "game": {
+    "stable_version": "v17.17.0",
+    "playable_preview_version": "v18.26",
+    "gameplay_modified": false
+  },
+  "qa_revision": "THR-20261103-001",
+  "last_change": {
+    "id": "THR-20261103-001",
+    "area": "bot/QA",
+    "game_version_changed": false,
+    "repository_committed": true,
+    "description": "Phase F resource-aware navigation: known potions, weapons, torches, bounded chest detours, reduced visible elite/alert exposure, collect supplies behind P3 locked boss gate.",
+    "files": [
+      "tools/qa_phase_f_bot.js",
+      "tools/qa_phase_f_worker.cjs",
+      "tools/qa_phase_f_paired_runner.cjs",
+      "tools/qa_phase_f_unit.cjs",
+      ".github/workflows/qa-threshold-phase-f.yml",
+      "threshold-project-state.json",
+      "THRESHOLD_CHANGELOG.md"
+    ],
+    "tests_run": [
+      "Node/V8 syntax parse of new bot and worker/runner/unit code",
+      "3 synthetic player-view checks: potion prioritized, P3 boss-gate loot, healthy go-to-stairs — passed"
+    ],
+    "ci": {
+      "run_id": 41629150837,
+      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41629150837",
+      "status": "in_progress_as_last_checked",
+      "not_a_completed_test": true
+    },
+    "limitations": [
+      "Synthetic checks are not actual played games",
+      "First paired-browser comparison not yet confirmed",
+      "The same initial seed does not force identical later random draws after actions diverge"
+    ]
+  },
+  "previous_qa": {
+    "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
+    "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
+  },
+  "next_actions": [
+    "Review Phase F GitHub Actions outcome and artifact; fix any CI issues",
+    "Compare baseline and Phase F on at least 100 paired initial seeds, report real deaths vs interruptions and floor-entry resources",
+    "Human playtest across P1-P5, validate lighting and interactivity before balancing changes"
+  ],
+  "constraints": [
+    "Keep v17 stable unchanged",
+    "Do not increment playable v18.26 for bot-only changes",
+    "Never treat isolated boss wins or bot timeouts as full-run victories",
+    "Never modify HP, boss AI, loot to improve bot numbers",
+    "Refresh ChatGPT Project's local manifest and changelog after repo changes"
+  ]
+}
