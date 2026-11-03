@@ -1,4 +1,5 @@
 
+// THRESHOLD_CHANGE_ID: THR-20261103-004 — expose only known harvestable wall torches to bot QA.
 window.__humanBotView=()=>{
  if(!s){const summary=root.querySelector('#runSummary'),finished=!!summary&&!summary.classList.contains('hidden');return {inGame:false,finished,summary:finished?{title:root.querySelector('#summaryTitle')?.textContent||'Fine partita'}:null,log:[...root.querySelectorAll('#log .log-entry')].slice(0,8).map(e=>e.textContent)}}
  const visible=s.visible,seen=s.seen,key=o=>K(o.x,o.y),isKnown=o=>!!o&&seen.has(key(o)),isNow=o=>!!o&&visible.has(key(o));
@@ -34,6 +35,7 @@ window.__humanBotView=()=>{
   props:v18RoomDecor().filter(o=>{for(let y=o.y;y<o.y+o.h;y++)for(let x=o.x;x<o.x+o.w;x++)if(seen.has(K(x,y)))return true;return false}).map(o=>({x:o.x,y:o.y,w:o.w,h:o.h,type:o.type,solid:o.solid})),
   traps:s.traps.filter(o=>o.revealed&&isKnown(o)).map(o=>({x:o.x,y:o.y,triggered:o.triggered})),
   loot:s.loot.filter(isKnown).map(o=>({x:o.x,y:o.y,kind:o.kind,id:o.id})),
+  wallTorches:(s.torches||[]).filter(o=>o.harvestable&&!o.harvested&&isKnown(o)).map(o=>({x:o.x,y:o.y})),
   chests:s.chests.filter(isKnown).map(o=>({x:o.x,y:o.y,opened:o.opened})),
   rareEvent:location(s.rareEvent),dangerDoor:location(s.dangerDoor),
   dialog:{
