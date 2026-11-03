@@ -98,6 +98,10 @@
     const x=here.x+dx,y=here.y+dy,next=key(x,y);
     if(!passable(tile(v,x,y))||block(next)||((nav.banned?.get(id+'>'+next)||0)>(nav.turn||0)))continue;
     let step=1;
+    // THRESHOLD_CHANGE_ID: THR-20261103-005 — don't casually walk over a
+    // dropped weapon that the engine would auto-pick back up.
+    if(v.loot.some(l=>l.kind==='weapon'&&l.x===x&&l.y===y&&
+       nav.ignoredLoot?.has(next+':'+l.id)))step+=180;
     const nearEnemy=v.enemies.some(e=>Math.abs(e.x-x)+Math.abs(e.y-y)<=2);
     if(nearEnemy)step+=18;
     // Only a modest extra cost near visible higher-tier enemies.
@@ -129,19 +133,28 @@
   const fallback=w.filter(i=>i.uid!==v.equippedUid);
   return (other.length?other:fallback).sort((a,b)=>basicWeaponScore(a)-basicWeaponScore(b))[0]||null;
  }
+
+ // THRESHOLD_CHANGE_ID: THR-20261103-005 — intentional discard only when
+ // an observed heal cannot fit or at an exit before descending.
  function discardWeakWeapon(v,nav,metrics,threats){
-  const w=v.inventory.filter(i=>i.kind==='weapon'&&i.uses>0),cap=v.capacity||10;
-  const healNearby=v.loot.some(l=>l.kind==='heal'&&close(l,v.player)<=5);
-  if(w.length<=(v.floor>=3?4:5)||threats.some(e=>close(e,v.player)<=2))return false;
-  if(v.inventory.length<cap-2&&!healNearby)return false;
+  const weapons=v.inventory.filter(i=>i.kind==='weapon'&&i.uses>0);
+  const cap=v.capacity||10,here=key(v.player.x,v.player.y);
+  const atExit=!!v.atStairs&&v.floor<5&&v.inventory.length>=cap-1;
+  const full=v.inventory.length>=cap;
+  const nearbyHeal=v.loot.some(l=>l.kind==='heal'&&close(l,v.player)<=3);
+  if(weapons.length<=(v.floor>=3?4:5)||(!atExit&&threats.some(e=>close(e,v.player)<=2)))
+    return false;
+  if(!atExit&&!(full&&v.floor>=2&&nearbyHeal))return false;
+  if((nav.droppedTiles??=new Set()).has(here))return false;
   const worst=expendableWeapon(v);
   if(!worst)return false;
   const idx=v.inventory.findIndex(i=>i.uid===worst.uid);
   const row=[...root().querySelectorAll('#inventory .inv-row')][idx];
   const btn=[...(row?.querySelectorAll('button')||[])].find(el=>/Lascia/i.test(el.textContent||''));
   if(!btn||btn.disabled)return false;
-  btn.click(); // Actual inventory discard button; no mutation of game state.
-  (nav.ignoredLoot??=new Set()).add(key(v.player.x,v.player.y)+':'+worst.id);
+  btn.click(); // Uses the genuine inventory UI; cannot alter drops or HP.
+  (nav.ignoredLoot??=new Set()).add(here+':'+worst.id);
+  nav.droppedTiles.add(here);
   metrics.weaponDrops=(metrics.weaponDrops||0)+1;
   return true;
  }
@@ -315,7 +328,10 @@
           ||buttons[0];
    best?.click();return 'reward';
   }
-  if(v.atStairs){click('#descendBtn');return 'stairs'}
+  if(v.atStairs){
+   if(discardWeakWeapon(v,nav,metrics,[]))return 'drop_weapon';
+   click('#descendBtn');return 'stairs';
+  }
   if(v.targetMode){
     const buttons=[...root().querySelectorAll('#targetChoices .target-btn')];
     const weak=buttons.find(b=>/custode|signore del profondo/i.test(b.textContent))
@@ -416,7 +432,7 @@
   if(nav.stairsBlocked&&nav.turn-(nav.stairsBlockedAt||0)>240){nav.stairsBlocked=false;nav.goal=null;nav.label=null}
   // Reset per-floor navigation BEFORE planning; never apply the last floor's
   // boss-gate/visited-tile state to this floor's graph and objectives.
-  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.ignoredLoot=new Set();nav.failedTorches=new Set();nav.torchTravelSteps=0;nav.equipCooldown=0;history.clear()}
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.ignoredLoot=new Set();nav.failedTorches=new Set();nav.droppedTiles=new Set();nav.torchTravelSteps=0;nav.equipCooldown=0;history.clear()}
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
   // Hold a selected destination unless it is gone or a higher-priority need appears.
@@ -492,7 +508,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),ignoredLoot:new Set(),failedTorches:new Set(),torchTravelSteps:0,retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),ignoredLoot:new Set(),failedTorches:new Set(),droppedTiles:new Set(),torchTravelSteps:0,retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
