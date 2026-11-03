@@ -1,5 +1,17 @@
 # THRESHOLD — CHANGELOG DI CONTINUITÀ TRA CHAT
 
+## THR-20261103-002 — Sprint 1 bot Fase F: telemetria terminale e navigazione prudente — 2026-11-03
+- **Area:** solo bot e QA; **v18.26 preview e v17.17.0 stabile invariate**.
+- **Base:** `d02961c7c3a4a884f0b2cca7011006b498a2def9`; **ultimo commit codice QA:** `67aa331e8408130e4df8b7d8ec7076322920c343`.
+- **Implementato:** osservatore terminale delle mosse per entrambe le policy, snapshot pre-morte HP/Allarme/pozioni, pulizia obiettivi tra piani, fallback più sicuro su trappole/porte, penalità frontiere già viste senza impedirne il passaggio, recupero cure già osservate entro limiti prudenti vicino al boss P3.
+- **File:** `tools/qa_phase_f_bot.js`, `tools/qa_phase_f_worker.cjs`, `tools/qa_phase_f_paired_runner.cjs`, `tools/qa_phase_f_unit.cjs`, `threshold-v18-preview/docs/QA_SPRINT1_PHASE_F_2026-11-03.md`, `THRESHOLD_CHANGELOG.md`, `threshold-project-state.json`.
+- **Test reali:** 3 iterazioni CI Chromium (10 coppie iniziali per iterazione, **non campioni indipendenti**). Finale [GitHub Actions 41650718387](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41650718387): **13/13 policy, 20/20 browser, 0 errori runner, 10/10 match iniziali; 19 morti, 1 interruzione, 0 vittorie**. 20/20 movimenti positivi; 19/19 morti con snapshot terminale.
+- **Risultato finale:** piani medi baseline 2,4 e Fase F 2,4; 1 seed migliore, 1 peggiore, 8 pari. Non dichiarare un incremento di vittorie/efficienza.
+- **Iterazioni scartate:** 93ab4922 (Fase F 2,4 vs baseline 2,7), e895f41d (2,5 vs 2,8; un bot bloccato con risorse residue). L'esclusione definitiva delle frontiere è stata rimossa.
+- **Problemi residui:** 0 vittorie P1→P5, esplorazione/Allarme/pozioni critici, seed solo inizialmente appaiati, mancano prova umana e mobile.
+- **Next:** 100 coppie su seed holdout con osservazione per piano; analisi dei percorsi, poi playtest umano. Mai modificare HP/loot/boss per far risultare il bot migliore.
+- **Report:** `threshold-v18-preview/docs/QA_SPRINT1_PHASE_F_2026-11-03.md`.
+
 ## THR-20261103-001 — Fase F conservativa con QA seed appaiati — 2026-11-03
 - **Area:** solo bot e infrastruttura QA, NON gioco.
 - **Versioni:** v18.26 preview invariata; v17.17.0 stabile invariata. Nessuna v18.27 giocabile.

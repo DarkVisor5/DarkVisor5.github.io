@@ -1,27 +1,130 @@
 {
   "schema": "threshold-handoff/v1",
   "project": "THRESHOLD",
-  "snapshot_id": "THR-20261103-001",
+  "snapshot_id": "THR-20261103-002",
   "snapshot_date": "2026-11-03",
   "source_of_truth": {
     "repository": "DarkVisor5/DarkVisor5.github.io",
     "branch": "main",
-    "base_commit": "a50a27d48d32aff6e6f1fc03fe984ffaa94ca9e2",
-    "last_qa_code_commit": "54877d37970e8cc164915dd95a6a39da7b08c9cf",
+    "base_commit": "d02961c7c3a4a884f0b2cca7011006b498a2def9",
+    "last_qa_code_commit": "67aa331e8408130e4df8b7d8ec7076322920c343",
     "stable_path": "threshold/index.html",
     "preview_path": "threshold-v18-preview/",
     "stable_url": "https://darkvisor5.github.io/threshold/",
     "preview_url": "https://darkvisor5.github.io/threshold-v18-preview/",
-    "last_observed_head": "343e1b0737035033ffc199f5e5d80d72c003c4d3",
-    "last_verified_report_commit": "f0d86930d8508d783db89391fad3dd5672446ce7"
+    "last_observed_head": "67aa331e8408130e4df8b7d8ec7076322920c343",
+    "last_verified_report_commit": "f0d86930d8508d783db89391fad3dd5672446ce7",
+    "head_note": "Code SHA before subsequent documentation commit; verify repository HEAD for current commit."
   },
   "game": {
     "stable_version": "v17.17.0",
     "playable_preview_version": "v18.26",
     "gameplay_modified": false
   },
-  "qa_revision": "THR-20261103-001",
+  "qa_revision": "THR-20261103-002",
   "last_change": {
+    "id": "THR-20261103-002",
+    "area": "bot/QA",
+    "game_version_changed": false,
+    "repository_committed": true,
+    "description": "Sprint 1: passive terminal movement/HP/potion/alarm telemetry; safer floor goal reset and fallback; conservative resource detours; revisited-frontier penalty with backtracking preserved. No gameplay changes.",
+    "base_commit": "d02961c7c3a4a884f0b2cca7011006b498a2def9",
+    "code_commit": "67aa331e8408130e4df8b7d8ec7076322920c343",
+    "files": [
+      "tools/qa_phase_f_bot.js",
+      "tools/qa_phase_f_worker.cjs",
+      "tools/qa_phase_f_paired_runner.cjs",
+      "tools/qa_phase_f_unit.cjs",
+      "THRESHOLD_CHANGELOG.md",
+      "threshold-project-state.json",
+      "threshold-v18-preview/docs/QA_SPRINT1_PHASE_F_2026-11-03.md"
+    ],
+    "tests_run": [
+      "13/13 Node policy checks and JavaScript syntax passed in final workflow",
+      "20/20 actual Chromium P1 run attempts, 10/10 matched initial player-visible maps, 0 harness errors",
+      "19 actual deaths and 1 action-limit interruption; 0 P1-P5 victories",
+      "20/20 runs positive observed movements, 19/19 death snapshots preserved"
+    ],
+    "ci": {
+      "run_id": 41650718387,
+      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41650718387",
+      "status": "completed",
+      "conclusion": "success",
+      "evidence_path": "threshold-v18-preview/docs/QA_SPRINT1_PHASE_F_2026-11-03.md"
+    },
+    "comparison": {
+      "n_initial_seed_pairs": 10,
+      "start_seed": 20261103,
+      "turn_limit": 1800,
+      "initial_state_matches": 10,
+      "baseline": {
+        "wins": 0,
+        "deaths": 9,
+        "interruptions": 1,
+        "max_floor": 3,
+        "mean_max_floor": 2.4,
+        "mean_turns": 711.6,
+        "mean_observed_moves": 663.9
+      },
+      "phase_f": {
+        "wins": 0,
+        "deaths": 10,
+        "interruptions": 0,
+        "max_floor": 3,
+        "mean_max_floor": 2.4,
+        "mean_turns": 706.4,
+        "mean_observed_moves": 656.1
+      },
+      "phase_f_deeper": 1,
+      "tied_depth": 8,
+      "baseline_deeper": 1,
+      "interpretation": "No proven win-rate or route-efficiency improvement. Later RNG is not controlled."
+    },
+    "iteration_ci": [
+      {
+        "sha": "93ab4922a738e9169adf7c5263b009822c34af81",
+        "run_id": 41649514855,
+        "baseline_mean_floor": 2.7,
+        "phase_f_mean_floor": 2.4
+      },
+      {
+        "sha": "e895f41d0542dd7691739116c3a73ee936e8fc4a",
+        "run_id": 41650045315,
+        "baseline_mean_floor": 2.8,
+        "phase_f_mean_floor": 2.5,
+        "known_regression": "Permanent frontier exclusion caused one stuck run despite 34 HP and two potions."
+      },
+      {
+        "sha": "67aa331e8408130e4df8b7d8ec7076322920c343",
+        "run_id": 41650718387,
+        "baseline_mean_floor": 2.4,
+        "phase_f_mean_floor": 2.4
+      }
+    ],
+    "limitations": [
+      "No authentic P1-P5 victory; sample of 10 matched initial states, not deterministic full trajectories",
+      "Three iterations reused the same 10 initial seed IDs, not 30 independent pairs",
+      "Fase F did not show statistically reliable improvement; no human full-run success documented",
+      "UI/engine/gameplay were not modified; website v18.26 remains unchanged"
+    ]
+  },
+  "previous_qa": {
+    "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
+    "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
+  },
+  "next_actions": [
+    "Test 100 holdout paired initial states with per-floor telemetry and improve reproducibility of random combat paths; never confuse action_limit with death.",
+    "Audit exploration frontier loops, alarm, optional elite engagements and P3 HP/potions using individual logs; improve QA bot only before game balance changes.",
+    "Human five-floor playtest and actual mobile lighting/sprite/Fase B verification before any v18 promotion."
+  ],
+  "constraints": [
+    "Keep v17 stable unchanged",
+    "Do not increment playable v18.26 for bot-only changes",
+    "Never treat isolated boss wins or bot timeouts as full-run victories",
+    "Never modify HP, boss AI, loot to improve bot numbers",
+    "Refresh ChatGPT Project's local manifest and changelog after repo changes"
+  ],
+  "previous_change": {
     "id": "THR-20261103-001",
     "area": "bot/QA",
     "game_version_changed": false,
@@ -81,21 +184,5 @@
       "paired_better_for_baseline": 0,
       "interpretation": "Small smoke test only: no demonstrated win-rate improvement"
     }
-  },
-  "previous_qa": {
-    "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
-    "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
-  },
-  "next_actions": [
-    "Fix end-of-run steps/HP/Alarme telemetry for real deaths and abandonments",
-    "Extend the conservative comparison to 100 validated paired starts and preserve resource checkpoints",
-    "Human P1-P5 playtest, mobile graphics/lighting and puzzle review before gameplay balance changes"
-  ],
-  "constraints": [
-    "Keep v17 stable unchanged",
-    "Do not increment playable v18.26 for bot-only changes",
-    "Never treat isolated boss wins or bot timeouts as full-run victories",
-    "Never modify HP, boss AI, loot to improve bot numbers",
-    "Refresh ChatGPT Project's local manifest and changelog after repo changes"
-  ]
+  }
 }
