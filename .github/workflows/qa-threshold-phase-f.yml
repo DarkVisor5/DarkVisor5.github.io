@@ -1,3 +1,4 @@
+# THRESHOLD_CHANGE_ID: THR-20261103-003 — QA 5000 action cap, new holdout seeds, no game changes
 # THRESHOLD_CHANGE_ID: THR-20261103-001 — QA-only, v18.26 playable unaffected
 name: Threshold v18.26 - Phase F bot and paired seed QA
 on:
@@ -13,7 +14,7 @@ permissions:
 jobs:
   policy-and-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,8 +34,8 @@ jobs:
       - name: Test actual full runs on paired initial seeds (smoke sample)
         env:
           THRESHOLD_PAIR_COUNT: '10'
-          THRESHOLD_FIRST_SEED: '20261103'
-          THRESHOLD_TURN_LIMIT: '1800'
+          THRESHOLD_FIRST_SEED: '20261113'
+          THRESHOLD_TURN_LIMIT: '5000'
           THRESHOLD_RESULTS_DIR: /tmp/threshold-phase-f-paired
         run: node tools/qa_phase_f_paired_runner.cjs
       - name: Upload raw game evidence

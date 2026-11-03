@@ -6,7 +6,8 @@ const {spawnSync}=require('node:child_process');
 const base=path.resolve(__dirname,'..');
 const count=Number(process.env.THRESHOLD_PAIR_COUNT||3);
 const startSeed=Number(process.env.THRESHOLD_FIRST_SEED||20261103)>>>0;
-const limit=Number(process.env.THRESHOLD_TURN_LIMIT||1800);
+// THRESHOLD_CHANGE_ID: THR-20261103-003 — default 5,000 actions for a whole bot run.
+const limit=Number(process.env.THRESHOLD_TURN_LIMIT||5000);
 const out=process.env.THRESHOLD_RESULTS_DIR||'/tmp/threshold-phase-f-paired';
 assert.ok(Number.isInteger(count)&&count>=1&&count<=200,'1–200 seed pairs');
 assert.ok(Number.isInteger(limit)&&limit>=50&&limit<=10000,'turn limit must be finite');
@@ -72,7 +73,7 @@ const summarize=profile=>({wins:good.filter(x=>x[profile].wins).length,
  averageLastAliveHp:mean(profile,x=>x.lastAlive?.hp),
  averageLastAliveAlarm:mean(profile,x=>x.lastAlive?.alarm),
  averageLastAlivePotions:mean(profile,x=>x.lastAlive?.potions)});
-const summary={change_id:'THR-20261103-002',playable_version:'v18.26',seedStart:startSeed,
+const summary={change_id:'THR-20261103-003',playable_version:'v18.26',seedStart:startSeed,
  requestedPairs:count,completedPairs:good.length,failedPairs:count-good.length,
  turnLimit:limit,baseline:summarize('baseline'),phase_f:summarize('phase_f'),
  phaseFBetterFloor:good.filter(x=>x.floorDelta>0).length,

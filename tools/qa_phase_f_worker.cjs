@@ -27,7 +27,9 @@ const server=http.createServer((req,res)=>{
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  let browser;
- const runCount=Number(process.env.THRESHOLD_RUNS||1),limit=Number(process.env.THRESHOLD_TURN_LIMIT||1800),seed=Number(process.env.THRESHOLD_SEED||1103)>>>0;
+ // THRESHOLD_CHANGE_ID: THR-20261103-003 — default 5,000 genuine browser actions, not per-floor.
+ const runCount=Number(process.env.THRESHOLD_RUNS||1),limit=Number(process.env.THRESHOLD_TURN_LIMIT||5000),seed=Number(process.env.THRESHOLD_SEED||1103)>>>0;
+ assert.ok(Number.isSafeInteger(limit)&&limit>=50&&limit<=10000,'QA action cap must be 50–10000');
  const dir=process.env.THRESHOLD_RESULTS_DIR||'/tmp/threshold-phase-f-'+profile+'-'+seed;
  fs.mkdirSync(dir,{recursive:true});
  const results=[],errors=[],started=Date.now();

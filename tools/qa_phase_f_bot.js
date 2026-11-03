@@ -333,7 +333,8 @@
   send(next);
   return kind||'move';
  }
- async function play100({count=100,limit=1800}={}){
+ // THRESHOLD_CHANGE_ID: THR-20261103-003 — 5,000 QA actions per full P1→P5 attempt.
+ async function play100({count=100,limit=5000}={}){
   const results=[],t0=performance.now();
   const R=root();
   for(let game=1;game<=count;game++){
