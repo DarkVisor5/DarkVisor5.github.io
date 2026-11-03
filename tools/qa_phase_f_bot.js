@@ -1,4 +1,6 @@
 'use strict';
+/* THRESHOLD_CHANGE_ID: THR-20261103-002 — safer observed-resource/navigation policy and honest terminal telemetry.
+   QA bot only; no v18.26 gameplay or v17 stable changes. */
 /* THRESHOLD_CHANGE_ID: THR-20261103-001 — conservative Phase F QA bot.
    Narrow changes to observed supplies and noisy chests. Gameplay v18.26 unchanged. */
 (function(global){
@@ -97,7 +99,7 @@
     const nearEnemy=v.enemies.some(e=>Math.abs(e.x-x)+Math.abs(e.y-y)<=2);
     if(nearEnemy)step+=18;
     // Only a modest extra cost near visible higher-tier enemies.
-    if(v.enemies.some(e=>/red|purple/i.test(String(e.tier||''))&&
+    if(v.enemies.some(e=>/elite|champion|rare|red|purple/i.test(String(e.tier||''))&&
       Math.abs(e.x-x)+Math.abs(e.y-y)<=2))step+=7;
     const candidate=dist.get(id)+step;
     if(candidate<(dist.get(next)??Infinity)){dist.set(next,candidate);prev.set(next,{from:id,dir:k});queue.push({x,y})}
@@ -118,6 +120,7 @@
   // THR-20261103-001: avoid the long supply tours that hurt paired-run results.
   const medicines=v.inventory.filter(i=>i.kind==='heal');
   const seenThreat=v.enemies.some(e=>close(e,v.player)<=3);
+  const immediateThreat=v.enemies.some(e=>close(e,v.player)<=2);
   const push=(x,weight=0,label='goal')=>{if(x&&graph.dist.has(key(x.x,x.y)))actions.push({point:x,score:graph.dist.get(key(x.x,x.y))+weight,label})};
   // Floors 1–3 contain an optional threshold chamber. The route to the
   // staircase is NOT gated by the optional chamber; floor 3 IS boss-gated.
@@ -141,8 +144,10 @@
    if(distance===undefined||(history.get(id)||0)>=3)continue;
    if(!(l.kind==='torch'||v.inventory.length<(v.capacity||10)))continue;
    // Prioritize only a very nearby known heal when genuinely critical.
-   if(l.kind==='heal'&&medicines.length===0&&v.hp<v.maxHp*.55&&
-      distance<=6&&!seenThreat)push(l,-490,'supply_heal');
+   // A short, already-observed healing stop is worthwhile before a mandatory P3 boss.
+   // The pathfinder costs danger; do not detour while a visible foe is within two tiles.
+   if(l.kind==='heal'&&medicines.length===0&&v.hp<v.maxHp*.70&&
+      distance<=5&&!immediateThreat)push(l,nav.stairsBlocked?-930:-510,'supply_heal');
    else if(nav.stairsBlocked&&distance<=6&&!seenThreat)push(l,1.5,'loot');
    else if(!nav.stairsBlocked)push(l,1.5,'loot');
   }
@@ -272,11 +277,12 @@
   // Collect loot by walking onto the visible tile. If a boss is nearby,
   // approach it for a real melee confrontation.
   if(nav.stairsBlocked&&nav.turn-(nav.stairsBlockedAt||0)>240){nav.stairsBlocked=false;nav.goal=null;nav.label=null}
+  // Reset per-floor navigation BEFORE planning; never apply the last floor's
+  // boss-gate/visited-tile state to this floor's graph and objectives.
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.equipCooldown=0;history.clear()}
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
-  // A player chooses a destination and follows through rather than
-  // changing direction toward a different frontier on every single step.
-  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.equipCooldown=0;history.clear()}
+  // Hold a selected destination unless it is gone or a higher-priority need appears.
   const urgent=list.find(o=>['stairs','boss','tablet','decoder','shrine','sigil','finalSeal','supply_heal'].includes(o.label));
   if(urgent&&nav.label!==urgent.label){nav.goal={...urgent.point};nav.label=urgent.label}
   if(nav.goal){
@@ -310,7 +316,12 @@
   // move toward it and engage via actual player movement.
   if(!next&&v.enemies.length){
    const e=v.enemies.sort((a,b)=>close(a,v.player)-close(b,v.player))[0];
-   const around=directions.map(([dir,dx,dy])=>({dir,x:v.player.x+dx,y:v.player.y+dy,d:Math.abs(v.player.x+dx-e.x)+Math.abs(v.player.y+dy-e.y)})).filter(o=>passable(tile(v,o.x,o.y))&&!graphState.solids.has(key(o.x,o.y)));
+   const around=directions.map(([dir,dx,dy])=>({dir,x:v.player.x+dx,y:v.player.y+dy,d:Math.abs(v.player.x+dx-e.x)+Math.abs(v.player.y+dy-e.y)})).filter(o=>{
+    const at=key(o.x,o.y),from=key(v.player.x,v.player.y);
+    return passable(tile(v,o.x,o.y))&&!graphState.solids.has(at)&&!graphState.trap.has(at)&&
+      !graphState.enemies.has(at)&&!(!p.open&&p.door&&key(p.door.x,p.door.y)===at)&&
+      ((nav.banned?.get(from+'>'+at)||0)<=(nav.turn||0));
+   });
    around.sort((a,b)=>a.d-b.d);
    if(around[0])next=around[0].dir,kind='pursuit';
   }
@@ -326,11 +337,16 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
     if(v.finished||!v.inGame){reason=v.summary?.title||'finished';break}
+    // Last genuine player-visible state is retained even when the game clears
+    // the run before its summary screen (where s.steps may become zero).
+    lastAlive={floor:v.floor,hp:v.hp,maxHp:v.maxHp,alarm:v.alarm,instability:v.instability,
+      torch:v.torch,stepsInFloor:v.steps,position:{...v.player},
+      potions:v.inventory.filter(i=>i.kind==='heal').length};
     const pos=key(v.player.x,v.player.y),old=key(v.floor,pos);
     highest=Math.max(highest,v.floor);
     if(nav.lastPosition!==pos||nav.lastFloor!==v.floor){
@@ -359,6 +375,8 @@
     if(act==='heal')metrics.heals++;
     if(act==='stuck'){reason='stuck_no_known_path';break}
     const after=global.__humanBotView();
+    if(after.inGame&&!after.finished&&after.floor===v.floor&&after.player&&
+       close(after.player,v.player)===1)observedMoves++;
     const postLog=after.log||[];
     // Learn public collision outcomes. A movement that does not change the
     // position and does not trigger combat/dialogue was blocked. Avoid this
@@ -396,7 +414,9 @@
    }
    const lastView=global.__humanBotView();
    if(!reason)reason=lastView.finished?lastView.summary?.title:'action_limit';
-   results.push({run:game,result:reason,finished:!!lastView.finished,floor:highest,hp:lastView.hp,steps:lastView.steps||0,
+   results.push({run:game,result:reason,finished:!!lastView.finished,floor:highest,
+    hp:lastAlive?.hp??null,steps:observedMoves,stepsSource:'observed_adjacent_player_moves',
+    gameStepsFinalView:lastView.steps??null,lastAlive,
     turns,known:lastView.knownCount||0,kills:bestKills,coins:lastView.coins||0,
     last30,deathScene,deathHp:deathScene?.hpBefore??null,
     finalPosition:lastView.player,finalPuzzle:{type:lastView.puzzle?.type,found:lastView.puzzle?.found,door:lastView.puzzle?.door,key:lastView.puzzle?.key},trace,

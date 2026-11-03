@@ -1,4 +1,5 @@
 'use strict';
+// THRESHOLD_CHANGE_ID: THR-20261103-002 — paired resource/movement terminal metrics, QA-only.
 // THRESHOLD_CHANGE_ID: THR-20261103-001 — honest paired-seed QA, no gameplay edits.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {spawnSync}=require('node:child_process');
@@ -33,7 +34,9 @@ for(let i=0;i<count;i++){
    errors.push(err);pair[profile]={error:err};continue;
   }
   const row=result.results[0],r=row.resourceTelemetry||{};
-  pair[profile]={initial:row.initial||null,floor:row.floor||0,turns:row.turns||0,steps:row.steps||0,
+  pair[profile]={initial:row.initial||null,floor:row.floor||0,turns:row.turns||0,
+   observedMoves:row.steps??null,stepsSource:row.stepsSource||null,
+   lastAlive:row.lastAlive||null,terminalSnapshot:row.terminalSnapshot||null,
    result:row.result,finished:!!row.finished,
    wins:/Dungeon completato/i.test(row.result||'')&&!!row.finished,
    deaths:/Run terminata/i.test(row.result||'')&&!!row.finished,
@@ -57,13 +60,19 @@ for(let i=0;i<count;i++){
  fs.writeFileSync(path.join(out,'results-partial.json'),JSON.stringify({trials,errors},null,2));
 }
 const good=trials.filter(x=>Number.isFinite(x.floorDelta)&&!x.pairMismatch);
+const mean=(profile,get)=>{const values=good.map(x=>get(x[profile])).filter(Number.isFinite);
+ return values.length?Number((values.reduce((s,x)=>s+x,0)/values.length).toFixed(2)):null;};
 const summarize=profile=>({wins:good.filter(x=>x[profile].wins).length,
  deaths:good.filter(x=>x[profile].deaths).length,
  abandoned:good.filter(x=>x[profile].abandoned).length,
  maxFloor:good.length?Math.max(...good.map(x=>x[profile].floor)):null,
- averageFloor:good.length?Number((good.reduce((s,x)=>s+x[profile].floor,0)/good.length).toFixed(3)):null,
- averageTurns:good.length?Math.round(good.reduce((s,x)=>s+x[profile].turns,0)/good.length):null});
-const summary={change_id:'THR-20261103-001',playable_version:'v18.26',seedStart:startSeed,
+ averageFloor:mean(profile,x=>x.floor),
+ averageTurns:mean(profile,x=>x.turns),
+ averageObservedMoves:mean(profile,x=>x.observedMoves),
+ averageLastAliveHp:mean(profile,x=>x.lastAlive?.hp),
+ averageLastAliveAlarm:mean(profile,x=>x.lastAlive?.alarm),
+ averageLastAlivePotions:mean(profile,x=>x.lastAlive?.potions)});
+const summary={change_id:'THR-20261103-002',playable_version:'v18.26',seedStart:startSeed,
  requestedPairs:count,completedPairs:good.length,failedPairs:count-good.length,
  turnLimit:limit,baseline:summarize('baseline'),phase_f:summarize('phase_f'),
  phaseFBetterFloor:good.filter(x=>x.floorDelta>0).length,

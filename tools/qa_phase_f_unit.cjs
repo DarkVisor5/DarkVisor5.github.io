@@ -1,4 +1,5 @@
 'use strict';
+// THRESHOLD_CHANGE_ID: THR-20261103-002 — expanded navigation/resources regression, QA only.
 // THRESHOLD_CHANGE_ID: THR-20261103-001 — Fase F QA-only policy regression.
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
@@ -35,4 +36,12 @@ check('low torch does not override known stairs',view({hp:45,torch:10,loot:[{x:2
 check('weapon does not force a side trip before stairs',view({hp:45,inventory:[{kind:'weapon',id:'shortSword',family:'sword',uses:1,power:6,uid:1}],loot:[{x:2,y:1,kind:'weapon',id:'longSword'}]}),{},'stairs','ArrowRight');
 check('high alarm ignores optional chest',view({hp:45,loot:[],alarm:89,chests:[{x:2,y:1,opened:false}]}),{},'stairs','ArrowRight');
 check('elite detour uses safe nearby corridor',view({hp:45,loot:[],enemies:[{x:3,y:1,family:'sword',hp:18,tier:'elite',boss:false,state:'alerted'}]}),{},'stairs','ArrowDown');
-console.log('PHASE_F_UNIT_DONE 7 checks');
+check('heal stop at 67 percent with empty potion slot',view({hp:30}),{},'supply_heal','ArrowRight');
+check('P3 boss gate preps short-range heal before boss',view({floor:3,hp:28,enemies:[{x:5,y:1,hp:78,boss:true,family:'sword',tier:'boss',state:'alerted'}]}),{floor:3,stairsBlocked:true},'supply_heal','ArrowRight');
+check('carried potion avoids optional refill tour',view({hp:30,inventory:[{kind:'weapon',id:'longSword',family:'sword',uses:4,power:7,uid:1},{kind:'heal',id:'small'}]}),{},'stairs','ArrowRight');
+check('floor transition clears stale gate and stale goal',view({hp:45,loot:[]}),{floor:2,stairsBlocked:true,goal:{x:3,y:2},label:'frontier'},'stairs','ArrowRight');
+const eliteView=view({loot:[],enemies:[{x:3,y:1,hp:20,family:'sword',boss:false,tier:'elite',state:'alerted'}]});
+const commonView=view({loot:[],enemies:[{x:3,y:1,hp:20,family:'sword',boss:false,tier:'normal',state:'alerted'}]});
+assert.ok(agent.graph(eliteView,nav()).dist.get('2,1')>agent.graph(commonView,nav()).dist.get('2,1'),'Path cost must penalize a visible elite');
+console.log('PHASE_F_UNIT_OK visible elite path penalty');
+console.log('PHASE_F_UNIT_DONE 12 checks');

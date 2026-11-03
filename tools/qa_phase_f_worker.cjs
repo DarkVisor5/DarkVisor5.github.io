@@ -1,4 +1,5 @@
 'use strict';
+// THRESHOLD_CHANGE_ID: THR-20261103-002 — passive terminal movement and resource telemetry for BOTH policies.
 // THRESHOLD_CHANGE_ID: THR-20261103-001 — paired-seed browser worker, QA only.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
@@ -93,9 +94,24 @@ const server=http.createServer((req,res)=>{
      let n=startSeed>>>0;
      Math.random=()=>{n=(n+0x6d2b79f5)|0;let z=Math.imul(n^(n>>>15),1|n);z=(z+Math.imul(z^(z>>>7),61|z))^z;return ((z^(z>>>14))>>>0)/4294967296;};
      window.__phaseFInitial=null;
+     // Passive observer works identically for baseline and Fase F. It uses
+     // ONLY the bot's player-visible view, never private game state.
+     window.__phaseFPassive={movementTiles:0,floorTransitions:0,lastAlive:null,terminal:null};
      const orig=window.__humanBotView;
      window.__humanBotView=(...args)=>{
-      const v=orig(...args);
+      const v=orig(...args),t=window.__phaseFPassive;
+      if(v.inGame&&!v.finished&&Number.isInteger(v.floor)&&v.player){
+       const prev=t.lastAlive;
+       if(prev&&prev.floor===v.floor&&
+          Math.abs(prev.position.x-v.player.x)+Math.abs(prev.position.y-v.player.y)===1)t.movementTiles++;
+       if(prev&&v.floor>prev.floor)t.floorTransitions+=v.floor-prev.floor;
+       t.lastAlive={floor:v.floor,position:{x:v.player.x,y:v.player.y},
+         hp:v.hp,maxHp:v.maxHp,alarm:v.alarm,instability:v.instability,
+         torch:v.torch,stepsInFloor:v.steps,knownCount:v.knownCount,
+         potions:v.inventory.filter(i=>i.kind==='heal').length};
+      }else if(v.finished&&!t.terminal){
+       t.terminal={lastAlive:t.lastAlive,summaryTitle:v.summary?.title??null};
+      }
       if(v.inGame&&!v.finished&&v.floor===1&&!window.__phaseFInitial){
        const masked=v.world.join('|');let hash=2166136261;
        for(let k=0;k<masked.length;k++)hash=Math.imul(hash^masked.charCodeAt(k),16777619)>>>0;
@@ -107,7 +123,14 @@ const server=http.createServer((req,res)=>{
     const batch=await page.evaluate(({lim,name})=>window[name].play100({count:1,limit:lim}),{lim:limit,name:botKey});
     const resourceTelemetry=await page.evaluate(()=>window.__qaResourceTelemetry.report());
     const initial=await page.evaluate(()=>window.__phaseFInitial);
-    const row={...batch.results[0],run:i,seed,profile,initial,startFloor:1,deck:['swordMaster','medic','bulwark','quartermaster','survivor'],resourceTelemetry};
+    const passive=await page.evaluate(()=>window.__phaseFPassive);
+    const raw=batch.results[0];
+    const row={...raw,steps:passive.movementTiles,
+      stepsSource:'observed_adjacent_player_moves',rawBotSteps:raw.steps??null,
+      terminalSnapshot:passive.terminal,lastAlive:passive.lastAlive,
+      floorTransitionsObserved:passive.floorTransitions,
+      run:i,seed,profile,initial,startFloor:1,
+      deck:['swordMaster','medic','bulwark','quartermaster','survivor'],resourceTelemetry};
     if(row.floor<1)throw Error('Full-run scenario failed to enter floor 1: '+row.floor);
     results.push(row);
     process.stdout.write('GAME '+i+'/'+runCount+' '+JSON.stringify({result:row.result,finished:row.finished,floor:row.floor,steps:row.steps,turns:row.turns,kills:row.kills,heals:row.heals,deathHp:row.deathHp,deathScene:row.deathScene,actions:row.actions,finalPosition:row.finalPosition,finalPuzzle:row.finalPuzzle,resources:{entry:resourceTelemetry.entryByFloor,firstBoss:resourceTelemetry.firstVisibleBossByFloor}})+'\n');
