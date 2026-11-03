@@ -1,4 +1,5 @@
 
+// THRESHOLD_CHANGE_ID: THR-20261103-005 — player-visible artefacts, boss warnings in QA view.
 // THRESHOLD_CHANGE_ID: THR-20261103-004 — expose only known harvestable wall torches to bot QA.
 window.__humanBotView=()=>{
  if(!s){const summary=root.querySelector('#runSummary'),finished=!!summary&&!summary.classList.contains('hidden');return {inGame:false,finished,summary:finished?{title:root.querySelector('#summaryTitle')?.textContent||'Fine partita'}:null,log:[...root.querySelectorAll('#log .log-entry')].slice(0,8).map(e=>e.textContent)}}
@@ -27,10 +28,12 @@ window.__humanBotView=()=>{
   log:[...root.querySelectorAll('#log .log-entry')].slice(0,8).map(e=>e.textContent),
   stats:{...s.stats},steps:s.steps,atStairs:!!s.atStairs,eventOpen:!!s.eventOpen,rewardOpen:!!s.rewardOpen,
   targetMode:!!s.targetMode,inventory:inv,capacity:maxInv(),equippedUid:s.equippedUid,
+  artifacts:[...(s.artifactBelt||[])],artifactUsedThisTurn:!!s.artifactUsedThisTurn,
+  artifactBuffs:{stone:!!s.artifactBuffs?.stone,power:s.artifactBuffs?.power||0},
   world:s.map.map((row,y)=>Array.from({length:row.length},(_,x)=>seen.has(K(x,y))?row[x]:'?').join('')),
   knownCount:seen.size,visibleCount:visible.size,
   stairs:location(s.stairs),puzzle:q,
-  enemies:s.enemies.filter(o=>o.hp>0&&isNow(o)).map(o=>({x:o.x,y:o.y,hp:o.hp,family:o.family,boss:!!o.boss,bossKind:o.bossKind||null,state:o.state,tier:o.tier})),
+  enemies:s.enemies.filter(o=>o.hp>0&&isNow(o)).map(o=>({x:o.x,y:o.y,hp:o.hp,family:o.family,boss:!!o.boss,bossKind:o.bossKind||null,telegraph:!!o.boss&&!!o.telegraph,state:o.state,tier:o.tier})),
   // Furniture that was visible earlier stays in the player's explored-map memory.
   props:v18RoomDecor().filter(o=>{for(let y=o.y;y<o.y+o.h;y++)for(let x=o.x;x<o.x+o.w;x++)if(seen.has(K(x,y)))return true;return false}).map(o=>({x:o.x,y:o.y,w:o.w,h:o.h,type:o.type,solid:o.solid})),
   traps:s.traps.filter(o=>o.revealed&&isKnown(o)).map(o=>({x:o.x,y:o.y,triggered:o.triggered})),

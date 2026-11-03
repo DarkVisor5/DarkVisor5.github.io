@@ -1,5 +1,6 @@
-/* THRESHOLD_CHANGE_ID: THR-20261103-004 — frozen v003 QA controller for unbiased comparison. */
+/* THRESHOLD_CHANGE_ID: THR-20261103-005 — frozen v004 reference for true A/B. */
 'use strict';
+/* THRESHOLD_CHANGE_ID: THR-20261103-004 — real UI resource management and seen wall torches, QA only. */
 /* THRESHOLD_CHANGE_ID: THR-20261103-002 — safer observed-resource/navigation policy and honest terminal telemetry.
    QA bot only; no v18.26 gameplay or v17 stable changes. */
 /* THRESHOLD_CHANGE_ID: THR-20261103-001 — conservative Phase F QA bot.
@@ -116,6 +117,42 @@
   while(g.prev.get(cur)&&g.prev.get(cur).from!==from&&iterations++<4000)cur=g.prev.get(cur).from;
   return g.prev.get(cur)?.dir||null;
  }
+
+ // THR-20261103-004 — rank only player-visible equipment.
+ function expendableWeapon(v){
+  const w=v.inventory.filter(i=>i.kind==='weapon'&&i.uses>0);
+  if(w.length<=3)return null;
+  const ranked=[...w].sort((a,b)=>basicWeaponScore(b)-basicWeaponScore(a));
+  const keep=new Set(ranked.slice(0,2).map(i=>i.uid));
+  w.filter(i=>i.family==='sword').sort((a,b)=>basicWeaponScore(b)-basicWeaponScore(a)).slice(0,2).forEach(i=>keep.add(i.uid));
+  const other=w.filter(i=>i.uid!==v.equippedUid&&!keep.has(i.uid));
+  const fallback=w.filter(i=>i.uid!==v.equippedUid);
+  return (other.length?other:fallback).sort((a,b)=>basicWeaponScore(a)-basicWeaponScore(b))[0]||null;
+ }
+ function discardWeakWeapon(v,nav,metrics,threats){
+  const w=v.inventory.filter(i=>i.kind==='weapon'&&i.uses>0),cap=v.capacity||10;
+  const healNearby=v.loot.some(l=>l.kind==='heal'&&close(l,v.player)<=5);
+  if(w.length<=(v.floor>=3?4:5)||threats.some(e=>close(e,v.player)<=2))return false;
+  if(v.inventory.length<cap-2&&!healNearby)return false;
+  const worst=expendableWeapon(v);
+  if(!worst)return false;
+  const idx=v.inventory.findIndex(i=>i.uid===worst.uid);
+  const row=[...root().querySelectorAll('#inventory .inv-row')][idx];
+  const btn=[...(row?.querySelectorAll('button')||[])].find(el=>/Lascia/i.test(el.textContent||''));
+  if(!btn||btn.disabled)return false;
+  btn.click(); // Actual inventory discard button; no mutation of game state.
+  (nav.ignoredLoot??=new Set()).add(key(v.player.x,v.player.y)+':'+worst.id);
+  metrics.weaponDrops=(metrics.weaponDrops||0)+1;
+  return true;
+ }
+ function useChosenHeal(v,heal){
+  const first=v.inventory.findIndex(i=>i.kind==='heal'),idx=v.inventory.indexOf(heal);
+  if(idx===first)return click('#healBtn');
+  const row=[...root().querySelectorAll('#inventory .inv-row')][idx];
+  const btn=[...(row?.querySelectorAll('button')||[])].find(el=>/^Usa$/i.test((el.textContent||'').trim()));
+  if(btn&&!btn.disabled){btn.click();return true}
+  return click('#healBtn');
+ }
  function goals(v,history,graph,nav){
   const q=v.puzzle,actions=[];
   // THR-20261103-001: avoid the long supply tours that hurt paired-run results.
@@ -157,16 +194,28 @@
   for(const l of v.loot){
    const id=key(l.x,l.y),distance=graph.dist.get(id);
    if(distance===undefined||(history.get(id)||0)>=3)continue;
+   if(nav.ignoredLoot?.has(id+':'+l.id))continue;
    if(!(l.kind==='torch'||v.inventory.length<(v.capacity||10)))continue;
+   if(l.kind==='weapon'&&v.inventory.filter(i=>i.kind==='weapon'&&i.uses>0).length>=5)continue;
    // Prioritize only a very nearby known heal when genuinely critical.
    // Keep the conservative rule except for a tiny, safe observed detour while
    // the P3 boss gate is known blocked. No speculative supply tours.
    const bossPrep=v.floor===3&&nav.stairsBlocked&&v.hp<v.maxHp*.65&&distance<=4&&!immediateThreat;
    const critical=v.hp<v.maxHp*.55&&distance<=6&&!seenThreat;
-   if(l.kind==='heal'&&medicines.length===0&&(bossPrep||critical))
-     push(l,bossPrep?-930:-490,'supply_heal');
+   const scarce=v.floor>=2&&medicines.length<2&&distance<=5&&!seenThreat&&v.hp<v.maxHp*.88;
+   const deep=v.floor>=4&&medicines.length<2&&distance<=6&&!seenThreat;
+   if(l.kind==='heal'&&(bossPrep||critical||scarce||deep))
+     push(l,bossPrep?-930:-530,'supply_heal');
    else if(nav.stairsBlocked&&distance<=6&&!seenThreat)push(l,1.5,'loot');
    else if(!nav.stairsBlocked)push(l,1.5,'loot');
+  }
+  // Known harvestable wall torches: only the adjacent standing tile is a goal.
+  if(v.torch<=25&&!seenThreat)for(const t of v.wallTorches||[]){
+   if(nav.failedTorches?.has(key(t.x,t.y)))continue;
+   for(const [,dx,dy] of directions){
+    const at={x:t.x+dx,y:t.y+dy},distance=graph.dist.get(key(at.x,at.y));
+    if(distance!==undefined&&distance<=8)push(at,-540,'wall_torch');
+   }
   }
   // Skip optional noisy chests if alarm is high or visible foes are close.
   if(v.alarm<55&&!seenThreat)
@@ -226,16 +275,28 @@
   }
   const danger=threatening(v),near=danger.filter(e=>close(e,v.player)<=1),
         meds=v.inventory.filter(i=>i.kind==='heal');
-  // Potions do not consume a monster turn. Use the default first potion only
-  // when healing is substantial, unless a visible enemy could kill next turn.
-  const heal=meds[0],missing=v.maxHp-v.hp,expected=heal?healAmount(heal)*1.25:0;
+  // THR-20261103-004 — use small first for modest damage; use large if badly hurt.
+  const missing=v.maxHp-v.hp;
   const incoming=near.length*9+danger.filter(e=>close(e,v.player)===2).length*4;
+  const preferLarge=missing>=17&&(v.hp<v.maxHp*.55||incoming>=9);
+  const heal=(preferLarge?meds.find(i=>i.id==='large'):meds.find(i=>i.id==='small'))||meds[0];
+  const expected=heal?healAmount(heal)*1.25:0;
   if(heal&&v.hp<v.maxHp&&(
      (near.length&&v.hp<=Math.max(expected+5,incoming+9))||
      (danger.length&&missing>=Math.max(8,expected-1)&&v.hp<=v.maxHp*.82)||
      (!danger.length&&missing>=expected&&v.hp<=v.maxHp*.5)
   )){
-   if(click('#healBtn'))return 'heal';
+   if(useChosenHeal(v,heal))return 'heal';
+  }
+  // Free capacity BEFORE a potion pickup; do not discard in immediate contact.
+  if(discardWeakWeapon(v,nav,metrics,danger))return 'drop_weapon';
+  // Bumping a previously seen harvestable torch is a normal player movement.
+  if(v.torch<=25&&!danger.length){
+   const t=(v.wallTorches||[]).find(o=>close(o,v.player)===1&&!nav.failedTorches?.has(key(o.x,o.y)));
+   if(t){
+    const dir=directions.find(([,dx,dy])=>v.player.x+dx===t.x&&v.player.y+dy===t.y);
+    if(dir){nav.torchAttempt=key(t.x,t.y);send(dir[0]);return 'wall_torch'}
+   }
   }
   // Match visible enemies against the real five-weapon-family advantage
   // chart and equip using the normal inventory UI, with no durability edits.
@@ -298,11 +359,11 @@
   if(nav.stairsBlocked&&nav.turn-(nav.stairsBlockedAt||0)>240){nav.stairsBlocked=false;nav.goal=null;nav.label=null}
   // Reset per-floor navigation BEFORE planning; never apply the last floor's
   // boss-gate/visited-tile state to this floor's graph and objectives.
-  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.equipCooldown=0;history.clear()}
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.ignoredLoot=new Set();nav.failedTorches=new Set();nav.equipCooldown=0;history.clear()}
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
   // Hold a selected destination unless it is gone or a higher-priority need appears.
-  const urgent=list.find(o=>['stairs','boss','blocker','tablet','decoder','shrine','sigil','finalSeal','supply_heal'].includes(o.label));
+  const urgent=list.find(o=>['stairs','boss','blocker','tablet','decoder','shrine','sigil','finalSeal','supply_heal','wall_torch'].includes(o.label));
   if(urgent&&nav.label!==urgent.label){nav.goal={...urgent.point};nav.label=urgent.label}
   if(nav.goal){
     const stillListed=list.some(o=>o.point.x===nav.goal.x&&o.point.y===nav.goal.y);
@@ -373,7 +434,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),ignoredLoot:new Set(),failedTorches:new Set(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
@@ -410,6 +471,10 @@
     const after=global.__humanBotView();
     if(after.inGame&&!after.finished&&after.floor===v.floor&&after.player&&
        close(after.player,v.player)===1)observedMoves++;
+    if(act==='wall_torch'&&nav.torchAttempt){
+      if(!(after.torch>v.torch))nav.failedTorches.add(nav.torchAttempt);
+      nav.torchAttempt=null;
+    }
     const postLog=after.log||[];
     // Learn public collision outcomes. A movement that does not change the
     // position and does not trigger combat/dialogue was blocked. Avoid this
@@ -453,7 +518,7 @@
     turns,known:lastView.knownCount||0,kills:bestKills,coins:lastView.coins||0,
     last30,deathScene,deathHp:deathScene?.hpBefore??null,
     finalPosition:lastView.player,finalPuzzle:{type:lastView.puzzle?.type,found:lastView.puzzle?.found,door:lastView.puzzle?.door,key:lastView.puzzle?.key},trace,
-    fights:metrics.fights,heals:metrics.heals,loopBreaks:metrics.loopBreaks||0,
+    fights:metrics.fights,heals:metrics.heals,weaponDrops:metrics.weaponDrops||0,loopBreaks:metrics.loopBreaks||0,
     actions:metrics.actions,durationMs:Math.round(performance.now()-started)});
    if(game%10===0)console.log('PLAY100_PROGRESS '+game+'/'+count+' completed='+results.filter(x=>x.finished).length+' reached5='+results.filter(x=>x.floor===5).length);
    if(game<count&&!(lastView.finished)){
@@ -473,5 +538,5 @@
   }
   return {attempted:results.length,finished:results.filter(x=>x.finished).length,elapsedMs:Math.round(performance.now()-t0),results};
  }
- global.ThresholdPhaseFBot={play100,action,graph,goals,attackable,enemyWeaponScore,retreat,breakShortCycle};
+ global.ThresholdPhaseFBot={play100,action,graph,goals,expendableWeapon,attackable,enemyWeaponScore,retreat,breakShortCycle};
 })(window);

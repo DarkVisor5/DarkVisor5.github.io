@@ -1,4 +1,5 @@
 'use strict';
+/* THRESHOLD_CHANGE_ID: THR-20261103-005 — QA visible event/artifact strategy and quake dodge; no gameplay edits. */
 /* THRESHOLD_CHANGE_ID: THR-20261103-004 — real UI resource management and seen wall torches, QA only. */
 /* THRESHOLD_CHANGE_ID: THR-20261103-002 — safer observed-resource/navigation policy and honest terminal telemetry.
    QA bot only; no v18.26 gameplay or v17 stable changes. */
@@ -152,6 +153,63 @@
   if(btn&&!btn.disabled){btn.click();return true}
   return click('#healBtn');
  }
+
+ // THRESHOLD_CHANGE_ID: THR-20261103-005 — visible game-choice decisions.
+ function chooseEvent(v,opts){
+  const find=re=>opts.find(x=>!x.disabled&&re.test(x.textContent||''));
+  const loss=Math.max(0,v.maxHp-v.hp),critical=v.hp<v.maxHp*.48;
+  const pots=v.inventory.filter(i=>i.kind==='heal').length;
+  const swords=v.inventory.filter(i=>i.kind==='weapon'&&i.uses>0).length;
+  const alarm=find(/-\s*(?:10|18|20|25)\s*Allarme/i);
+  const instant=find(/Recupera\s+18\s*HP|Cura\s+12\s*HP|Riposa.*\+10\s*HP|Guardia immediata.*12\s*HP/i);
+  const full=find(/Cura completa/i),supply=find(/Pozione grande|Recupera scorte|Arma avanzata \+ pozione/i);
+  if(find(/HP massimi/i))return find(/HP massimi/i);
+  if(find(/Liberalo/i))return find(/Liberalo/i);
+  if(full&&loss>=22&&v.instability<60)return full;
+  if(instant&&critical&&loss>=7)return instant;
+  if(alarm&&v.alarm>=55&&!(critical&&loss>=12&&instant))return alarm;
+  if(supply&&(pots<2||swords<2))return supply;
+  if(instant&&loss>=6)return instant;
+  if(full&&loss>=13&&v.instability<65)return full;
+  if(alarm&&v.alarm>=22)return alarm;
+  const artifact=find(/Artefatto raro/i);
+  if(artifact&&(v.artifacts||[]).length<3&&swords>=2)return artifact;
+  if(supply)return supply;
+  const route=find(/Rivela scale e stanze speciali/i);
+  if(route&&!v.stairs)return route;
+  return find(/Lascialo stare|Non toccarlo|Ignoralo|\+2 KO all.arma|-12 Instabilità/i)||
+   opts.find(x=>!x.disabled)||null;
+ }
+ function chooseArtifact(v){
+  if(v.artifactUsedThisTurn)return null;
+  const a=v.artifacts||[],near=v.enemies.filter(e=>close(e,v.player)<=3);
+  if(a.includes('silence')&&v.alarm>=62)return 'silence';
+  if(a.includes('stone')&&!v.artifactBuffs?.stone&&near.some(e=>(e.state==='alerted'||e.boss)&&close(e,v.player)<=2))return 'stone';
+  if(a.includes('heart')&&!(v.artifactBuffs?.power>0)&&near.some(e=>e.boss&&close(e,v.player)<=2))return 'heart';
+  if(a.includes('eye')&&!near.length&&!v.stairs&&v.knownCount>=100&&(v.floor>=3||(v.steps||0)>=120))return 'eye';
+  return null;
+ }
+ function useArtifact(v,metrics){
+  const id=chooseArtifact(v);if(!id)return null;
+  const index=v.artifacts.indexOf(id);
+  const btn=[...root().querySelectorAll('#artifactBelt .artifact-row')][index]?.querySelector('button');
+  if(btn&&!btn.disabled){btn.click();metrics.artifactUses=(metrics.artifactUses||0)+1;return 'artifact_'+id}
+  return null;
+ }
+ function dodgeVisibleQuake(v,nav){
+  const boss=v.enemies.find(e=>e.bossKind==='final'&&e.telegraph&&close(e,v.player)<=1);
+  if(!boss)return null;
+  const props=allProps(v),traps=visibleTrap(v),candidates=[];
+  for(const [dir,dx,dy] of directions){
+   const cell={x:v.player.x+dx,y:v.player.y+dy},id=key(cell.x,cell.y),from=key(v.player.x,v.player.y);
+   if(!passable(tile(v,cell.x,cell.y))||props.has(id)||traps.has(id)||
+     v.enemies.some(e=>e.x===cell.x&&e.y===cell.y)||
+     (v.puzzle.door&&!v.puzzle.open&&key(v.puzzle.door.x,v.puzzle.door.y)===id)||
+     (nav.banned?.get(from+'>'+id)||0)>(nav.turn||0)||close(boss,cell)<=1)continue;
+   candidates.push({dir,score:v.enemies.filter(e=>e!==boss&&close(e,cell)<=2).length*12+(nav.visit?.get(id)||0)*1.5});
+  }
+  candidates.sort((a,b)=>a.score-b.score);return candidates[0]?.dir||null;
+ }
  function goals(v,history,graph,nav){
   const q=v.puzzle,actions=[];
   // THR-20261103-001: avoid the long supply tours that hurt paired-run results.
@@ -244,14 +302,7 @@
   if(dlg.guide){click('#guidePlayBtn');return 'close_tutorial'}
   if(dlg.puzzle){click('#puzzleCloseBtn');return 'close_puzzle'}
   if(dlg.phaseB){click('#phaseBClose');return 'close_furniture'}
-  if(dlg.event){
-   const opts=[...root().querySelectorAll('#eventChoices button')];
-   const healing=opts.find(b=>/cura|recupera.+HP|pozione/i.test(b.textContent));
-   const weapon=opts.find(b=>/arma avanzata|recupera un.arma/i.test(b.textContent));
-   const good=v.hp<v.maxHp*.66&&healing?healing:(weapon||healing||opts[opts.length-1]);
-   if(good&&!good.disabled)good.click();
-   return 'event';
-  }
+  if(dlg.event){chooseEvent(v,[...root().querySelectorAll('#eventChoices button')])?.click();return 'event'}
   if(dlg.danger){click('#dangerChoices button:last-child');return 'avoid_danger'}
   if(v.rewardOpen){
    const buttons=[...root().querySelectorAll('#rewardChoices button')];
@@ -287,6 +338,10 @@
   )){
    if(useChosenHeal(v,heal))return 'heal';
   }
+  const dodge=dodgeVisibleQuake(v,nav);
+  if(dodge){send(dodge);metrics.quakeDodges=(metrics.quakeDodges||0)+1;return 'dodge_quake'}
+  const artifact=useArtifact(v,metrics);
+  if(artifact)return artifact;
   // Free capacity BEFORE a potion pickup; do not discard in immediate contact.
   if(discardWeakWeapon(v,nav,metrics,danger))return 'drop_weapon';
   // Bumping a previously seen harvestable torch is a normal player movement.
@@ -537,5 +592,5 @@
   }
   return {attempted:results.length,finished:results.filter(x=>x.finished).length,elapsedMs:Math.round(performance.now()-t0),results};
  }
- global.ThresholdPhaseFBot={play100,action,graph,goals,expendableWeapon,attackable,enemyWeaponScore,retreat,breakShortCycle};
+ global.ThresholdPhaseFBot={play100,action,graph,goals,expendableWeapon,chooseEvent,chooseArtifact,dodgeVisibleQuake,attackable,enemyWeaponScore,retreat,breakShortCycle};
 })(window);
