@@ -144,10 +144,12 @@
    if(distance===undefined||(history.get(id)||0)>=3)continue;
    if(!(l.kind==='torch'||v.inventory.length<(v.capacity||10)))continue;
    // Prioritize only a very nearby known heal when genuinely critical.
-   // A short, already-observed healing stop is worthwhile before a mandatory P3 boss.
-   // The pathfinder costs danger; do not detour while a visible foe is within two tiles.
-   if(l.kind==='heal'&&medicines.length===0&&v.hp<v.maxHp*.70&&
-      distance<=5&&!immediateThreat)push(l,nav.stairsBlocked?-930:-510,'supply_heal');
+   // Keep the conservative rule except for a tiny, safe observed detour while
+   // the P3 boss gate is known blocked. No speculative supply tours.
+   const bossPrep=v.floor===3&&nav.stairsBlocked&&v.hp<v.maxHp*.65&&distance<=4&&!immediateThreat;
+   const critical=v.hp<v.maxHp*.55&&distance<=6&&!seenThreat;
+   if(l.kind==='heal'&&medicines.length===0&&(bossPrep||critical))
+     push(l,bossPrep?-930:-490,'supply_heal');
    else if(nav.stairsBlocked&&distance<=6&&!seenThreat)push(l,1.5,'loot');
    else if(!nav.stairsBlocked)push(l,1.5,'loot');
   }
@@ -163,7 +165,9 @@
    const [x,y]=id.split(',').map(Number),neighborDirs=directions.filter(([_,dx,dy])=>tile(v,x+dx,y+dy)==='?');
    if(!neighborDirs.length)continue;
    const visits=history.get(id)||0;
-   if(visits>5)continue;
+   // A completed frontier is not a new destination merely because its foggy
+   // neighbor stayed hidden behind a wall. It remains passable as a route.
+   if(visits>5||nav.frontierVisited?.has(id))continue;
    const novelty=neighborDirs.length;
    actions.push({point:{x,y},score:dist+4+visits*8-novelty*1.4,label:'frontier'});
   }
@@ -279,7 +283,12 @@
   if(nav.stairsBlocked&&nav.turn-(nav.stairsBlockedAt||0)>240){nav.stairsBlocked=false;nav.goal=null;nav.label=null}
   // Reset per-floor navigation BEFORE planning; never apply the last floor's
   // boss-gate/visited-tile state to this floor's graph and objectives.
-  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.equipCooldown=0;history.clear()}
+  if(nav.floor!==v.floor){nav.floor=v.floor;nav.goal=null;nav.label=null;nav.stairsBlocked=false;nav.banned=new Map();nav.recent=[];nav.visit=new Map();nav.frontierVisited=new Set();nav.equipCooldown=0;history.clear()}
+  // Mark a reached frontier as explored ONCE; returning to it later without
+  // additional visible information caused long, repeatable wander loops.
+  if(nav.label==='frontier'&&nav.goal&&close(nav.goal,v.player)===0){
+    (nav.frontierVisited??=new Set()).add(key(nav.goal.x,nav.goal.y));
+  }
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
   // Hold a selected destination unless it is gone or a higher-priority need appears.
@@ -337,7 +346,7 @@
    const summary=R.querySelector('#runSummary');
    if(summary&&!summary.classList.contains('hidden'))click('#summaryRunBtn');
    else {if(!R.querySelector('#welcome')?.classList.contains('hidden'))click('#welcomeStartBtn');click('#enterBtn')}
-   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
+   let history=new Map(),nav={floor:1,goal:null,label:null,stairsBlocked:false,stairsBlockedAt:0,banned:new Map(),recent:[],visit:new Map(),frontierVisited:new Set(),retreatCooldown:0,equipCooldown:0,turn:0},turns=0,highest=1,metrics={fights:0,actions:{},heals:0},reason=null,last=null,noProgress=0,trace=[],last30=[],bestKills=0,deathScene=null,observedMoves=0,lastAlive=null;
    const started=performance.now();
    for(;turns<limit;turns++){
     const v=global.__humanBotView();
