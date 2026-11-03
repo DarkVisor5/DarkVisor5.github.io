@@ -38,7 +38,7 @@ for(let i=0;i<count;i++){
   pair[profile]={initial:row.initial||null,floor:row.floor||0,turns:row.turns||0,
    observedMoves:row.steps??null,stepsSource:row.stepsSource||null,
    lastAlive:row.lastAlive||null,terminalSnapshot:row.terminalSnapshot||null,
-   result:row.result,finished:!!row.finished,
+   result:row.result,finished:!!row.finished,loopBreaks:row.loopBreaks??null,
    wins:/Dungeon completato/i.test(row.result||'')&&!!row.finished,
    deaths:/Run terminata/i.test(row.result||'')&&!!row.finished,
    abandoned:!row.finished,heals:row.heals||0,alarmAtBoss3:r.firstVisibleBossByFloor?.['3']?.alarm??null,

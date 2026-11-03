@@ -130,6 +130,20 @@
     if(v.floor===4){if(!q.tabletRead)push(q.tablet,-520,'tablet');else if(!q.decoderRead)push(q.decoder,-520,'decoder');else push(q.shrine,-500,'shrine')}
     if(v.floor===5){if(!q.tabletRead)push(q.tablet,-520,'tablet');else if(!q.decoderRead)push(q.decoder,-520,'decoder');else if(q.sigilProgress<3)push(q.sigils[q.sigilProgress],-510,'sigil');else push(q.finalSeal,-520,'finalSeal')}
   }else push(v.stairs,-450,'stairs');
+  // THRESHOLD_CHANGE_ID: THR-20261103-003 — observed ordinary foe blocking
+  // the only discovered route to the stairs. Prefer a legal adjacent approach
+  // only with enough HP and a real potion; do not inspect unseen enemies.
+  const stairKnown=!!v.stairs&&!nav.stairsBlocked&&v.floor<=3;
+  const stairUnreachable=stairKnown&&!graph.dist.has(key(v.stairs.x,v.stairs.y));
+  if(stairUnreachable&&v.hp>=v.maxHp*.65&&medicines.length>0){
+    const blockers=v.enemies.filter(e=>!e.boss&&!/elite|champion|red|purple/i.test(String(e.tier||''))&&close(e,v.player)<=5);
+    blockers.sort((a,b)=>close(a,v.player)-close(b,v.player));
+    const e=blockers[0];
+    if(e)for(const [,dx,dy] of directions){
+      const spot={x:e.x+dx,y:e.y+dy};
+      if(key(spot.x,spot.y)!==key(v.player.x,v.player.y))push(spot,-710,'blocker');
+    }
+  }
   // The boss is a known required obstacle once it is actually seen. Approach
   // any reachable free orthogonal neighbor, no hidden coordinates.
   for(const boss of v.enemies.filter(e=>e.boss)){
@@ -287,7 +301,7 @@
   const graphState=graph(v,nav);
   let list=goals(v,history,graphState,nav);
   // Hold a selected destination unless it is gone or a higher-priority need appears.
-  const urgent=list.find(o=>['stairs','boss','tablet','decoder','shrine','sigil','finalSeal','supply_heal'].includes(o.label));
+  const urgent=list.find(o=>['stairs','boss','blocker','tablet','decoder','shrine','sigil','finalSeal','supply_heal'].includes(o.label));
   if(urgent&&nav.label!==urgent.label){nav.goal={...urgent.point};nav.label=urgent.label}
   if(nav.goal){
     const stillListed=list.some(o=>o.point.x===nav.goal.x&&o.point.y===nav.goal.y);
@@ -334,6 +348,22 @@
   return kind||'move';
  }
  // THRESHOLD_CHANGE_ID: THR-20261103-003 — 5,000 QA actions per full P1→P5 attempt.
+ // THRESHOLD_CHANGE_ID: THR-20261103-003 — detect genuine 2–4 tile cycles
+ // only when explored-map knowledge has not changed. Ban the next loop edge
+ // temporarily; preserve paths for legitimate backtracking afterward.
+ function breakShortCycle(recent,banned,turn){
+  for(const period of [2,3,4]){
+   if(recent.length<period*3)continue;
+   const cycle=recent.slice(-period*3);
+   if(cycle[0].known!==cycle[cycle.length-1].known)continue;
+   if(new Set(cycle.slice(0,period).map(o=>o.id)).size!==period)continue;
+   if(!cycle.every((o,i)=>o.id===cycle[i%period].id))continue;
+   const from=cycle[cycle.length-1].id,to=cycle[0].id;
+   banned.set(from+'>'+to,turn+160);
+   return {period,from,to};
+  }
+  return null;
+ }
  async function play100({count=100,limit=5000}={}){
   const results=[],t0=performance.now();
   const R=root();
@@ -363,14 +393,11 @@
     bestKills=Math.max(bestKills,v.kills||0);
     const recent=nav.recent;
     recent.push({id:pos,known:v.knownCount,turn:turns});
-    if(recent.length>7)recent.shift();
-    if(recent.length>=5){
-     const q=recent.slice(-5);
-     if(q[0].id===q[2].id&&q[2].id===q[4].id&&
-        q[1].id===q[3].id&&q[0].id!==q[1].id&&q[0].known===q[4].known){
-       nav.banned.set(q[4].id+'>'+q[3].id,turns+85);
-       nav.goal=null;nav.label=null;
-     }
+    if(recent.length>12)recent.shift();
+    const cycle=breakShortCycle(recent,nav.banned,turns);
+    if(cycle){
+      nav.goal=null;nav.label=null;
+      metrics.loopBreaks=(metrics.loopBreaks||0)+1;
     }
     recentKey=null;
     const act=action(v,history,metrics,nav);
@@ -425,7 +452,8 @@
     turns,known:lastView.knownCount||0,kills:bestKills,coins:lastView.coins||0,
     last30,deathScene,deathHp:deathScene?.hpBefore??null,
     finalPosition:lastView.player,finalPuzzle:{type:lastView.puzzle?.type,found:lastView.puzzle?.found,door:lastView.puzzle?.door,key:lastView.puzzle?.key},trace,
-    fights:metrics.fights,heals:metrics.heals,actions:metrics.actions,durationMs:Math.round(performance.now()-started)});
+    fights:metrics.fights,heals:metrics.heals,loopBreaks:metrics.loopBreaks||0,
+    actions:metrics.actions,durationMs:Math.round(performance.now()-started)});
    if(game%10===0)console.log('PLAY100_PROGRESS '+game+'/'+count+' completed='+results.filter(x=>x.finished).length+' reached5='+results.filter(x=>x.floor===5).length);
    if(game<count&&!(lastView.finished)){
      // A separate game is started from the menu. We never force a death or
@@ -444,5 +472,5 @@
   }
   return {attempted:results.length,finished:results.filter(x=>x.finished).length,elapsedMs:Math.round(performance.now()-t0),results};
  }
- global.ThresholdPhaseFBot={play100,action,graph,goals,attackable,enemyWeaponScore,retreat};
+ global.ThresholdPhaseFBot={play100,action,graph,goals,attackable,enemyWeaponScore,retreat,breakShortCycle};
 })(window);

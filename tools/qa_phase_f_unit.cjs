@@ -55,4 +55,22 @@ assert.equal(freshGoal.point.y,1);
 assert.equal(revisitedGoal.point.x,5);
 assert.equal(revisitedGoal.point.y,2);
 console.log('PHASE_F_UNIT_OK revisits are penalized but legal');
-console.log('PHASE_F_UNIT_DONE 13 checks');
+const blockedView=view({hp:40,maxHp:45,loot:[],chests:[],
+ inventory:[{kind:'weapon',id:'longSword',family:'sword',uses:4,power:7,uid:1},{kind:'heal',id:'small'}],
+ stairs:{x:5,y:1},world:['#######','#.....#','#######'],
+ enemies:[{x:3,y:1,hp:16,boss:false,tier:'blue',family:'axe',state:'alerted'}]});
+check('observed ordinary blocker ahead of known stairs',blockedView,{},'blocker','ArrowRight');
+const eliteBlockView={...blockedView,enemies:[{x:3,y:1,hp:22,boss:false,tier:'elite',family:'axe',state:'alerted'}]};
+assert.ok(!agent.goals(eliteBlockView,new Map(),agent.graph(eliteBlockView,nav()),nav()).some(x=>x.label==='blocker'),
+ 'Do not force an observed elite encounter merely to clear stairs');
+console.log('PHASE_F_UNIT_OK no forced elite blocker pursuit');
+const cyclePositions=['1,1','2,1','2,2','1,2'];
+const cycleHistory=Array.from({length:12},(_,i)=>({id:cyclePositions[i%4],known:70,turn:i}));
+const cycleBans=new Map();
+const broken=agent.breakShortCycle(cycleHistory,cycleBans,100);
+assert.equal(broken.period,4);
+assert.equal(cycleBans.get('1,2>1,1'),260);
+assert.equal(agent.breakShortCycle(cycleHistory.map((o,i)=>({...o,known:70+i})),new Map(),100),null,
+ 'Do not cut a loop if discovery is progressing');
+console.log('PHASE_F_UNIT_OK detected repeated four-cell loop');
+console.log('PHASE_F_UNIT_DONE 16 checks');
