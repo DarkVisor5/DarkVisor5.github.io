@@ -1,16 +1,16 @@
 # THRESHOLD — CHANGELOG DI CONTINUITÀ TRA CHAT
 
-## THR-20261103-001 — Fase F, strategia bot e QA su seed appaiati — 2026-11-03
-- **Area:** strumenti di test e bot, NON gameplay.
-- **Gioco prima/dopo:** v18.26 preview **invariata**; v17.17.0 stabile **invariata**.
-- **Base GitHub:** `a50a27d48d32aff6e6f1fc03fe984ffaa94ca9e2`.
-- **Codice originale implementato:** `ca5fe9f9d4558ff45bc7d5aa28ea82591379a5f4` — creato `tools/qa_phase_f_bot.js`; correzione successiva dei limiti delle deviazioni e dei livelli di pericolo `35a860636520e381415e1abf1c3e22678d4a8dac`.
-- **Runner e test:** `tools/qa_phase_f_worker.cjs`, `tools/qa_phase_f_paired_runner.cjs`, `tools/qa_phase_f_unit.cjs`, `.github/workflows/qa-threshold-phase-f.yml`. CI estesa a 10 coppie nel commit `513ff8ff5b4ba4510ae7012cc3215ec7afcecaae`.
-- **Implementazione:** priorità a cure, armi e torce già visibili, con detour limitati; evita casse rumorose quando Allarme elevato; sfavorisce percorsi vicini a nemici di rango alto visibili. Al P3 il blocco delle scale non impedisce al bot di cercare risorse.
-- **Test eseguiti:** 7/7 controlli automatici di decisione passati; test Chromium su due seed iniziali appaiati passati senza errori tecnici — [run 41629150837](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41629150837). Primo confronto (PRIMA della correzione 35a8606): baseline arriva al P3 su entrambi, Fase F al P1 su un seed e P3 sull'altro con interruzione per 1800 turni; zero vittorie da entrambe. **Prima iterazione non migliore**; non promuovere risultati.
-- **Correzione in esame:** ridotti detour opzionali e migliorata la penalità per tier red/purple; CI a 10 coppie di partite, esito da registrare dopo completamento.
-- **Problemi aperti:** prima vittoria autonoma P1→P5 mai dimostrata; scelte esplorative e allarme possono ancora peggiorare la run; campione numerico insufficiente per confronto robusto; test umano assente.
-- **Passo successivo:** analizzare dieci seed, poi estendere a 100 seed appaiati se la nuova politica è promettente e controllare HP/pozioni al Custode. Non modificare loot, boss, IA, HP per alterare i risultati.
+## THR-20261103-001 — Fase F conservativa con QA seed appaiati — 2026-11-03
+- **Area:** solo bot e infrastruttura QA, NON gioco.
+- **Versioni:** v18.26 preview invariata; v17.17.0 stabile invariata. Nessuna v18.27 giocabile.
+- **Base commit:** `a50a27d48d32aff6e6f1fc03fe984ffaa94ca9e2`.
+- **Modifiche implementate:** controller `tools/qa_phase_f_bot.js` derivato da Spada/Guardia; breve deviazione verso cure critiche già viste, bottino P3 consentito durante il blocco del Custode, minore interesse per forzieri rumorosi, lieve penalità su nemici forti già visibili. Niente alterazione di HP, loot, mappe, boss o IA.
+- **Codice QA:** `tools/qa_phase_f_bot.js` (revisione conservativa `f45fdbe853575270d78cba4405d031694838ceb0`), `tools/qa_phase_f_worker.cjs`, `tools/qa_phase_f_paired_runner.cjs`, `tools/qa_phase_f_unit.cjs`, `.github/workflows/qa-threshold-phase-f.yml`.
+- **Test effettivo definitivo:** 7/7 test Node passati; [GitHub Actions 41630726729](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41630726729) successo. 10 seed con stato iniziale/mappa visibile corrispondenti, 20 partite Chromium dal P1. **0 errori harness, 0 vittorie, 20 morti reali, 0 interruzioni.** Baseline: piano medio 2,6, turni medi 852, max P4; Phase F: piano medio 2,7, turni medi 756, max P4. 1 seed migliore, 9 pari, 0 peggiori.
+- **Interpretazione:** segnale preliminare soltanto; campione troppo piccolo per dimostrare miglioramento significativo. Non dichiarare vittorie end-to-end né giocabilità umana dimostrata.
+- **Dettagli:** `threshold-v18-preview/docs/QA_FASE_F_2026-11-03.md` (commit `f0d86930d8508d783db89391fad3dd5672446ce7`).
+- **Problemi aperti:** niente vittoria completa; Allarme e risorse critiche; `steps=0` nel sommario di alcune morti per reset stato finale; playtest umano e mobile mancanti.
+- **Next:** correggere telemetria passi, campione 100 seed appaiati se opportuno, analizzare HP/pozioni al P3 prima di qualsiasi modifica al bilanciamento.
 
 ## THR-20261103-BASELINE-001 — Archivio storico e protocollo di handoff — 2026-11-03
 - **Tipo:** documentazione, non patch gameplay.
