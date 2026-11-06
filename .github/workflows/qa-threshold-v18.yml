@@ -18,7 +18,10 @@ jobs:
   qa:
     runs-on: ubuntu-latest
     steps:
+      # THRESHOLD_CHANGE_ID: THR-20261106-001 — compare before/after lighting.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -30,12 +33,22 @@ jobs:
           node tools/qa_v18_24_furniture.cjs
           node tools/qa_v18_25_phaseb.cjs
           node tools/qa_v18_26_world.cjs
+          node --check tools/qa_v18_27_lighting.cjs
       - name: Install Playwright and Chromium for real browser smoke tests
         run: |
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
       - name: Exercise dungeon in Chromium desktop and mobile
-        run: node tools/qa_v18_26_browser.cjs
+        run: |
+          node tools/qa_v18_26_browser.cjs
+          node tools/qa_v18_27_lighting.cjs
+      - name: Upload lighting before/after screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threshold-v18-27-lighting-before-after
+          path: /tmp/threshold-lighting-*.png
+          retention-days: 30
       - name: Generate 500 real floors and verify mandatory routes and puzzles
         timeout-minutes: 10
         run: node tools/qa_v18_27_deep.cjs
