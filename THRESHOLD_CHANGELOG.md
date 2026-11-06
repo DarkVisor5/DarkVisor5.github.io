@@ -1,5 +1,15 @@
 # THRESHOLD — CHANGELOG DI CONTINUITÀ TRA CHAT
 
+## THR-20261106-002 — v18.28 Reset Artistico (4 stanze pilota) — 2026-11-06
+- **Preview giocabile:** v18.27 → **v18.28**, **ID nel menu + debug**; **stabile v17.17.0 protetta**. Base GitHub `b7c454a98d8c6c56c1f25df1fc3e0d4f245f5449`; codice grafico e generatori fino a `a593b6dfe82f73f635abaaf275bf5d79e950c9a0`, QA HEAD prima del report `c697b374a3414e005ff537063536c3cf5985dbaf`.
+- **Implementato:** palette e pavimenti architettonici riconoscibili per **Cripta, Archivio, Infermeria, Santuario**; firma cromatica post-oscurità soltanto in stanza visibile illuminata, sprite leggermente più saturi, uno scenario principale preferenziale, massimo 2–3 arredi L2 per stanza pilota. Non aumentate torce, non modificati combattimento/HP/IA/boss/loot.
+- **Attenzione gameplay ambientale:** arredi solidi e opportunità interattive facoltative possono variare. Preservati controlli di collisione, connettività e puzzle obbligatori. Altre quattro categorie NON ancora modificate.
+- **File:** `threshold-v18-preview/js/game.js`, `threshold-v18-preview/index.html`, `tools/qa_v18_24_furniture.cjs`, `tools/qa_v18_27_lighting.cjs`, `tools/qa_v18_28_art_direction.cjs`, `.github/workflows/qa-threshold-v18.yml`, `threshold-v18-preview/docs/QA_v18_28_RESET_ARTISTICO_2026-11-06.md`, `THRESHOLD_CHANGELOG.md`, `threshold-project-state.json`.
+- **QA reali:** [Actions 42202696558](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/42202696558) **SUCCESS**: regressioni JS, smoke Chromium desktop/mobile, 8 confronti visivi guidati (4 categorie × 2 viewport) con 16 screenshot, 500 piani generati / 500 enigmi obbligatori risolti / 1.000 nicchie / 13.874 props. Deviazione RGB rispetto alla grafica precedente 60–78 punti nel campione (NON voto estetico). Nessuna vittoria autonoma P1→P5 testata.
+- **Limiti:** accettazione estetica umana non raccolta; confronti con seed iniziale uguale non garantiscono `seen/visible` identici dopo inizializzazione opzionale; collisione/arredi facoltativi modificati; performance smartphone reale non collaudate.
+- **Report:** `threshold-v18-preview/docs/QA_v18_28_RESET_ARTISTICO_2026-11-06.md`; screenshot nel workflow Actions (30 giorni).
+- **Next:** approvazione visiva di 4 stanze, test meccanismi opzionali, palette/landmark delle altre 4, eventuale vero rifacimento sprite.
+
 ## THR-20261106-001 — v18.27 Room Light Bounce e arredi illuminati — 2026-11-06
 - **Build giocabile:** v18.26-preview → **v18.27-preview**. Stabile `v17.17.0` invariata. **ID nel menu Accampamento e nel debug** (`window.__thresholdBuild`). Commit code: `2bb117831442a5be2f8999c38a916c9802258af8` (base `3a3e64aefbc1a09e2994b7def977de66de075885`).
 - **Causa verificata:** raggi fermati dai muri, NON dagli arredi; stanze senza sorgenti garantite; overlay scuro 74–78%; gli sprite arredi venivano ravvivati soltanto per prossimità giocatore.
