@@ -1,5 +1,15 @@
 # THRESHOLD — CHANGELOG DI CONTINUITÀ TRA CHAT
 
+## THR-20261106-001 — v18.27 Room Light Bounce e arredi illuminati — 2026-11-06
+- **Build giocabile:** v18.26-preview → **v18.27-preview**. Stabile `v17.17.0` invariata. **ID nel menu Accampamento e nel debug** (`window.__thresholdBuild`). Commit code: `2bb117831442a5be2f8999c38a916c9802258af8` (base `3a3e64aefbc1a09e2994b7def977de66de075885`).
+- **Causa verificata:** raggi fermati dai muri, NON dagli arredi; stanze senza sorgenti garantite; overlay scuro 74–78%; gli sprite arredi venivano ravvivati soltanto per prossimità giocatore.
+- **Implementato:** riflessione tenue limitata alle celle già visibili della stanza, lampade reali e luce portatile; relighting degli arredi in base alle sorgenti della propria stanza; nessun cambiamento a vision radius, nebbia di guerra, quantità di torce, Allarme, enigmi, HP, loot, IA o boss.
+- **File:** `threshold-v18-preview/js/game.js`, `threshold-v18-preview/index.html`, `tools/qa_v18_24_furniture.cjs`, `tools/qa_v18_27_lighting.cjs`, `.github/workflows/qa-threshold-v18.yml`, `threshold-v18-preview/docs/QA_v18_27_ROOM_LIGHTING_2026-11-06.md`, `THRESHOLD_CHANGELOG.md`, `threshold-project-state.json`.
+- **Test GitHub reali:** [42193228121](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/42193228121) **SUCCESS**: statiche, regressioni arredi/puzzle, Chromium desktop/mobile, 500 piani/500 enigmi, 993 nicchie, 15.547 arredi. Screenshot comparativi visual fixture seed 20261106 (non run P1–P5): desktop luma **53,63 → 55,49**, mobile **56,58 → 58,24**, visibilità e intensità torcia invariate. Miglioramento quantitativo ma lieve.
+- **Limiti:** nessun collaudo umano; regolazione luce e performance mobile da verificare; la prima vittoria autentica bot P1–P5 NON è dimostrata. L'ultima QA bot del 03/11 (ID `THR-20261103-005`) era su GitHub ma non ancora trascritta nel precedente manifest. Corretto test obsoleto che cercava solo URL build ≤18.26.
+- **Evidenze:** `threshold-v18-preview/docs/QA_v18_27_ROOM_LIGHTING_2026-11-06.md`; suite screenshot canvas vera ripetuta su [42193446431](https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/42193446431).
+- **Prossimo:** confronti visivi reali delle 8 categorie di stanza e smartphone, eventuale calibrazione solo grafica; riprendere separatamente QA bot.
+
 ## THR-20261103-004 — Bot Fase F: efficienza risorse e torce tramite UI reale — 2026-11-03
 - **Ambito:** esclusivamente codice QA/bot, **v18.26 preview e v17.17.0 stabile NON modificate**. Base `7d69206ddc1d82f557d7baaf3efa0f542d57430f`, HEAD codice testato `04d899a6fb4af05c531895d1e3947a6107f9da10`.
 - **Implementato:** `Lascia` per armi deboli con priorità agli slot cura, memoria loot scartato, raccolta più prioritaria di pozioni note, piccole/grandi selezionate via UI, recupero torce a muro solo se già scoperte; controller v003 congelato per A/B.

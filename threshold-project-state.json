@@ -1,28 +1,112 @@
 {
   "schema": "threshold-handoff/v1",
   "project": "THRESHOLD",
-  "snapshot_id": "THR-20261103-004",
-  "snapshot_date": "2026-11-03",
+  "snapshot_id": "THR-20261106-001",
+  "snapshot_date": "2026-11-06",
   "source_of_truth": {
     "repository": "DarkVisor5/DarkVisor5.github.io",
     "branch": "main",
-    "base_commit": "7d69206ddc1d82f557d7baaf3efa0f542d57430f",
-    "last_qa_code_commit": "04d899a6fb4af05c531895d1e3947a6107f9da10",
+    "base_commit": "3a3e64aefbc1a09e2994b7def977de66de075885",
+    "last_qa_code_commit": "3a3e64aefbc1a09e2994b7def977de66de075885",
     "stable_path": "threshold/index.html",
     "preview_path": "threshold-v18-preview/",
     "stable_url": "https://darkvisor5.github.io/threshold/",
     "preview_url": "https://darkvisor5.github.io/threshold-v18-preview/",
-    "last_observed_head": "04d899a6fb4af05c531895d1e3947a6107f9da10",
+    "last_observed_head": "35bb3a725243ce7a44f83fc31faa35473e481855",
     "last_verified_report_commit": "f0d86930d8508d783db89391fad3dd5672446ce7",
-    "head_note": "Code commit SHA at time of report; subsequent docs commit changes HEAD, recheck GitHub before next patch."
+    "head_note": "Gameplay visual code SHA 2bb1178; QA source at 35bb3a72; docs commit to follow; reverify current GitHub HEAD for future patches. Pre-existing 20261103-005 QA code preceded outdated manifest 20261103-004."
   },
   "game": {
     "stable_version": "v17.17.0",
-    "playable_preview_version": "v18.26",
-    "gameplay_modified": false
+    "playable_preview_version": "v18.27",
+    "gameplay_modified": false,
+    "visual_render_modified": true
   },
-  "qa_revision": "THR-20261103-004",
+  "qa_revision": "THR-20261103-005",
   "last_change": {
+    "id": "THR-20261106-001",
+    "area": "preview-graphics/lighting",
+    "game_version_changed": true,
+    "gameplay_mechanics_modified": false,
+    "repository_committed": true,
+    "base_commit": "3a3e64aefbc1a09e2994b7def977de66de075885",
+    "game_code_commit": "2bb117831442a5be2f8999c38a916c9802258af8",
+    "qa_source_commit": "35bb3a725243ce7a44f83fc31faa35473e481855",
+    "stable_version": "v17.17.0",
+    "playable_version": "v18.27-preview",
+    "description": "Room-only visual light bounce and furniture relight from known light sources; preserve all gameplay and fog-of-war, UI build ID.",
+    "files": [
+      "threshold-v18-preview/js/game.js",
+      "threshold-v18-preview/index.html",
+      "tools/qa_v18_24_furniture.cjs",
+      "tools/qa_v18_27_lighting.cjs",
+      ".github/workflows/qa-threshold-v18.yml",
+      "threshold-v18-preview/docs/QA_v18_27_ROOM_LIGHTING_2026-11-06.md",
+      "THRESHOLD_CHANGELOG.md",
+      "threshold-project-state.json"
+    ],
+    "tests_run": [
+      "JavaScript syntax and v18.24 furniture/v18.25 puzzle/v18.26 mechanism regressions passed in GitHub Actions 42193228121",
+      "Chromium desktop 1280x800 and mobile 390x844 normal game smoke passed, no page errors or missing assets",
+      "Chromium guided visual fixture comparison same seeded 9x5 room: desktop baseline 53.6255 vs v18.27 55.4872 mean luma, mobile 56.5835 vs 58.2354",
+      "No change in sample known/visible cells (103/57) or current torch charge (85)",
+      "500 genuine floor layouts and 500 mandatory puzzles passed; 993 optional niches and 15547 furniture placements analyzed",
+      "Human playtest NOT executed; no normal full-run bot test performed for this graphics sprint"
+    ],
+    "ci": {
+      "run_id": 42193228121,
+      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/42193228121",
+      "status": "completed",
+      "conclusion": "success",
+      "subsequent_capture_qa_run_id": 42193446431,
+      "subsequent_capture_qa_url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/42193446431",
+      "evidence_path": "threshold-v18-preview/docs/QA_v18_27_ROOM_LIGHTING_2026-11-06.md"
+    },
+    "visual_comparison": {
+      "seed": 20261106,
+      "room": {
+        "w": 9,
+        "h": 5,
+        "unlit": true
+      },
+      "numTiles": 29,
+      "torch": 85,
+      "seen": 103,
+      "visible": 57,
+      "desktop": {
+        "before": 53.6255,
+        "after": 55.4872
+      },
+      "mobile": {
+        "before": 56.5835,
+        "after": 58.2354
+      }
+    },
+    "limitations": [
+      "Small light improvement, acceptance not validated by humans",
+      "No new torches generated and no change to resource consumption",
+      "No physics-based furniture shadowcasting: wall occlusion unchanged",
+      "No verified full-run bot clear, unrelated to this release",
+      "Prior QA change ID THR-20261103-005 existed in code despite stale 004 manifest"
+    ]
+  },
+  "previous_qa": {
+    "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
+    "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
+  },
+  "next_actions": [
+    "Review authentic before/after screenshot pixels (not DOM-overlay captures) for a furnished room and confirm readability desktop/mobile; tune subtle light bounce only if justified.",
+    "Sample the eight different room categories and verify render performance on real phones; maintain fog-of-war, darkness risk and torch resource balance.",
+    "Return separately to Phase F bot survival/loot QA on new 5000-action seeds; human complete P1–P5 playtest still pending."
+  ],
+  "constraints": [
+    "Keep v17 stable unchanged",
+    "Do not increment playable v18.26 for bot-only changes",
+    "Never treat isolated boss wins or bot timeouts as full-run victories",
+    "Never modify HP, boss AI, loot to improve bot numbers",
+    "Refresh ChatGPT Project's local manifest and changelog after repo changes"
+  ],
+  "previous_change": {
     "id": "THR-20261103-004",
     "area": "bot/QA",
     "game_version_changed": false,
@@ -96,96 +180,5 @@
       "Discarded weapons may be auto-collected if the player traverses their tile again",
       "Game engine and stable build not edited"
     ]
-  },
-  "previous_qa": {
-    "full_run_resource_diagnostic": "200 browser games, no full P1-P5 win; not proof of impossible gameplay",
-    "isolated_boss_battles": "150 wins of 200 isolated fights with prepared plausible loadouts"
-  },
-  "next_actions": [
-    "Measure successful torch restorations and inadvertent re-pickups of dropped weapons; compare per-floor resource use before adjusting bot.",
-    "Run >=100 new holdout initially paired real Chromium runs with 5000 action cap and per-floor resource checkpoints; keep death vs interruption separate.",
-    "Prioritize P3→P4 healing and alarm mitigation using only player-visible gameplay actions; then human full-run and mobile playtest."
-  ],
-  "constraints": [
-    "Keep v17 stable unchanged",
-    "Do not increment playable v18.26 for bot-only changes",
-    "Never treat isolated boss wins or bot timeouts as full-run victories",
-    "Never modify HP, boss AI, loot to improve bot numbers",
-    "Refresh ChatGPT Project's local manifest and changelog after repo changes"
-  ],
-  "previous_change": {
-    "id": "THR-20261103-003",
-    "area": "bot/QA",
-    "game_version_changed": false,
-    "repository_committed": true,
-    "base_commit": "04d60cd49b1deaef09421872d82140fbd2fc1fe8",
-    "code_commit": "902ac2e4aeb58b21d5f2621d926127473f9b7897",
-    "description": "QA action cap 5000 per P1-P5 run, new initial seed pair test, observed blocker navigation and short-loop detector; no changes to game engine or published playable version.",
-    "files": [
-      "tools/qa_phase_f_bot.js",
-      "tools/qa_phase_f_worker.cjs",
-      "tools/qa_phase_f_paired_runner.cjs",
-      "tools/qa_phase_f_unit.cjs",
-      ".github/workflows/qa-threshold-phase-f.yml",
-      "threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md",
-      "THRESHOLD_CHANGELOG.md",
-      "threshold-project-state.json"
-    ],
-    "tests_run": [
-      "Syntax and 16/16 policy regression checks passed in final GitHub Actions run 41660443057",
-      "20 actual Chromium attempts (10 baseline + 10 Phase F), 10/10 matching initial visible states, no runner errors",
-      "Final baseline 8 deaths, 2 interruptions, 0 wins, max P3; Phase F 10 deaths, 0 interruptions, 0 wins, max P5",
-      "Full P1-P5 progression reached floor 5 but no win on seed 20261117; floor 5 entered 22HP and 0 potions",
-      "Repeat run initially exposed and later avoided 4-cell stair navigation loop on seed 20261118"
-    ],
-    "ci": {
-      "run_id": 41660443057,
-      "url": "https://github.com/DarkVisor5/DarkVisor5.github.io/actions/runs/41660443057",
-      "status": "completed",
-      "conclusion": "success",
-      "evidence_path": "threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md"
-    },
-    "action_limit": 5000,
-    "seed_first": 20261113,
-    "comparison": {
-      "n_seed_pairs": 10,
-      "initial_matches": 10,
-      "baseline": {
-        "wins": 0,
-        "deaths": 8,
-        "interruptions": 2,
-        "maxFloor": 3,
-        "meanFloor": 2.2,
-        "meanTurns": 1238.9,
-        "meanObservedMoves": 1190.2
-      },
-      "phase_f": {
-        "wins": 0,
-        "deaths": 10,
-        "interruptions": 0,
-        "maxFloor": 5,
-        "meanFloor": 3.2,
-        "meanTurns": 926.1,
-        "meanObservedMoves": 854.1
-      },
-      "phaseFDeeper": 7,
-      "baselineDeeper": 1,
-      "tied": 2
-    },
-    "initial_test": {
-      "code_commit": "106921d15e3e63eb32fd5982afb1cfd01ea06dae",
-      "ci_run_id": 41658958316,
-      "passed": true,
-      "phaseFMaxFloor": 4,
-      "phaseFMeanFloor": 2.7,
-      "stairRoutingLoopSeed": 20261118
-    },
-    "limitations": [
-      "No genuine P1-P5 victory; reaching P5 is not clearing final boss",
-      "Seed match verifies initial player-visible world; later RNG paths may differ, so 10 pairs are not proof of causal win-rate benefit",
-      "P5 entered with 22/51 HP and 0 heal items on 20261117",
-      "No gameplay/HP/loot/boss or stable release changes; no human playtest"
-    ],
-    "report_path": "threshold-v18-preview/docs/QA_FASE_F_5000_AZIONI_2026-11-03.md"
   }
 }
