@@ -3,7 +3,8 @@
 const root=document.getElementById('dungeon-fixed');if(!root||root.dataset.ready)return;root.dataset.ready='1';
 const canvas=root.querySelector('#map'),ctx=canvas.getContext('2d'),WORLD=52,DESKTOP_VIEW=15,MOBILE_VIEW=11,DESKTOP_CELL=34,MOBILE_CELL=46,MAX_FLOOR=5,STORE='dungeonCrawlerMetaV5';
 // THRESHOLD_CHANGE_ID: THR-20261106-001 — v18.27 visible room-lighting pass, no gameplay changes.
-window.__thresholdBuild=Object.freeze({version:'v18.27',change_id:'THR-20261106-001',area:'room-lighting'});
+// THRESHOLD_CHANGE_ID: THR-20261106-002 — four-category Art Direction Pilot.
+window.__thresholdBuild=Object.freeze({version:'v18.28',change_id:'THR-20261106-002',area:'art-direction-pilot'});
 let VIEW=DESKTOP_VIEW,CELL=DESKTOP_CELL;
 const mobileUI=()=>window.matchMedia('(max-width:700px)').matches||(window.matchMedia('(pointer:coarse)').matches&&Math.min(window.innerWidth,window.innerHeight)<=700);let suppressCanvasClickUntil=0,mobilePointerStart=null;
 function applyResponsiveBoard(){const mobile=mobileUI();VIEW=mobile?MOBILE_VIEW:DESKTOP_VIEW;CELL=mobile?MOBILE_CELL:DESKTOP_CELL;canvas.width=VIEW*CELL;canvas.height=VIEW*CELL;root.classList.toggle('mobile-board-mode',mobile)}
@@ -1921,12 +1922,12 @@ function drawWallTile(vx,vy,visible,x,y){const px=vx*CELL,py=vy*CELL,pal=themePa
 // overwrite doors, enemies, interactables or the rendered Layer-2 furniture.
 const V18_ROOM_MATERIALS={
  armory:{base:'#32383d',lighter:'#57646a',dark:'#222c32',joint:'#191f25',accent:'#b37442',wall:'#465057'},
- archive:{base:'#594332',lighter:'#866344',dark:'#362b25',joint:'#30241d',accent:'#b99a65',wall:'#654730'},
+ archive:{base:'#254a4b',lighter:'#537f7d',dark:'#19363d',joint:'#294644',accent:'#c78d59',wall:'#426b6b'},
  guardroom:{base:'#384c63',lighter:'#57718a',dark:'#253648',joint:'#213044',accent:'#ba9d64',wall:'#445772'},
- infirmary:{base:'#667c7e',lighter:'#a4b4ac',dark:'#425b60',joint:'#3b5556',accent:'#d5caad',wall:'#7a9897'},
- sanctuary:{base:'#7f715f',lighter:'#ab9a7f',dark:'#554b49',joint:'#4d4140',accent:'#d5b46e',wall:'#8b795f'},
+ infirmary:{base:'#648b7e',lighter:'#d0e1cd',dark:'#385f5d',joint:'#496f65',accent:'#e5e3c5',wall:'#749990'},
+ sanctuary:{base:'#2d4772',lighter:'#7597b8',dark:'#263e62',joint:'#253957',accent:'#ddad68',wall:'#506993'},
  treasury:{base:'#373740',lighter:'#585361',dark:'#24242d',joint:'#171823',accent:'#c59b4d',wall:'#4f4654'},
- crypt:{base:'#46484f',lighter:'#676c72',dark:'#30323a',joint:'#242732',accent:'#8f9692',wall:'#4b525a'},
+ crypt:{base:'#393950',lighter:'#aa90b8',dark:'#26273b',joint:'#26273b',accent:'#77c5cd',wall:'#51435f'},
  warehouse:{base:'#674934',lighter:'#9a7249',dark:'#483526',joint:'#352518',accent:'#bd9a67',wall:'#62432d'}
 };
 function v18TileRoomMaterial(x,y){
@@ -1934,10 +1935,59 @@ function v18TileRoomMaterial(x,y){
  return room&&V18_ROOM_MATERIALS[v18RoomCategory(room)?.type]
   ?{room,kind:v18RoomCategory(room).type,mat:V18_ROOM_MATERIALS[v18RoomCategory(room).type]}:null;
 }
+// THRESHOLD_CHANGE_ID: THR-20261106-002 — graphic-only benchmark for four
+// environments, with bold color family and a room-scale visual landmark.
+// Render on already seen tiles; no traps, torches, collision or extra loot.
+const V18_ART_PILOT={
+ crypt:{name:'Cripta',base:'#393950',alternate:'#50465f',edge:'#a587ad',light:'#c9b4c8',accent:'#77c5cd',shadow:'#26273b'},
+ archive:{name:'Archivio',base:'#254a4b',alternate:'#356567',edge:'#c78d59',light:'#e9d1a7',accent:'#69c3b3',shadow:'#193a41'},
+ infirmary:{name:'Infermeria',base:'#648b7e',alternate:'#86ac9b',edge:'#e5e3c5',light:'#f3f0db',accent:'#d16b75',shadow:'#385f5d'},
+ sanctuary:{name:'Santuario',base:'#2d4772',alternate:'#486d9a',edge:'#ddad68',light:'#e9d5a6',accent:'#76c4de',shadow:'#253957'}
+};
+function drawV18ArtPilotTile(x,y,room,kind,visible){
+ const p=V18_ART_PILOT[kind];if(!p)return false;
+ const tx=x-room.x,ty=y-room.y,cx=Math.floor(room.w/2),cy=Math.floor(room.h/2);
+ ctx.save();ctx.globalAlpha=visible?1:.44;
+ const R=(a,b,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(a,b,w,h)};
+ const L=(x1,y1,x2,y2,c,w=1)=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()};
+ R(0,0,32,32,(tx+ty)%2?p.alternate:p.base);
+ if(kind==='crypt'){
+  R(2,2,28,28,ty%2?p.base:p.alternate);R(2,3,28,2,p.shadow);R(2,27,28,2,p.shadow);
+  if((tx+ty*3)%5===0){L(6,9,12,20,p.edge,1.5);R(21,6,4,3,p.light)}
+  if(tx===cx&&ty>0&&ty<room.h-1){R(10,4,12,24,p.shadow);R(13,4,6,24,p.edge);R(15,6,2,20,p.light)}
+  if(tx===cx&&ty===cy){R(9,11,14,10,p.accent);R(14,7,4,18,p.light);R(10,14,12,3,p.light)}
+ }else if(kind==='archive'){
+  R(1,2,30,28,(tx+ty)%3===0?'#326064':p.base);
+  R(1,2,30,2,p.edge);R(1,16,30,2,p.shadow);R(2,29,28,2,p.edge);
+  if((tx+ty)%4===0){R(5,7,12,2,p.light);R(6,9,8,1,p.edge)}
+  if(tx===cx&&ty>0&&ty<room.h-1){R(3,1,26,30,p.shadow);R(6,3,20,26,p.accent);R(9,5,14,22,p.base);R(14,8,4,16,p.light)}
+  if(tx===cx&&ty===cy){R(9,11,14,11,p.light);R(11,13,5,7,p.edge);R(17,13,4,7,p.edge)}
+ }else if(kind==='infirmary'){
+  R(1,1,30,30,(tx+ty)%2?p.base:p.alternate);
+  R(0,0,32,2,p.shadow);R(0,30,32,2,p.shadow);R(0,0,2,32,p.shadow);R(30,0,2,32,p.shadow);
+  R(5,5,22,2,'rgba(251,249,228,.42)');
+  if(tx===cx&&ty>0&&ty<room.h-1){R(6,1,20,30,p.light);R(7,1,2,30,p.edge);R(23,1,2,30,p.edge)}
+  if(tx===cx&&ty===cy){R(13,7,6,18,p.accent);R(7,13,18,6,p.accent);R(15,9,2,14,p.light)}
+ }else if(kind==='sanctuary'){
+  R(1,1,30,30,(tx+ty)%2?p.alternate:p.base);
+  R(0,0,32,2,p.shadow);R(0,30,32,2,p.shadow);R(0,0,2,32,p.shadow);R(30,0,2,32,p.shadow);
+  if((tx+ty*2)%4===0){R(11,11,10,10,p.shadow);R(14,14,4,4,p.accent)}
+  if(tx===cx&&ty>0&&ty<room.h-1){R(3,0,26,32,p.edge);R(6,0,20,32,p.base);R(10,0,12,32,p.alternate);R(14,0,4,32,p.light)}
+  if(tx===cx&&ty===cy){ctx.fillStyle=p.edge;ctx.beginPath();ctx.arc(16,16,12,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=p.base;ctx.beginPath();ctx.arc(16,16,8,0,Math.PI*2);ctx.fill();
+   R(14,7,4,18,p.light);R(7,14,18,4,p.light)}
+ }
+ if(tx===0)L(3,0,3,32,p.edge,2);
+ if(tx===room.w-1)L(29,0,29,32,p.edge,2);
+ if(ty===0)L(0,3,32,3,p.edge,2);
+ if(ty===room.h-1)L(0,29,32,29,p.edge,2);
+ ctx.restore();return true;
+}
 function drawV18CategoryFloor(x,y,px,py,visible){
  const data=v18TileRoomMaterial(x,y);if(!data)return;
  const {room,kind,mat}=data,h=envHash(x,y,1701),r=(h>>>8)%5;
  ctx.save();ctx.translate(px,py);ctx.scale(CELL/32,CELL/32);
+ if(V18_ART_PILOT[kind]){drawV18ArtPilotTile(x,y,room,kind,visible);ctx.restore();return}
  ctx.globalAlpha=visible?1:.52;
  ctx.fillStyle=mat.base;ctx.fillRect(0,0,32,32);
  const R=(a,b,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(a,b,w,h)};
@@ -2274,11 +2324,13 @@ function v18RoomDecor(){
   let budget=area>=75?5:area>=54?4:area>=36?3:area>=26?2:1;
   if(startRoom||stairsRoom)budget=Math.min(2,budget);
   if(bossRoom)budget=1;
+  // THR-20261106-002: low clutter for benchmark rooms; keep safe placement checks.
+  if(V18_ART_PILOT[kind])budget=Math.min(budget,area>=56?3:2);
   budget=Math.min(budget,objects.length);
   const special=(s.specialRooms||[]).find(q=>q.x===room.x&&q.y===room.y);
   // Vary room anchors as well as secondary shapes, retaining safe density limits.
   const anchorCount=Math.min(4,objects.length);
-  const anchorIndex=envHash(room.x,room.y,1401+s.floor)%anchorCount;
+  const anchorIndex=V18_ART_PILOT[kind]?0:envHash(room.x,room.y,1401+s.floor)%anchorCount;
   const signature=objects[anchorIndex],secondary=objects.filter((_,i)=>i!==anchorIndex);
   const shift=secondary.length?envHash(room.y,room.x,1415+s.floor)%secondary.length:0;
   const ordered=[signature,...secondary.slice(shift),...secondary.slice(0,shift)];
@@ -3068,6 +3120,8 @@ function drawV18RoomDecor(c,relight=false){
    ctx.globalAlpha=.10+.54*lift;
    ctx.filter='brightness(1.65) contrast(1.12)';
   }
+  // THR-20261106-002: preserve silhouette, push limited color contrast.
+  if(V18_ART_PILOT[v18RoomCategory(r)?.type])ctx.filter=relight?'brightness(1.55) saturate(1.28) contrast(1.10)':'brightness(1.09) saturate(1.32) contrast(1.10)';
   ctx.imageSmoothingEnabled=false;
   const phaseB=V18_24_SPRITES[prop.type];
   const phaseA=V18_23_SPRITES[prop.type];
