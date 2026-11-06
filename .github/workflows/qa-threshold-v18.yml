@@ -6,6 +6,7 @@ on:
       - 'threshold-v18-preview/js/**'
       - 'tools/qa_v18_26_world.cjs'
       - 'tools/qa_v18_26_browser.cjs'
+      - 'tools/qa_v18_27_lighting.cjs' # THR-20261106-001
       - 'tools/qa_v18_27_deep.cjs'
       - 'threshold-v18-preview/index.html'
       - 'tools/qa_v18_25_phaseb.cjs'
