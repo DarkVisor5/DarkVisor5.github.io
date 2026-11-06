@@ -2,6 +2,8 @@
 (()=>{
 const root=document.getElementById('dungeon-fixed');if(!root||root.dataset.ready)return;root.dataset.ready='1';
 const canvas=root.querySelector('#map'),ctx=canvas.getContext('2d'),WORLD=52,DESKTOP_VIEW=15,MOBILE_VIEW=11,DESKTOP_CELL=34,MOBILE_CELL=46,MAX_FLOOR=5,STORE='dungeonCrawlerMetaV5';
+// THRESHOLD_CHANGE_ID: THR-20261106-001 — v18.27 visible room-lighting pass, no gameplay changes.
+window.__thresholdBuild=Object.freeze({version:'v18.27',change_id:'THR-20261106-001',area:'room-lighting'});
 let VIEW=DESKTOP_VIEW,CELL=DESKTOP_CELL;
 const mobileUI=()=>window.matchMedia('(max-width:700px)').matches||(window.matchMedia('(pointer:coarse)').matches&&Math.min(window.innerWidth,window.innerHeight)<=700);let suppressCanvasClickUntil=0,mobilePointerStart=null;
 function applyResponsiveBoard(){const mobile=mobileUI();VIEW=mobile?MOBILE_VIEW:DESKTOP_VIEW;CELL=mobile?MOBILE_CELL:DESKTOP_CELL;canvas.width=VIEW*CELL;canvas.height=VIEW*CELL;root.classList.toggle('mobile-board-mode',mobile)}
@@ -1741,6 +1743,37 @@ function drawThreatVisuals(now=animNow()){
  for(let n=0;n<4;n++){const offset=(n*113+Math.floor(now/800)*3)%Math.floor(canvas.height), y=offset+.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y+Math.sin(n*2+now/500)*4);ctx.stroke()}}
  ctx.restore();
 }
+// THRESHOLD_CHANGE_ID: THR-20261106-001 — modest reflected light in the
+// player's current room, clipped to tiles already in s.visible. This never
+// changes fog, visibility, torch resource, enemies or corridor darkness.
+function drawVisibleRoomBounce(c){
+ if(!s?.visible||!s?.player)return;
+ const room=roomGeometryAt(s.player.x,s.player.y);
+ if(!room)return;
+ const sources=[],power=torchLight()/100;
+ const radius=Math.max(3.8,Math.min(6.4,Math.max(room.w,room.h)*.78));
+ if(power>0)sources.push({x:s.player.x+.5,y:s.player.y+.5,r:radius,strength:.12+.11*power});
+ for(const t of s.torches||[]){
+  if(t.harvested||!torchKnown(t))continue;
+  if(t.ax<room.x||t.ax>=room.x+room.w||t.ay<room.y||t.ay>=room.y+room.h)continue;
+  const lamp=torchWorldSource(t);
+  sources.push({x:lamp.x,y:lamp.y,r:radius,strength:.17});
+ }
+ if(!sources.length)return;
+ ctx.save();ctx.beginPath();
+ let clipped=0;
+ for(let y=room.y;y<room.y+room.h;y++)for(let x=room.x;x<room.x+room.w;x++){
+  if(!inc(x,y,c)||!s.visible.has(K(x,y))||s.map[y]?.[x]==='#')continue;
+  ctx.rect((x-c.sx)*CELL,(y-c.sy)*CELL,CELL,CELL);clipped++;
+ }
+ if(!clipped){ctx.restore();return}
+ ctx.clip();ctx.globalCompositeOperation='destination-out';
+ for(const source of sources){
+  ctx.globalAlpha=source.strength;
+  punchLight((source.x-c.sx)*CELL,(source.y-c.sy)*CELL,CELL*source.r);
+ }
+ ctx.restore();
+}
 function drawTorchDarkness(c,now=animNow()){
   if(!s)return;
   ctx.save();
@@ -1756,6 +1789,7 @@ function drawTorchDarkness(c,now=animNow()){
     const tp=torchPixel(t,c,now),radiusTiles=(t.radius||3.2)+(tp.flicker*.055),radius=CELL*radiusTiles;
     clipTorchOcclusion(t,c,radiusTiles,()=>punchLight(tp.x,tp.y,radius));
   }
+  drawVisibleRoomBounce(c);
   ctx.restore();
   ctx.save();ctx.globalCompositeOperation='lighter';
   for(const t of s.torches||[]){
@@ -2989,6 +3023,26 @@ for(const [type,file] of Object.entries(V18_24_ART_FILES)){
  V18_24_SPRITES[type]=img;
 }
 
+// THRESHOLD_CHANGE_ID: THR-20261106-001 — reflected lighting makes furniture
+// beside real room sources readable without lighting hidden geometry.
+function v18FurnitureLightLift(prop){
+ const x=prop.x+(prop.w-1)/2,y=prop.y+(prop.h-1)/2;
+ const d=Math.hypot(x-s.player.x,y-s.player.y);
+ let lift=Math.max(0,Math.min(1,(4.5-d)/3.2));
+ if(portableTorchActive()){
+  const reach=(mobileUI()?5.35:5.55)*(.34+.66*torchLight()/100);
+  lift=Math.max(lift,Math.max(0,(reach+.8-d)/(reach+.8))*.88);
+ }
+ for(const t of s.torches||[]){
+  if(t.harvested||!torchKnown(t))continue;
+  if(t.ax<prop.room.x||t.ax>=prop.room.x+prop.room.w||
+     t.ay<prop.room.y||t.ay>=prop.room.y+prop.room.h)continue;
+  const lamp=torchWorldSource(t),distance=Math.hypot(x+.5-lamp.x,y+.5-lamp.y);
+  const reach=(t.radius||3.2)+1.3;
+  lift=Math.max(lift,Math.max(0,(reach-distance)/reach)*.95);
+ }
+ return Math.min(1,lift);
+}
 function drawV18RoomDecor(c,relight=false){
  if(!s)return;
  for(const prop of v18RoomDecor()){
@@ -3000,8 +3054,7 @@ function drawV18RoomDecor(c,relight=false){
   const r=prop.room,px=(prop.x-c.sx)*CELL,py=(prop.y-c.sy)*CELL;
   let lift=0;
   if(relight){
-   const distance=Math.hypot(prop.x+(prop.w-1)/2-s.player.x,prop.y+(prop.h-1)/2-s.player.y);
-   lift=Math.max(0,Math.min(1,(4.5-distance)/3.2));
+   lift=v18FurnitureLightLift(prop);
    if(lift<=0||!cells.some(([dx,dy])=>s.visible.has(K(prop.x+dx,prop.y+dy))))continue;
   }
   ctx.save();ctx.beginPath();
