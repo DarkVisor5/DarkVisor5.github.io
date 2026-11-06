@@ -7,6 +7,7 @@ on:
       - 'tools/qa_v18_26_world.cjs'
       - 'tools/qa_v18_26_browser.cjs'
       - 'tools/qa_v18_27_lighting.cjs' # THR-20261106-001
+      - 'tools/qa_v18_28_art_direction.cjs' # THR-20261106-002
       - 'tools/qa_v18_27_deep.cjs'
       - 'threshold-v18-preview/index.html'
       - 'tools/qa_v18_25_phaseb.cjs'
@@ -35,6 +36,7 @@ jobs:
           node tools/qa_v18_25_phaseb.cjs
           node tools/qa_v18_26_world.cjs
           node --check tools/qa_v18_27_lighting.cjs
+          node --check tools/qa_v18_28_art_direction.cjs
       - name: Install Playwright and Chromium for real browser smoke tests
         run: |
           npm install --no-save --no-package-lock playwright
@@ -43,12 +45,20 @@ jobs:
         run: |
           node tools/qa_v18_26_browser.cjs
           node tools/qa_v18_27_lighting.cjs
+          node tools/qa_v18_28_art_direction.cjs
       - name: Upload lighting before/after screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: threshold-v18-27-lighting-before-after
           path: /tmp/threshold-lighting-*.png
+          retention-days: 30
+      - name: Upload room design pilot before-after screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threshold-v18-28-art-reset-before-after
+          path: /tmp/threshold-art-*.png
           retention-days: 30
       - name: Generate 500 real floors and verify mandatory routes and puzzles
         timeout-minutes: 10
