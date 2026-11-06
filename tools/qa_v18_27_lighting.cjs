@@ -44,7 +44,8 @@ const server=http.createServer((req,res)=>{
     const result=await page.evaluate(()=>window.__qaLightingFixture.measure());
     if(which==='current')assert.equal(await page.evaluate(()=>window.__thresholdBuild?.version),'v18.27');
     assert.equal(errors.length,0,which+' browser exceptions: '+errors.join('; '));
-    await page.locator('#map').screenshot({path:'/tmp/threshold-lighting-'+spec.name+'-'+which+'.png'});
+    const png=await page.evaluate(()=>document.querySelector('#map').toDataURL('image/png'));
+    fs.writeFileSync('/tmp/threshold-lighting-'+spec.name+'-'+which+'.png',Buffer.from(png.slice(png.indexOf(',')+1),'base64'));
     results[which]={start,result};
     await context.close();
    }
