@@ -61,5 +61,6 @@ jobs:
           path: /tmp/threshold-art-*.png
           retention-days: 30
       - name: Generate 500 real floors and verify mandatory routes and puzzles
+        if: always() # THR-20261106-002: run pathfinding even if visual A/B has problems
         timeout-minutes: 10
         run: node tools/qa_v18_27_deep.cjs
